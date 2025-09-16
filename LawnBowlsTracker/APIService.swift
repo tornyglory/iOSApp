@@ -1,0 +1,435 @@
+import Foundation
+
+class APIService: ObservableObject {
+    static let shared = APIService()
+    
+    private let trainingBaseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod/api/training"
+    private let authBaseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod"
+    @Published var authToken: String?
+    @Published var isAuthenticated: Bool = false
+    @Published var currentUser: User?
+    
+    // MARK: - Computed Properties for UI
+    var userDisplayName: String {
+        currentUser?.name ?? "User"
+    }
+    
+    var userFirstName: String {
+        currentUser?.firstName ?? "User"
+    }
+    
+    var userEmail: String {
+        currentUser?.email ?? ""
+    }
+    
+    var userAvatarUrl: String? {
+        guard let url = currentUser?.avatarUrl, !url.isEmpty else { return nil }
+        return url
+    }
+    
+    var hasAvatar: Bool {
+        userAvatarUrl != nil && !userAvatarUrl!.isEmpty
+    }
+    
+    private init() {
+        loadAuthToken()
+    }
+    
+    func setAuthToken(_ token: String) {
+        self.authToken = token
+    }
+    
+    private func makeRequest<T: Codable>(
+        endpoint: String,
+        method: HTTPMethod = .GET,
+        body: Data? = nil,
+        responseType: T.Type,
+        useAuthBase: Bool = false
+    ) async throws -> T {
+        let baseURL = useAuthBase ? authBaseURL : trainingBaseURL
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+        
+        print("📡 API Request: \(method.rawValue) \(url.absoluteString)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = method.rawValue
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        if let token = authToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        if let body = body {
+            request.httpBody = body
+            if let bodyString = String(data: body, encoding: .utf8) {
+                print("📤 Request Body: \(bodyString)")
+            }
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        print("📥 Response Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📥 Response Body: \(responseString)")
+        }
+        
+        guard 200...299 ~= httpResponse.statusCode else {
+            // Try to parse error message from response body
+            if let errorData = try? JSONDecoder().decode(ErrorResponse.self, from: data),
+               let message = errorData.message {
+                throw APIError.serverErrorWithMessage(httpResponse.statusCode, message)
+            }
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+                
+                // Create formatters for different date formats
+                let formatter1 = DateFormatter()
+                formatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                formatter1.locale = Locale(identifier: "en_US_POSIX")
+                formatter1.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                let formatter2 = DateFormatter()
+                formatter2.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                formatter2.locale = Locale(identifier: "en_US_POSIX")
+                formatter2.timeZone = TimeZone(secondsFromGMT: 0)
+                
+                let iso8601Formatter = ISO8601DateFormatter()
+                
+                // Try different formats
+                if let date = formatter1.date(from: dateString) {
+                    return date
+                } else if let date = formatter2.date(from: dateString) {
+                    return date
+                } else if let date = iso8601Formatter.date(from: dateString) {
+                    return date
+                }
+                
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+            }
+            return try decoder.decode(responseType, from: data)
+        } catch {
+            print("❌ Decoding error for \(responseType): \(error)")
+            if let dataString = String(data: data, encoding: .utf8) {
+                print("❌ Failed to decode response: \(dataString)")
+            }
+            throw APIError.decodingError(error)
+        }
+    }
+    
+    // MARK: - Authentication Token Management
+    
+    private func loadAuthToken() {
+        if let token = UserDefaults.standard.string(forKey: "auth_token"), !token.isEmpty {
+            self.authToken = token
+            self.isAuthenticated = true
+        } else {
+            self.authToken = nil
+            self.isAuthenticated = false
+        }
+    }
+    
+    private func saveAuthToken(_ token: String) {
+        UserDefaults.standard.set(token, forKey: "auth_token")
+        self.authToken = token
+        self.isAuthenticated = true
+    }
+    
+    private func clearAuthToken() {
+        UserDefaults.standard.removeObject(forKey: "auth_token")
+        self.authToken = nil
+        self.isAuthenticated = false
+        self.currentUser = nil
+    }
+    
+    // MARK: - Authentication Methods
+    
+    func register(_ request: RegisterRequest) async throws -> RegisterResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(request)
+        
+        let response: RegisterResponse = try await makeRequest(
+            endpoint: "/register",
+            method: .POST,
+            body: data,
+            responseType: RegisterResponse.self,
+            useAuthBase: true
+        )
+        
+        // Registration doesn't return a token, user needs to login separately
+        print("✅ Registration successful: \(response.message)")
+        
+        return response
+    }
+    
+    func login(_ request: LoginRequest) async throws -> AuthResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(request)
+        
+        let response: AuthResponse = try await makeRequest(
+            endpoint: "/login",
+            method: .POST,
+            body: data,
+            responseType: AuthResponse.self,
+            useAuthBase: true
+        )
+        
+        saveAuthToken(response.token)
+        DispatchQueue.main.async {
+            self.currentUser = response.user
+            self.objectWillChange.send()
+        }
+        
+        return response
+    }
+    
+    func logout() {
+        clearAuthToken()
+    }
+    
+    func clearAllStoredData() {
+        UserDefaults.standard.removeObject(forKey: "auth_token")
+        self.authToken = nil
+        self.isAuthenticated = false
+        self.currentUser = nil
+    }
+    
+    // MARK: - Profile Methods
+    
+    func updateProfile(userId: String, profile: ProfileUpdateRequest) async throws -> UpdateProfileResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(profile)
+        
+        let response: UpdateProfileResponse = try await makeRequest(
+            endpoint: "/profile/\(userId)",
+            method: .PUT,
+            body: data,
+            responseType: UpdateProfileResponse.self,
+            useAuthBase: true
+        )
+        
+        // Note: The API doesn't return the updated user object in this response
+        // We might need to fetch the updated profile separately if needed
+        
+        return response
+    }
+    
+    func getProfile(userId: String) async throws -> User {
+        let user: User = try await makeRequest(
+            endpoint: "/profile/\(userId)",
+            method: .GET,
+            responseType: User.self,
+            useAuthBase: true
+        )
+        
+        self.currentUser = user
+        return user
+    }
+    
+    // MARK: - Clubs Methods
+    
+    func searchClubs(name: String) async throws -> [Club] {
+        guard name.count >= 3 else {
+            return []
+        }
+        
+        let baseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod"
+        guard let url = URL(string: baseURL + "/clubs?name=\(name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&sport=1") else {
+            throw APIError.invalidURL
+        }
+        
+        print("📡 Clubs Search: GET \(url.absoluteString)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        print("📥 Clubs Response Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("📥 Clubs Response Body: \(responseString)")
+        }
+        
+        guard 200...299 ~= httpResponse.statusCode else {
+            // Try to parse error message from response body
+            if let errorData = try? JSONDecoder().decode(ErrorResponse.self, from: data),
+               let message = errorData.message {
+                throw APIError.serverErrorWithMessage(httpResponse.statusCode, message)
+            }
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+        
+        do {
+            let clubsResponse = try JSONDecoder().decode(ClubsSearchResponse.self, from: data)
+            return clubsResponse.data
+        } catch {
+            print("❌ Clubs decoding error: \(error)")
+            throw APIError.decodingError(error)
+        }
+    }
+    
+    func getUserProfile(_ userId: Int) async throws -> User {
+        return try await makeRequest(
+            endpoint: "/profile/\(userId)",
+            responseType: User.self,
+            useAuthBase: true
+        )
+    }
+    
+    // MARK: - Training Methods
+    
+    func createSession(_ session: CreateSessionRequest) async throws -> CreateSessionResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(session)
+        
+        return try await makeRequest(
+            endpoint: "/sessions",
+            method: .POST,
+            body: data,
+            responseType: CreateSessionResponse.self
+        )
+    }
+    
+    func getSessions(limit: Int = 20, offset: Int = 0, dateFrom: String? = nil, dateTo: String? = nil) async throws -> SessionListResponse {
+        var endpoint = "/training/sessions?limit=\(limit)&offset=\(offset)&sport=lawn_bowls"
+        
+        if let dateFrom = dateFrom {
+            endpoint += "&dateFrom=\(dateFrom)"
+        }
+        if let dateTo = dateTo {
+            endpoint += "&dateTo=\(dateTo)"
+        }
+        
+        return try await makeRequest(
+            endpoint: endpoint,
+            responseType: SessionListResponse.self
+        )
+    }
+    
+    func getSessionDetails(_ sessionId: Int) async throws -> SessionDetailResponse {
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)",
+            responseType: SessionDetailResponse.self
+        )
+    }
+    
+    func deleteSession(_ sessionId: Int) async throws -> DeleteResponse {
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)",
+            method: .DELETE,
+            responseType: DeleteResponse.self
+        )
+    }
+    
+    func endSession(_ sessionId: Int, request: EndSessionRequest) async throws -> CreateSessionResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(request)
+        
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)/end",
+            method: .POST,
+            body: data,
+            responseType: CreateSessionResponse.self
+        )
+    }
+    
+    func getActiveSession() async throws -> CreateSessionResponse? {
+        do {
+            return try await makeRequest(
+                endpoint: "/sessions/active",
+                method: .GET,
+                responseType: CreateSessionResponse.self
+            )
+        } catch {
+            // If no active session, return nil instead of throwing
+            return nil
+        }
+    }
+    
+    func recordShot(_ shot: RecordShotRequest) async throws -> RecordShotResponse {
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(shot)
+        
+        return try await makeRequest(
+            endpoint: "/shots",
+            method: .POST,
+            body: data,
+            responseType: RecordShotResponse.self
+        )
+    }
+    
+    func deleteShot(_ shotId: Int) async throws -> DeleteShotResponse {
+        return try await makeRequest(
+            endpoint: "/shots/\(shotId)",
+            method: .DELETE,
+            responseType: DeleteShotResponse.self
+        )
+    }
+    
+    func getTrainingStats(period: String = "all", shotType: String? = nil) async throws -> TrainingStatsResponse {
+        var endpoint = "/stats?period=\(period)"
+        
+        if let shotType = shotType {
+            endpoint += "&shot_type=\(shotType)"
+        }
+        
+        return try await makeRequest(
+            endpoint: endpoint,
+            responseType: TrainingStatsResponse.self
+        )
+    }
+    
+    func getTrainingProgress(groupBy: String = "week", limit: Int = 12) async throws -> TrainingProgressResponse {
+        let endpoint = "/progress?group_by=\(groupBy)&limit=\(limit)"
+        
+        return try await makeRequest(
+            endpoint: endpoint,
+            responseType: TrainingProgressResponse.self
+        )
+    }
+}
+
+enum HTTPMethod: String {
+    case GET = "GET"
+    case POST = "POST"
+    case PUT = "PUT"
+    case DELETE = "DELETE"
+}
+
+enum APIError: Error, LocalizedError {
+    case invalidURL
+    case invalidResponse
+    case serverError(Int)
+    case serverErrorWithMessage(Int, String)
+    case decodingError(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .invalidResponse:
+            return "Invalid response"
+        case .serverError(let code):
+            return "Server error: \(code)"
+        case .serverErrorWithMessage(_, let message):
+            return message
+        case .decodingError(let error):
+            return "Decoding error: \(error.localizedDescription)"
+        }
+    }
+}

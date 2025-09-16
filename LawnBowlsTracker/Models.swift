@@ -1,0 +1,885 @@
+import Foundation
+
+// MARK: - Error Response
+
+struct ErrorResponse: Codable {
+    let status: String?
+    let message: String?
+}
+
+// MARK: - User Models
+
+struct User: Codable, Identifiable {
+    let id: Int
+    let email: String
+    let name: String
+    let userType: String
+    let phone: String?
+    let address: String?
+    let description: String?
+    let avatarUrl: String?
+    let bannerUrl: String?
+    let created: String?
+    let updated: String?
+    let profileCompleted: Int
+    let club: String?
+    let sport: String?
+    let images: [String]?
+    let achievements: [String]?
+    let clubData: Club?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, email, name
+        case userType = "user_type"
+        case phone, address, description
+        case avatarUrl = "avatar_url"
+        case bannerUrl = "banner_url"
+        case created, updated
+        case profileCompleted = "profile_completed"
+        case club, sport, images, achievements
+        case clubData = "club_data"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(Int.self, forKey: .id)
+        email = try container.decode(String.self, forKey: .email)
+        name = try container.decode(String.self, forKey: .name)
+        userType = try container.decode(String.self, forKey: .userType)
+        phone = try container.decodeIfPresent(String.self, forKey: .phone)
+        address = try container.decodeIfPresent(String.self, forKey: .address)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
+        bannerUrl = try container.decodeIfPresent(String.self, forKey: .bannerUrl)
+        created = try container.decodeIfPresent(String.self, forKey: .created)
+        updated = try container.decodeIfPresent(String.self, forKey: .updated)
+        profileCompleted = try container.decode(Int.self, forKey: .profileCompleted)
+        club = try container.decodeIfPresent(String.self, forKey: .club)
+        sport = try container.decodeIfPresent(String.self, forKey: .sport)
+        clubData = try container.decodeIfPresent(Club.self, forKey: .clubData)
+        
+        // Handle null or missing arrays
+        images = try container.decodeIfPresent([String].self, forKey: .images) ?? []
+        achievements = try container.decodeIfPresent([String].self, forKey: .achievements) ?? []
+    }
+    
+    // Computed properties for backwards compatibility
+    var firstName: String {
+        let components = name.components(separatedBy: " ")
+        return components.first ?? name
+    }
+    
+    var lastName: String {
+        let components = name.components(separatedBy: " ")
+        return components.count > 1 ? components.dropFirst().joined(separator: " ") : ""
+    }
+}
+
+struct RegisterRequest: Codable {
+    let email: String
+    let name: String
+    let password: String
+    let sport: String = "Lawn Bowls"
+    let accountType: String = "player"
+    let membershipType: String = "founder"
+    let phone: String?
+    let address: String?
+    let description: String?
+    let avatarUrl: String?
+    let club: String?
+    let achievements: [String] = []
+    let images: [String] = []
+    
+    enum CodingKeys: String, CodingKey {
+        case email
+        case name
+        case password
+        case sport
+        case accountType = "account_type"
+        case membershipType = "membership_type"
+        case phone
+        case address
+        case description
+        case avatarUrl = "avatar_url"
+        case club
+        case achievements
+        case images
+    }
+}
+
+struct LoginRequest: Codable {
+    let email: String
+    let password: String
+}
+
+struct UpdateProfileRequest: Codable {
+    let firstName: String
+    let lastName: String
+    let phone: String?
+    let dateOfBirth: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case phone
+        case dateOfBirth = "date_of_birth"
+    }
+}
+
+struct AuthResponse: Codable {
+    let status: String
+    let message: String
+    let token: String
+    let user: User
+}
+
+struct RegisterResponse: Codable {
+    let status: String
+    let message: String
+}
+
+// MARK: - Profile Models
+struct ProfileUpdateRequest: Codable {
+    let name: String
+    let email: String
+    let phone: String
+    let gender: String
+    let description: String
+    let shortDescription: String
+    let avatarUrl: String?
+    let bannerUrl: String?
+    let avatarBase64: String?
+    let bannerBase64: String?
+    let country: String
+    let state: String
+    let region: String
+    let sport: String = "Lawn Bowls"
+    let sportId: Int = 1
+    let club: String
+    let clubId: String
+    
+    enum CodingKeys: String, CodingKey {
+        case name, email, phone, gender, description
+        case shortDescription = "short_description"
+        case avatarUrl = "avatar_url"
+        case bannerUrl = "banner_url"
+        case avatarBase64 = "avatar_base64"
+        case bannerBase64 = "banner_base64"
+        case country, state, region, sport
+        case sportId = "sport_id"
+        case club
+        case clubId = "club_id"
+    }
+}
+
+struct Club: Codable, Identifiable {
+    let id: Int
+    let name: String
+    let description: String
+    let avatar: String
+    let bannerImage: String
+    let country: String
+    let state: String
+    let region: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "club_id"
+        case name, description, avatar
+        case bannerImage = "banner_image"
+        case country, state, region
+    }
+    
+    // Computed property for string ID compatibility
+    var stringId: String {
+        return String(id)
+    }
+}
+
+struct ClubsSearchResponse: Codable {
+    let status: String
+    let data: [Club]
+}
+
+struct UpdateProfileResponse: Codable {
+    let status: String
+    let message: String
+    let data: ProfileUpdateData?
+    
+    struct ProfileUpdateData: Codable {
+        let avatarUrl: String?
+        let bannerUrl: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case avatarUrl = "avatar_url"
+            case bannerUrl = "banner_url"
+        }
+    }
+}
+
+// MARK: - Enums
+
+enum Location: String, CaseIterable, Codable {
+    case indoor = "indoor"
+    case outdoor = "outdoor"
+}
+
+enum GreenType: String, CaseIterable, Codable {
+    case couch = "couch"
+    case tift = "tift"
+    case bent = "bent"
+    case grass = "grass"
+    case synthetic = "synthetic"
+    case carpet = "carpet"
+}
+
+enum Weather: String, CaseIterable, Codable {
+    case cold = "cold"
+    case warm = "warm"
+    case hot = "hot"
+}
+
+enum WindConditions: String, CaseIterable, Codable {
+    case noWind = "no_wind"
+    case light = "light"
+    case moderate = "moderate"
+    case strong = "strong"
+}
+
+enum ShotType: String, CaseIterable, Codable {
+    case draw = "draw"
+    case yardOn = "yard_on"
+    case ditchWeight = "ditch_weight"
+    case drive = "drive"
+}
+
+enum Hand: String, CaseIterable, Codable {
+    case forehand = "forehand"
+    case backhand = "backhand"
+}
+
+enum Length: String, CaseIterable, Codable {
+    case short = "short"
+    case medium = "medium"
+    case long = "long"
+}
+
+enum DistanceFromJack: String, CaseIterable, Codable {
+    case foot = "foot"
+    case yard = "yard"
+    case miss = "miss"
+}
+
+// MARK: - Request Models
+
+struct CreateSessionRequest: Codable {
+    let location: Location
+    let greenType: GreenType
+    let greenSpeed: Int
+    let rinkNumber: Int?
+    let weather: Weather?
+    let windConditions: WindConditions?
+    let notes: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case location
+        case greenType = "green_type"
+        case greenSpeed = "green_speed"
+        case rinkNumber = "rink_number"
+        case weather
+        case windConditions = "wind_conditions"
+        case notes
+    }
+}
+
+struct RecordShotRequest: Codable {
+    let sessionId: Int
+    let shotType: ShotType
+    let hand: Hand
+    let length: Length
+    let distanceFromJack: DistanceFromJack
+    let notes: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case sessionId = "session_id"
+        case shotType = "shot_type"
+        case hand
+        case length
+        case distanceFromJack = "distance_from_jack"
+        case notes
+    }
+}
+
+struct EndSessionRequest: Codable {
+    let endedAt: String         // Required - ISO string
+    let durationSeconds: Int    // Required - seconds
+    
+    enum CodingKeys: String, CodingKey {
+        case endedAt = "ended_at"
+        case durationSeconds = "duration_seconds"
+    }
+}
+
+// MARK: - Core Models
+
+struct TrainingSession: Codable, Identifiable {
+    let id: Int
+    let playerId: Int
+    let sport: String
+    let sessionDate: Date
+    let location: Location
+    let greenType: GreenType
+    let greenSpeed: Int
+    let rinkNumber: Int?
+    let weather: Weather?
+    let windConditions: WindConditions?
+    let notes: String?
+    let createdAt: Date
+    let updatedAt: Date
+    let totalShots: Int?
+    let drawShots: Int?
+    let weightedShots: Int?
+    let drawAccuracy: Double?
+    let weightedAccuracy: Double?
+    let overallAccuracy: Double?
+    let startedAt: Date?
+    let endedAt: Date?
+    let durationSeconds: Int?
+    let _isActive: Int?
+    
+    // New fields from updated API
+    let totalPoints: Int?
+    let averageScore: Double?
+    let accuracyPercentage: Double?
+    let yardOnShots: Int?
+    let yardOnAccuracy: Double?
+    let ditchWeightShots: Int?
+    let ditchWeightAccuracy: Double?
+    let driveShots: Int?
+    let driveAccuracy: Double?
+    
+    
+    // Computed property to convert MySQL TINYINT (0/1) to Bool
+    var isActive: Bool? {
+        guard let value = _isActive else { return nil }
+        return value == 1
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case playerId = "player_id"
+        case sport
+        case sessionDate = "session_date"
+        case location
+        case greenType = "green_type"
+        case greenSpeed = "green_speed"
+        case rinkNumber = "rink_number"
+        case weather
+        case windConditions = "wind_conditions"
+        case notes
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+        case totalShots = "total_shots"
+        case drawShots = "draw_shots"
+        case weightedShots = "weighted_shots"
+        case drawAccuracy = "draw_accuracy"
+        case weightedAccuracy = "weighted_accuracy"
+        case overallAccuracy = "overall_accuracy"
+        case startedAt = "started_at"
+        case endedAt = "ended_at"
+        case durationSeconds = "duration_seconds"
+        case _isActive = "is_active"
+        case totalPoints = "total_points"
+        case averageScore = "average_score"
+        case accuracyPercentage = "accuracy_percentage"
+        case yardOnShots = "yard_on_shots"
+        case yardOnAccuracy = "yard_on_accuracy"
+        case ditchWeightShots = "ditch_weight_shots"
+        case ditchWeightAccuracy = "ditch_weight_accuracy"
+        case driveShots = "drive_shots"
+        case driveAccuracy = "drive_accuracy"
+    }
+    
+    // Computed property for formatted duration display
+    var durationFormatted: String {
+        guard let duration = durationSeconds else { 
+            return isActive == true ? "In Progress" : "--"
+        }
+        
+        let hours = duration / 3600
+        let minutes = (duration % 3600) / 60
+        let secs = duration % 60
+        
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%d:%02d", minutes, secs)
+        }
+    }
+    
+    // Computed property for elapsed time (for active sessions)
+    var elapsedTime: TimeInterval? {
+        guard let startedAt = startedAt else { return nil }
+        
+        if let endedAt = endedAt {
+            return endedAt.timeIntervalSince(startedAt)
+        } else if isActive == true {
+            return Date().timeIntervalSince(startedAt)
+        }
+        
+        return nil
+    }
+    
+    // Helper methods for shot type statistics
+    func shotCountForType(_ type: String) -> String {
+        switch type {
+        case "draw": return drawShots.map(String.init) ?? "0"
+        case "yard_on": return yardOnShots.map(String.init) ?? "0"
+        case "ditch_weight": return ditchWeightShots.map(String.init) ?? "0"
+        case "drive": return driveShots.map(String.init) ?? "0"
+        default: return "0"
+        }
+    }
+    
+    func accuracyForType(_ type: String) -> Double? {
+        switch type {
+        case "draw": return drawAccuracy
+        case "yard_on": return yardOnAccuracy
+        case "ditch_weight": return ditchWeightAccuracy
+        case "drive": return driveAccuracy
+        default: return nil
+        }
+    }
+    
+    func displayAccuracyForType(_ type: String) -> String? {
+        guard let accuracy = accuracyForType(type) else { return nil }
+        return String(format: "%.1f", accuracy)
+    }
+}
+
+struct TrainingShot: Codable, Identifiable {
+    let id: Int
+    let sessionId: Int?
+    let shotType: ShotType
+    let hand: Hand
+    let length: Length
+    let distanceFromJack: DistanceFromJack?
+    let _hitTarget: Int?
+    let _withinFoot: Int?
+    let _success: Int?
+    let score: Int?
+    let notes: String?
+    let createdAt: Date
+    
+    // Computed properties to convert MySQL TINYINT to Bool
+    var hitTarget: Bool? {
+        guard let value = _hitTarget else { return nil }
+        return value == 1
+    }
+    
+    var withinFoot: Bool? {
+        guard let value = _withinFoot else { return nil }
+        return value == 1
+    }
+    
+    var success: Bool? {
+        guard let value = _success else { return nil }
+        return value == 1
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case sessionId = "session_id"
+        case shotType = "shot_type"
+        case hand
+        case length
+        case distanceFromJack = "distance_from_jack"
+        case _hitTarget = "hit_target"
+        case _withinFoot = "within_foot"
+        case _success = "success"
+        case score
+        case notes
+        case createdAt = "created_at"
+    }
+}
+
+struct SessionStatistics: Codable {
+    let totalShots: Int
+    let totalPoints: String?
+    let maxPossiblePoints: Int?
+    let averageScore: String?
+    let accuracyPercentage: String
+    
+    // Draw shot statistics
+    let drawShots: String?
+    let drawPoints: String?
+    let drawAccuracyPercentage: String?
+    
+    // Yard on shot statistics
+    let yardOnShots: String?
+    let yardOnPoints: String?
+    let yardOnAccuracyPercentage: String?
+    
+    // Ditch weight shot statistics
+    let ditchWeightShots: String?
+    let ditchWeightPoints: String?
+    let ditchWeightAccuracyPercentage: String?
+    
+    // Drive shot statistics
+    let driveShots: String?
+    let drivePoints: String?
+    let driveAccuracyPercentage: String?
+    
+    // Legacy weighted fields for backward compatibility
+    let weightedShots: String?
+    let weightedPoints: String?
+    let weightedAccuracyPercentage: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case totalShots = "total_shots"
+        case totalPoints = "total_points"
+        case maxPossiblePoints = "max_possible_points"
+        case averageScore = "average_score"
+        case accuracyPercentage = "accuracy_percentage"
+        
+        case drawShots = "draw_shots"
+        case drawPoints = "draw_points"
+        case drawAccuracyPercentage = "draw_accuracy_percentage"
+        
+        case yardOnShots = "yard_on_shots"
+        case yardOnPoints = "yard_on_points"
+        case yardOnAccuracyPercentage = "yard_on_accuracy_percentage"
+        
+        case ditchWeightShots = "ditch_weight_shots"
+        case ditchWeightPoints = "ditch_weight_points"
+        case ditchWeightAccuracyPercentage = "ditch_weight_accuracy_percentage"
+        
+        case driveShots = "drive_shots"
+        case drivePoints = "drive_points"
+        case driveAccuracyPercentage = "drive_accuracy_percentage"
+        
+        case weightedShots = "weighted_shots"
+        case weightedPoints = "weighted_points"
+        case weightedAccuracyPercentage = "weighted_accuracy_percentage"
+    }
+    
+    // Computed properties to match the old interface
+    var successfulShots: Int {
+        return Int(totalPoints ?? "0") ?? 0
+    }
+    
+    var overallAccuracy: Double {
+        return Double(accuracyPercentage) ?? 0.0
+    }
+    
+    var drawAccuracy: Double {
+        return Double(drawAccuracyPercentage ?? "0.0") ?? 0.0
+    }
+    
+    var yardOnAccuracy: Double {
+        return Double(yardOnAccuracyPercentage ?? "0.0") ?? 0.0
+    }
+    
+    var ditchWeightAccuracy: Double {
+        return Double(ditchWeightAccuracyPercentage ?? "0.0") ?? 0.0
+    }
+    
+    var driveAccuracy: Double {
+        return Double(driveAccuracyPercentage ?? "0.0") ?? 0.0
+    }
+    
+    var weightedAccuracy: Double {
+        return Double(weightedAccuracyPercentage ?? "0.0") ?? 0.0
+    }
+    
+    // Helper functions for display
+    func shotCountForType(_ type: String) -> String {
+        switch type {
+        case "draw": return drawShots ?? "0"
+        case "yard_on": return yardOnShots ?? "0"
+        case "ditch_weight": return ditchWeightShots ?? "0"
+        case "drive": return driveShots ?? "0"
+        default: return "0"
+        }
+    }
+    
+    func pointsForType(_ type: String) -> String {
+        switch type {
+        case "draw": return drawPoints ?? "0"
+        case "yard_on": return yardOnPoints ?? "0"
+        case "ditch_weight": return ditchWeightPoints ?? "0"
+        case "drive": return drivePoints ?? "0"
+        default: return "0"
+        }
+    }
+    
+    func accuracyForType(_ type: String) -> String? {
+        switch type {
+        case "draw": return drawAccuracyPercentage
+        case "yard_on": return yardOnAccuracyPercentage
+        case "ditch_weight": return ditchWeightAccuracyPercentage
+        case "drive": return driveAccuracyPercentage
+        default: return nil
+        }
+    }
+    
+    func displayAccuracyForType(_ type: String) -> String {
+        if let accuracy = accuracyForType(type) {
+            return "\(accuracy)%"
+        } else {
+            return "Not practiced"
+        }
+    }
+}
+
+struct Pagination: Codable {
+    let total: Int
+    let limit: Int
+    let offset: Int
+    let hasMore: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case total
+        case limit
+        case offset
+        case hasMore
+    }
+}
+
+// MARK: - Response Models
+
+struct CreateSessionResponse: Codable {
+    let message: String
+    let session: TrainingSession
+}
+
+struct SessionListResponse: Codable {
+    let sessions: [TrainingSession]
+    let pagination: Pagination
+}
+
+struct SessionDetailResponse: Codable {
+    let session: TrainingSession
+    let shots: [TrainingShot]
+    let statistics: SessionStatistics
+    let shotsByType: [String: [TrainingShot]]
+    
+    enum CodingKeys: String, CodingKey {
+        case session
+        case shots
+        case statistics
+        case shotsByType = "shots_by_type"
+    }
+}
+
+struct RecordShotResponse: Codable {
+    let message: String
+    let shot: TrainingShot
+    let sessionStats: SessionStatistics
+    
+    enum CodingKeys: String, CodingKey {
+        case message
+        case shot
+        case sessionStats = "session_stats"
+    }
+}
+
+struct DeleteResponse: Codable {
+    let message: String
+    let deletedSessionId: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case message
+        case deletedSessionId = "deleted_session_id"
+    }
+}
+
+struct DeleteShotResponse: Codable {
+    let message: String
+    let deletedShotId: Int
+    let updatedSessionStats: SessionStatistics
+    
+    enum CodingKeys: String, CodingKey {
+        case message
+        case deletedShotId = "deleted_shot_id"
+        case updatedSessionStats = "updated_session_stats"
+    }
+}
+
+struct HandStats: Codable {
+    let hand: Hand
+    let shots: Int
+    let accuracy: Double
+}
+
+struct LengthStats: Codable {
+    let length: Length
+    let shots: Int
+    let accuracy: Double
+}
+
+struct ShotTypeStats: Codable {
+    let shotType: ShotType
+    let count: Int
+    let successful: Int
+    let accuracy: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case shotType = "shot_type"
+        case count
+        case successful
+        case accuracy
+    }
+}
+
+struct DetailedStats: Codable {
+    let byHand: [HandStats]
+    let byLength: [LengthStats]
+    let byShotType: [ShotTypeStats]
+    
+    enum CodingKeys: String, CodingKey {
+        case byHand = "by_hand"
+        case byLength = "by_length"
+        case byShotType = "by_shot_type"
+    }
+}
+
+struct ImprovementTrend: Codable {
+    let draw: String
+    let weighted: String
+}
+
+struct ShotBreakdown: Codable {
+    let draw: Int
+    let weighted: Int
+}
+
+struct TrainingStatsResponse: Codable {
+    let sport: String
+    let period: String
+    let totalSessions: Int
+    let totalShots: Int
+    let drawAccuracy: Double
+    let weightedAccuracy: Double
+    let overallAccuracy: Double
+    let bestHand: Hand
+    let bestLength: Length
+    let improvementTrend: ImprovementTrend
+    let shotBreakdown: ShotBreakdown
+    let detailedStats: DetailedStats
+    
+    enum CodingKeys: String, CodingKey {
+        case sport
+        case period
+        case totalSessions = "total_sessions"
+        case totalShots = "total_shots"
+        case drawAccuracy = "draw_accuracy"
+        case weightedAccuracy = "weighted_accuracy"
+        case overallAccuracy = "overall_accuracy"
+        case bestHand = "best_hand"
+        case bestLength = "best_length"
+        case improvementTrend = "improvement_trend"
+        case shotBreakdown = "shot_breakdown"
+        case detailedStats = "detailed_stats"
+    }
+}
+
+struct ProgressPeriod: Codable {
+    let period: String
+    let periodLabel: String
+    let periodStart: Date
+    let periodEnd: Date
+    let sessions: Int
+    let totalShots: Int
+    let drawShots: Int
+    let weightedShots: Int
+    let drawAccuracy: Double
+    let weightedAccuracy: Double
+    let overallAccuracy: Double
+    let avgGreenSpeed: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case period
+        case periodLabel = "period_label"
+        case periodStart = "period_start"
+        case periodEnd = "period_end"
+        case sessions
+        case totalShots = "total_shots"
+        case drawShots = "draw_shots"
+        case weightedShots = "weighted_shots"
+        case drawAccuracy = "draw_accuracy"
+        case weightedAccuracy = "weighted_accuracy"
+        case overallAccuracy = "overall_accuracy"
+        case avgGreenSpeed = "avg_green_speed"
+    }
+}
+
+struct Milestone: Codable {
+    let milestone: String
+    let achievedDate: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case milestone
+        case achievedDate = "achieved_date"
+    }
+}
+
+struct BestPeriod: Codable {
+    let periodLabel: String
+    let overallAccuracy: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case periodLabel = "period_label"
+        case overallAccuracy = "overall_accuracy"
+    }
+}
+
+struct ProgressSummary: Codable {
+    let totalPeriods: Int
+    let earliestSession: Date
+    let latestSession: Date
+    let bestPeriod: BestPeriod
+    
+    enum CodingKeys: String, CodingKey {
+        case totalPeriods = "total_periods"
+        case earliestSession = "earliest_session"
+        case latestSession = "latest_session"
+        case bestPeriod = "best_period"
+    }
+}
+
+struct ProgressTrends: Codable {
+    let drawAccuracy: String
+    let weightedAccuracy: String
+    let overallAccuracy: String
+    let sessionFrequency: String
+    let shotsPerSession: String
+    
+    enum CodingKeys: String, CodingKey {
+        case drawAccuracy = "draw_accuracy"
+        case weightedAccuracy = "weighted_accuracy"
+        case overallAccuracy = "overall_accuracy"
+        case sessionFrequency = "session_frequency"
+        case shotsPerSession = "shots_per_session"
+    }
+}
+
+struct TrainingProgressResponse: Codable {
+    let sport: String
+    let groupBy: String
+    let limit: Int
+    let progressData: [ProgressPeriod]
+    let trends: ProgressTrends
+    let milestones: [Milestone]
+    let summary: ProgressSummary
+    
+    enum CodingKeys: String, CodingKey {
+        case sport
+        case groupBy = "group_by"
+        case limit
+        case progressData = "progress_data"
+        case trends
+        case milestones
+        case summary
+    }
+}
