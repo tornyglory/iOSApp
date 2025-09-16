@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct LawnBowlsTrackerApp: App {
+struct TornyiOSApp: App {
     init() {
         loadCustomFonts()
     }

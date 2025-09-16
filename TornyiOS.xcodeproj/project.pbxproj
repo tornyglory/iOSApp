@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D8A1B5A92B8E4F2A00123456 /* LawnBowlsTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5A82B8E4F2A00123456 /* LawnBowlsTrackerApp.swift */; };
+		D8A1B5A92B8E4F2A00123456 /* TornyiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */; };
 		D8A1B5AB2B8E4F2A00123456 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */; };
 		D8A1B5AD2B8E4F2C00123456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */; };
 		D8A1B5B02B8E4F2C00123456 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */; };
@@ -26,8 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D8A1B5A52B8E4F2A00123456 /* LawnBowlsTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LawnBowlsTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D8A1B5A82B8E4F2A00123456 /* LawnBowlsTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LawnBowlsTrackerApp.swift; sourceTree = "<group>"; };
+		D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TornyiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyiOSApp.swift; sourceTree = "<group>"; };
 		D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -59,7 +59,7 @@
 		D8A1B59C2B8E4F2A00123456 = {
 			isa = PBXGroup;
 			children = (
-				D8A1B5A72B8E4F2A00123456 /* LawnBowlsTracker */,
+				D8A1B5A72B8E4F2A00123456 /* TornyiOS */,
 				D8A1B5A62B8E4F2A00123456 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,15 +67,15 @@
 		D8A1B5A62B8E4F2A00123456 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D8A1B5A52B8E4F2A00123456 /* LawnBowlsTracker.app */,
+				D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D8A1B5A72B8E4F2A00123456 /* LawnBowlsTracker */ = {
+		D8A1B5A72B8E4F2A00123456 /* TornyiOS */ = {
 			isa = PBXGroup;
 			children = (
-				D8A1B5A82B8E4F2A00123456 /* LawnBowlsTrackerApp.swift */,
+				D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */,
 				D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */,
 				D8A1B5B82B8E4F5800123456 /* Models.swift */,
 				D8A1B5B62B8E4F4D00123456 /* APIService.swift */,
@@ -92,7 +92,7 @@
 				D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */,
 				D8A1B5AE2B8E4F2C00123456 /* Preview Content */,
 			);
-			path = LawnBowlsTracker;
+			path = TornyiOS;
 			sourceTree = "<group>";
 		};
 		D8A1B5AE2B8E4F2C00123456 /* Preview Content */ = {
@@ -106,9 +106,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D8A1B5A42B8E4F2A00123456 /* LawnBowlsTracker */ = {
+		D8A1B5A42B8E4F2A00123456 /* TornyiOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D8A1B5B32B8E4F2C00123456 /* Build configuration list for PBXNativeTarget "LawnBowlsTracker" */;
+			buildConfigurationList = D8A1B5B32B8E4F2C00123456 /* Build configuration list for PBXNativeTarget "TornyiOS" */;
 			buildPhases = (
 				D8A1B5A12B8E4F2A00123456 /* Sources */,
 				D8A1B5A22B8E4F2A00123456 /* Frameworks */,
@@ -118,9 +118,9 @@
 			);
 			dependencies = (
 			);
-			name = LawnBowlsTracker;
-			productName = LawnBowlsTracker;
-			productReference = D8A1B5A52B8E4F2A00123456 /* LawnBowlsTracker.app */;
+			name = TornyiOS;
+			productName = TornyiOS;
+			productReference = D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -138,7 +138,7 @@
 					};
 				};
 			};
-			buildConfigurationList = D8A1B5A02B8E4F2A00123456 /* Build configuration list for PBXProject "LawnBowlsTracker" */;
+			buildConfigurationList = D8A1B5A02B8E4F2A00123456 /* Build configuration list for PBXProject "TornyiOS" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -151,7 +151,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D8A1B5A42B8E4F2A00123456 /* LawnBowlsTracker */,
+				D8A1B5A42B8E4F2A00123456 /* TornyiOS */,
 			);
 		};
 /* End PBXProject section */
@@ -179,7 +179,7 @@
 				D8A1B5BB2B8E4F6300123456 /* SessionView.swift in Sources */,
 				D8A1B5B92B8E4F5800123456 /* Models.swift in Sources */,
 				D8A1B5BF2B8E4F7900123456 /* AnalyticsView.swift in Sources */,
-				D8A1B5A92B8E4F2A00123456 /* LawnBowlsTrackerApp.swift in Sources */,
+				D8A1B5A92B8E4F2A00123456 /* TornyiOSApp.swift in Sources */,
 				D8A1B5B72B8E4F4D00123456 /* APIService.swift in Sources */,
 				D8A1B5C12B8E4F8400123456 /* SessionHistoryView.swift in Sources */,
 				D8A1B5C32B8E4F8F00123456 /* AuthView.swift in Sources */,
@@ -319,7 +319,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LawnBowlsTracker/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TornyiOS/Preview Content\"";
 				DEVELOPMENT_TEAM = GCXCBV3XH9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -336,7 +336,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.LawnBowlsTracker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TornyiOS;
 				PRODUCT_NAME = Torny;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -351,7 +351,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"LawnBowlsTracker/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TornyiOS/Preview Content\"";
 				DEVELOPMENT_TEAM = GCXCBV3XH9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -368,7 +368,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.LawnBowlsTracker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TornyiOS;
 				PRODUCT_NAME = Torny;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -379,7 +379,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D8A1B5A02B8E4F2A00123456 /* Build configuration list for PBXProject "LawnBowlsTracker" */ = {
+		D8A1B5A02B8E4F2A00123456 /* Build configuration list for PBXProject "TornyiOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D8A1B5B12B8E4F2C00123456 /* Debug */,
@@ -388,7 +388,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D8A1B5B32B8E4F2C00123456 /* Build configuration list for PBXNativeTarget "LawnBowlsTracker" */ = {
+		D8A1B5B32B8E4F2C00123456 /* Build configuration list for PBXNativeTarget "TornyiOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D8A1B5B42B8E4F2C00123456 /* Debug */,
