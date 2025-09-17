@@ -27,6 +27,10 @@ struct User: Codable, Identifiable {
     let images: [String]?
     let achievements: [String]?
     let clubData: Club?
+    let gender: String?
+    let country: String?
+    let state: String?
+    let region: String?
     
     enum CodingKeys: String, CodingKey {
         case id, email, name
@@ -38,6 +42,7 @@ struct User: Codable, Identifiable {
         case profileCompleted = "profile_completed"
         case club, sport, images, achievements
         case clubData = "club_data"
+        case gender, country, state, region
     }
     
     init(from decoder: Decoder) throws {
@@ -58,7 +63,11 @@ struct User: Codable, Identifiable {
         club = try container.decodeIfPresent(String.self, forKey: .club)
         sport = try container.decodeIfPresent(String.self, forKey: .sport)
         clubData = try container.decodeIfPresent(Club.self, forKey: .clubData)
-        
+        gender = try container.decodeIfPresent(String.self, forKey: .gender)
+        country = try container.decodeIfPresent(String.self, forKey: .country)
+        state = try container.decodeIfPresent(String.self, forKey: .state)
+        region = try container.decodeIfPresent(String.self, forKey: .region)
+
         // Handle null or missing arrays
         images = try container.decodeIfPresent([String].self, forKey: .images) ?? []
         achievements = try container.decodeIfPresent([String].self, forKey: .achievements) ?? []
@@ -337,8 +346,8 @@ struct TrainingSession: Codable, Identifiable {
     let createdAt: Date
     let updatedAt: Date
     let totalShots: Int?
-    let drawShots: Int?
-    let weightedShots: Int?
+    let _drawShots: String?
+    let _weightedShots: String?
     let drawAccuracy: Double?
     let weightedAccuracy: Double?
     let overallAccuracy: Double?
@@ -346,16 +355,16 @@ struct TrainingSession: Codable, Identifiable {
     let endedAt: Date?
     let durationSeconds: Int?
     let _isActive: Int?
-    
+
     // New fields from updated API
-    let totalPoints: Int?
-    let averageScore: Double?
-    let accuracyPercentage: Double?
-    let yardOnShots: Int?
+    let _totalPoints: String?
+    let _averageScore: String?
+    let _accuracyPercentage: String?
+    let _yardOnShots: String?
     let yardOnAccuracy: Double?
-    let ditchWeightShots: Int?
+    let _ditchWeightShots: String?
     let ditchWeightAccuracy: Double?
-    let driveShots: Int?
+    let _driveShots: String?
     let driveAccuracy: Double?
     
     
@@ -363,6 +372,47 @@ struct TrainingSession: Codable, Identifiable {
     var isActive: Bool? {
         guard let value = _isActive else { return nil }
         return value == 1
+    }
+
+    // Computed properties to convert string values to integers/doubles for compatibility
+    var drawShots: Int? {
+        guard let value = _drawShots else { return nil }
+        return Int(value)
+    }
+
+    var weightedShots: Int? {
+        guard let value = _weightedShots else { return nil }
+        return Int(value)
+    }
+
+    var totalPoints: Int? {
+        guard let value = _totalPoints else { return nil }
+        return Int(value)
+    }
+
+    var averageScore: Double? {
+        guard let value = _averageScore else { return nil }
+        return Double(value)
+    }
+
+    var accuracyPercentage: Double? {
+        guard let value = _accuracyPercentage else { return nil }
+        return Double(value)
+    }
+
+    var yardOnShots: Int? {
+        guard let value = _yardOnShots else { return nil }
+        return Int(value)
+    }
+
+    var ditchWeightShots: Int? {
+        guard let value = _ditchWeightShots else { return nil }
+        return Int(value)
+    }
+
+    var driveShots: Int? {
+        guard let value = _driveShots else { return nil }
+        return Int(value)
     }
     
     enum CodingKeys: String, CodingKey {
@@ -380,8 +430,8 @@ struct TrainingSession: Codable, Identifiable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case totalShots = "total_shots"
-        case drawShots = "draw_shots"
-        case weightedShots = "weighted_shots"
+        case _drawShots = "draw_shots"
+        case _weightedShots = "weighted_shots"
         case drawAccuracy = "draw_accuracy"
         case weightedAccuracy = "weighted_accuracy"
         case overallAccuracy = "overall_accuracy"
@@ -389,15 +439,164 @@ struct TrainingSession: Codable, Identifiable {
         case endedAt = "ended_at"
         case durationSeconds = "duration_seconds"
         case _isActive = "is_active"
-        case totalPoints = "total_points"
-        case averageScore = "average_score"
-        case accuracyPercentage = "accuracy_percentage"
-        case yardOnShots = "yard_on_shots"
+        case _totalPoints = "total_points"
+        case _averageScore = "average_score"
+        case _accuracyPercentage = "accuracy_percentage"
+        case _yardOnShots = "yard_on_shots"
         case yardOnAccuracy = "yard_on_accuracy"
-        case ditchWeightShots = "ditch_weight_shots"
+        case _ditchWeightShots = "ditch_weight_shots"
         case ditchWeightAccuracy = "ditch_weight_accuracy"
-        case driveShots = "drive_shots"
+        case _driveShots = "drive_shots"
         case driveAccuracy = "drive_accuracy"
+    }
+
+    // Memberwise initializer for preview/test purposes
+    init(id: Int, playerId: Int, sport: String, sessionDate: Date, location: Location, greenType: GreenType, greenSpeed: Int, rinkNumber: Int?, weather: Weather?, windConditions: WindConditions?, notes: String?, createdAt: Date, updatedAt: Date, totalShots: Int?, _drawShots: String?, _weightedShots: String?, drawAccuracy: Double?, weightedAccuracy: Double?, overallAccuracy: Double?, startedAt: Date?, endedAt: Date?, durationSeconds: Int?, _isActive: Int?, _totalPoints: String?, _averageScore: String?, _accuracyPercentage: String?, _yardOnShots: String?, yardOnAccuracy: Double?, _ditchWeightShots: String?, ditchWeightAccuracy: Double?, _driveShots: String?, driveAccuracy: Double?) {
+        self.id = id
+        self.playerId = playerId
+        self.sport = sport
+        self.sessionDate = sessionDate
+        self.location = location
+        self.greenType = greenType
+        self.greenSpeed = greenSpeed
+        self.rinkNumber = rinkNumber
+        self.weather = weather
+        self.windConditions = windConditions
+        self.notes = notes
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.totalShots = totalShots
+        self._drawShots = _drawShots
+        self._weightedShots = _weightedShots
+        self.drawAccuracy = drawAccuracy
+        self.weightedAccuracy = weightedAccuracy
+        self.overallAccuracy = overallAccuracy
+        self.startedAt = startedAt
+        self.endedAt = endedAt
+        self.durationSeconds = durationSeconds
+        self._isActive = _isActive
+        self._totalPoints = _totalPoints
+        self._averageScore = _averageScore
+        self._accuracyPercentage = _accuracyPercentage
+        self._yardOnShots = _yardOnShots
+        self.yardOnAccuracy = yardOnAccuracy
+        self._ditchWeightShots = _ditchWeightShots
+        self.ditchWeightAccuracy = ditchWeightAccuracy
+        self._driveShots = _driveShots
+        self.driveAccuracy = driveAccuracy
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(Int.self, forKey: .id)
+        playerId = try container.decode(Int.self, forKey: .playerId)
+        sport = try container.decode(String.self, forKey: .sport)
+        location = try container.decode(Location.self, forKey: .location)
+        greenType = try container.decode(GreenType.self, forKey: .greenType)
+        greenSpeed = try container.decode(Int.self, forKey: .greenSpeed)
+        rinkNumber = try container.decodeIfPresent(Int.self, forKey: .rinkNumber)
+        weather = try container.decodeIfPresent(Weather.self, forKey: .weather)
+        windConditions = try container.decodeIfPresent(WindConditions.self, forKey: .windConditions)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        totalShots = try container.decodeIfPresent(Int.self, forKey: .totalShots)
+        _drawShots = try container.decodeIfPresent(String.self, forKey: ._drawShots)
+        _weightedShots = try container.decodeIfPresent(String.self, forKey: ._weightedShots)
+        // Handle accuracy fields that may come as strings from API
+        if let drawAccuracyString = try container.decodeIfPresent(String.self, forKey: .drawAccuracy) {
+            drawAccuracy = Double(drawAccuracyString)
+        } else {
+            drawAccuracy = try container.decodeIfPresent(Double.self, forKey: .drawAccuracy)
+        }
+
+        if let weightedAccuracyString = try container.decodeIfPresent(String.self, forKey: .weightedAccuracy) {
+            weightedAccuracy = Double(weightedAccuracyString)
+        } else {
+            weightedAccuracy = try container.decodeIfPresent(Double.self, forKey: .weightedAccuracy)
+        }
+
+        if let overallAccuracyString = try container.decodeIfPresent(String.self, forKey: .overallAccuracy) {
+            overallAccuracy = Double(overallAccuracyString)
+        } else {
+            overallAccuracy = try container.decodeIfPresent(Double.self, forKey: .overallAccuracy)
+        }
+        durationSeconds = try container.decodeIfPresent(Int.self, forKey: .durationSeconds)
+        _isActive = try container.decodeIfPresent(Int.self, forKey: ._isActive)
+        _totalPoints = try container.decodeIfPresent(String.self, forKey: ._totalPoints)
+        _averageScore = try container.decodeIfPresent(String.self, forKey: ._averageScore)
+        _accuracyPercentage = try container.decodeIfPresent(String.self, forKey: ._accuracyPercentage)
+        _yardOnShots = try container.decodeIfPresent(String.self, forKey: ._yardOnShots)
+        // Handle yard on accuracy that may come as string from API
+        if let yardOnAccuracyString = try container.decodeIfPresent(String.self, forKey: .yardOnAccuracy) {
+            yardOnAccuracy = Double(yardOnAccuracyString)
+        } else {
+            yardOnAccuracy = try container.decodeIfPresent(Double.self, forKey: .yardOnAccuracy)
+        }
+
+        _ditchWeightShots = try container.decodeIfPresent(String.self, forKey: ._ditchWeightShots)
+        // Handle ditch weight accuracy that may come as string from API
+        if let ditchWeightAccuracyString = try container.decodeIfPresent(String.self, forKey: .ditchWeightAccuracy) {
+            ditchWeightAccuracy = Double(ditchWeightAccuracyString)
+        } else {
+            ditchWeightAccuracy = try container.decodeIfPresent(Double.self, forKey: .ditchWeightAccuracy)
+        }
+
+        _driveShots = try container.decodeIfPresent(String.self, forKey: ._driveShots)
+        // Handle drive accuracy that may come as string from API
+        if let driveAccuracyString = try container.decodeIfPresent(String.self, forKey: .driveAccuracy) {
+            driveAccuracy = Double(driveAccuracyString)
+        } else {
+            driveAccuracy = try container.decodeIfPresent(Double.self, forKey: .driveAccuracy)
+        }
+
+        // Handle date decoding with the same logic as the APIService
+        let dateFormatter1 = DateFormatter()
+        dateFormatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        dateFormatter1.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter1.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let dateFormatter2 = DateFormatter()
+        dateFormatter2.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        dateFormatter2.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter2.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let iso8601Formatter = ISO8601DateFormatter()
+
+        func decodeDate(_ key: CodingKeys) throws -> Date {
+            let dateString = try container.decode(String.self, forKey: key)
+            if let date = dateFormatter1.date(from: dateString) {
+                return date
+            } else if let date = dateFormatter2.date(from: dateString) {
+                return date
+            } else if let date = iso8601Formatter.date(from: dateString) {
+                return date
+            }
+            throw DecodingError.dataCorruptedError(forKey: key, in: container, debugDescription: "Cannot decode date string \(dateString)")
+        }
+
+        func decodeDateOptional(_ key: CodingKeys) -> Date? {
+            do {
+                guard let dateString = try container.decodeIfPresent(String.self, forKey: key) else {
+                    return nil
+                }
+                if let date = dateFormatter1.date(from: dateString) {
+                    return date
+                } else if let date = dateFormatter2.date(from: dateString) {
+                    return date
+                } else if let date = iso8601Formatter.date(from: dateString) {
+                    return date
+                }
+                return nil
+            } catch {
+                return nil
+            }
+        }
+
+        sessionDate = try decodeDate(.sessionDate)
+        createdAt = try decodeDate(.createdAt)
+        updatedAt = try decodeDate(.updatedAt)
+        startedAt = decodeDateOptional(.startedAt)
+        endedAt = decodeDateOptional(.endedAt)
     }
     
     // Computed property for formatted duration display

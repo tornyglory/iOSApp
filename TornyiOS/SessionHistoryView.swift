@@ -8,9 +8,9 @@ struct SessionHistoryView: View {
     @State private var alertMessage = ""
     @State private var hasMoreSessions = true
     @State private var currentOffset = 0
-    
+
     private let pageSize = 20
-    
+
     var body: some View {
         NavigationView {
             List {
@@ -19,12 +19,13 @@ struct SessionHistoryView: View {
                         SessionRowView(session: session)
                     }
                 }
-                
+
                 if hasMoreSessions && !sessions.isEmpty {
                     LoadMoreRow(isLoading: isLoading, loadMore: loadMoreSessions)
                 }
             }
             .navigationTitle("Session History")
+            .navigationBarTitleDisplayMode(.large)
             .refreshable {
                 await loadSessionsAsync(refresh: true)
             }
@@ -148,7 +149,7 @@ struct SessionRowView: View {
                     }
                     
                     // Shot type breakdown
-                    HStack(spacing: 12) {
+                    HStack(spacing: 8) {
                         if let drawShots = session.drawShots, drawShots > 0 {
                             ShotTypePill(
                                 title: "Draw",
@@ -157,16 +158,34 @@ struct SessionRowView: View {
                                 color: .blue
                             )
                         }
-                        
-                        if let weightedShots = session.weightedShots, weightedShots > 0 {
+
+                        if let yardOnShots = session.yardOnShots, yardOnShots > 0 {
                             ShotTypePill(
-                                title: "Weighted",
-                                count: weightedShots,
-                                accuracy: session.weightedAccuracy,
+                                title: "Yard On",
+                                count: yardOnShots,
+                                accuracy: session.yardOnAccuracy,
+                                color: .green
+                            )
+                        }
+
+                        if let ditchWeightShots = session.ditchWeightShots, ditchWeightShots > 0 {
+                            ShotTypePill(
+                                title: "Ditch",
+                                count: ditchWeightShots,
+                                accuracy: session.ditchWeightAccuracy,
                                 color: .orange
                             )
                         }
-                        
+
+                        if let driveShots = session.driveShots, driveShots > 0 {
+                            ShotTypePill(
+                                title: "Drive",
+                                count: driveShots,
+                                accuracy: session.driveAccuracy,
+                                color: .purple
+                            )
+                        }
+
                         Spacer()
                     }
                 }

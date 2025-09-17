@@ -52,12 +52,16 @@ class APIService: ObservableObject {
         }
         
         print("📡 API Request: \(method.rawValue) \(url.absoluteString)")
+        if let token = authToken {
+            print("🔑 Auth Token: \(token)")
+        }
         
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         if let token = authToken {
+            // Always use Bearer token for authentication
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
@@ -134,9 +138,36 @@ class APIService: ObservableObject {
         if let token = UserDefaults.standard.string(forKey: "auth_token"), !token.isEmpty {
             self.authToken = token
             self.isAuthenticated = true
+            // Fetch current user profile when token is loaded
+            Task {
+                await fetchCurrentUserProfile()
+            }
         } else {
             self.authToken = nil
             self.isAuthenticated = false
+        }
+    }
+
+    private func fetchCurrentUserProfile() async {
+        // We need to get the user ID from somewhere. Let's check if it's stored.
+        guard let userIdString = UserDefaults.standard.string(forKey: "current_user_id"),
+              let userId = Int(userIdString) else {
+            print("❌ No stored user ID found")
+            return
+        }
+
+        do {
+            let user = try await getUserProfile(userId)
+            await MainActor.run {
+                self.currentUser = user
+                print("✅ Current user profile loaded: \(user.name)")
+            }
+        } catch {
+            print("❌ Failed to load current user profile: \(error)")
+            // If fetching fails, clear the stored data
+            await MainActor.run {
+                clearAuthToken()
+            }
         }
     }
     
@@ -148,6 +179,7 @@ class APIService: ObservableObject {
     
     private func clearAuthToken() {
         UserDefaults.standard.removeObject(forKey: "auth_token")
+        UserDefaults.standard.removeObject(forKey: "current_user_id")
         self.authToken = nil
         self.isAuthenticated = false
         self.currentUser = nil
@@ -176,7 +208,7 @@ class APIService: ObservableObject {
     func login(_ request: LoginRequest) async throws -> AuthResponse {
         let encoder = JSONEncoder()
         let data = try encoder.encode(request)
-        
+
         let response: AuthResponse = try await makeRequest(
             endpoint: "/login",
             method: .POST,
@@ -184,13 +216,15 @@ class APIService: ObservableObject {
             responseType: AuthResponse.self,
             useAuthBase: true
         )
-        
+
         saveAuthToken(response.token)
+        // Store the user ID for future profile loading
+        UserDefaults.standard.set(String(response.user.id), forKey: "current_user_id")
         DispatchQueue.main.async {
             self.currentUser = response.user
             self.objectWillChange.send()
         }
-        
+
         return response
     }
     
@@ -200,6 +234,7 @@ class APIService: ObservableObject {
     
     func clearAllStoredData() {
         UserDefaults.standard.removeObject(forKey: "auth_token")
+        UserDefaults.standard.removeObject(forKey: "current_user_id")
         self.authToken = nil
         self.isAuthenticated = false
         self.currentUser = nil
@@ -306,15 +341,15 @@ class APIService: ObservableObject {
     }
     
     func getSessions(limit: Int = 20, offset: Int = 0, dateFrom: String? = nil, dateTo: String? = nil) async throws -> SessionListResponse {
-        var endpoint = "/training/sessions?limit=\(limit)&offset=\(offset)&sport=lawn_bowls"
-        
+        var endpoint = "/sessions?limit=\(limit)&offset=\(offset)&sport=lawn_bowls"
+
         if let dateFrom = dateFrom {
             endpoint += "&dateFrom=\(dateFrom)"
         }
         if let dateTo = dateTo {
             endpoint += "&dateTo=\(dateTo)"
         }
-        
+
         return try await makeRequest(
             endpoint: endpoint,
             responseType: SessionListResponse.self

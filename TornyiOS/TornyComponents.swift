@@ -607,6 +607,44 @@ struct BottomNavItem: View {
     }
 }
 
+// MARK: - Standard Back Button
+/// A reusable back button component with consistent Torny styling
+/// Usage:
+/// - TornyBackButton { /* action */ } - Just back arrow
+/// - TornyBackButton(title: "Back") { /* action */ } - Back arrow with title
+struct TornyBackButton: View {
+    let action: () -> Void
+    let title: String?
+
+    init(title: String? = nil, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.tornyBlue)
+
+                if let title = title {
+                    Text(title)
+                        .font(TornyFonts.body)
+                        .foregroundColor(.tornyBlue)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.clear)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
 // MARK: - Bottom Navigation Profile Item with Avatar
 struct BottomNavProfileItem: View {
     @ObservedObject private var apiService = APIService.shared

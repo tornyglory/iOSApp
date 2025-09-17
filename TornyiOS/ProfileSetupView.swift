@@ -5,18 +5,9 @@ struct ProfileSetupView: View {
     var onProfileCompleted: (() -> Void)? = nil
     @State private var name = ""
     @State private var email = ""
-    
+
     init(onProfileCompleted: (() -> Void)? = nil) {
         self.onProfileCompleted = onProfileCompleted
-        
-        // Initialize with current user data if available
-        if let user = APIService.shared.currentUser {
-            _name = State(initialValue: user.name)
-            _email = State(initialValue: user.email)
-            print("🏏 ProfileSetupView init - Name: '\(user.name)', Email: '\(user.email)'")
-        } else {
-            print("❌ No current user found during ProfileSetupView init")
-        }
     }
     @State private var selectedClub: Club?
     @State private var clubSearchText = ""
@@ -28,6 +19,7 @@ struct ProfileSetupView: View {
     @State private var selectedCountry = "Australia"
     @State private var selectedState = "Victoria"
     @State private var selectedArea = "Ballarat"
+    @State private var hasLoadedUserData = false
     @State private var isLoading = false
     @State private var isSearchingClubs = false
     @State private var showingAlert = false
@@ -783,7 +775,10 @@ struct ProfileSetupView: View {
     }
     
     private func loadUserData() {
+        guard !hasLoadedUserData else { return }
+
         if let user = apiService.currentUser {
+            hasLoadedUserData = true
             name = user.name
             email = user.email
             avatarUrl = user.avatarUrl
@@ -791,7 +786,23 @@ struct ProfileSetupView: View {
             phoneNumber = user.phone ?? ""
             shortDescription = user.description ?? ""
             fullDescription = user.description ?? ""
-            
+
+            // Load location data if available
+            if let country = user.country, !country.isEmpty {
+                selectedCountry = country
+            }
+            if let state = user.state, !state.isEmpty {
+                selectedState = state
+            }
+            if let region = user.region, !region.isEmpty {
+                selectedArea = region
+            }
+
+            // Load gender if available
+            if let gender = user.gender, !gender.isEmpty {
+                selectedGender = gender
+            }
+
             // Load club data if available
             if let clubData = user.clubData {
                 selectedClub = clubData
@@ -801,11 +812,11 @@ struct ProfileSetupView: View {
                 // If only club name is available, set search text
                 clubSearchText = clubName
             }
-            
+
             print("🏏 Loading user data - Name: '\(user.name)', Email: '\(user.email)'")
             print("🏏 Avatar URL: \(user.avatarUrl ?? "none")")
             print("🏏 Banner URL: \(user.bannerUrl ?? "none")")
-            
+
             // Always fetch complete profile to get banner and club data
             fetchCompleteProfile()
         } else {
@@ -832,12 +843,30 @@ struct ProfileSetupView: View {
                     apiService.currentUser = completeUser
                     
                     // Update local state with complete data
+                    name = completeUser.name
+                    email = completeUser.email
                     bannerUrl = completeUser.bannerUrl
                     avatarUrl = completeUser.avatarUrl
                     phoneNumber = completeUser.phone ?? phoneNumber
                     shortDescription = completeUser.description ?? shortDescription
                     fullDescription = completeUser.description ?? fullDescription
-                    
+
+                    // Update location data
+                    if let country = completeUser.country, !country.isEmpty {
+                        selectedCountry = country
+                    }
+                    if let state = completeUser.state, !state.isEmpty {
+                        selectedState = state
+                    }
+                    if let region = completeUser.region, !region.isEmpty {
+                        selectedArea = region
+                    }
+
+                    // Update gender
+                    if let gender = completeUser.gender, !gender.isEmpty {
+                        selectedGender = gender
+                    }
+
                     // Update club data
                     if let clubData = completeUser.clubData {
                         selectedClub = clubData
