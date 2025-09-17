@@ -23,6 +23,8 @@
 		D8A1B5C72B8E4FA500123456 /* TornyComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */; };
 		D8A1B5C92B8E4FB000123456 /* PermanentMarker-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */; };
 		D8A1B5CA2B8E4FC100123456 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */; };
+		96DBB43E64DF44AC858364AA /* TrainingSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */; };
+		87A81E2DC11D4ACABB22FD76 /* TrainingSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 		D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyComponents.swift; sourceTree = "<group>"; };
 		D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PermanentMarker-Regular.ttf"; sourceTree = "<group>"; };
 		D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionView.swift; sourceTree = "<group>"; };
+		A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSetupView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +89,8 @@
 				D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */,
 				D8A1B5C22B8E4F8F00123456 /* AuthView.swift */,
 				D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */,
+				DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */,
+				A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */,
 				D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */,
 				D8A1B5C42B8E4F9A00123456 /* TornyColors.swift */,
 				D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */,
@@ -184,6 +190,8 @@
 				D8A1B5C12B8E4F8400123456 /* SessionHistoryView.swift in Sources */,
 				D8A1B5C32B8E4F8F00123456 /* AuthView.swift in Sources */,
 				D8A1B5C52B8E4F9F00123456 /* ProfileSetupView.swift in Sources */,
+				96DBB43E64DF44AC858364AA /* TrainingSessionView.swift in Sources */,
+				87A81E2DC11D4ACABB22FD76 /* TrainingSetupView.swift in Sources */,
 				D8A1B5CA2B8E4FC100123456 /* ImagePicker.swift in Sources */,
 				D8A1B5C52B8E4F9A00123456 /* TornyColors.swift in Sources */,
 				D8A1B5C72B8E4FA500123456 /* TornyComponents.swift in Sources */,

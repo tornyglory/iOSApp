@@ -155,7 +155,8 @@ struct ActiveSessionView: View {
             driveAccuracyPercentage: nil,
             weightedShots: "\(weightedShots)",
             weightedPoints: "\(Int(Double(weightedShots) * weightedAccuracy / 100.0))",
-            weightedAccuracyPercentage: "\(weightedAccuracy)"
+            weightedAccuracyPercentage: "\(weightedAccuracy)",
+            drawBreakdown: nil
         )
     }
 }
@@ -224,11 +225,11 @@ struct SessionStatsCard: View {
                 .font(.headline)
             
             HStack {
-                StatItem(title: "Total Shots", value: "\(stats.totalShots)")
+                StatItem(title: "Total Shots", value: "\(stats.totalShots)", color: .primary)
                 Spacer()
-                StatItem(title: "Draw Shots", value: "\(stats.drawShots)")
+                StatItem(title: "Draw Shots", value: "\(stats.drawShots)", color: .primary)
                 Spacer()
-                StatItem(title: "Weighted", value: "\(stats.weightedShots)")
+                StatItem(title: "Weighted", value: "\(stats.weightedShots)", color: .primary)
             }
             
             HStack {
@@ -245,21 +246,6 @@ struct SessionStatsCard: View {
     }
 }
 
-struct StatItem: View {
-    let title: String
-    let value: String
-    
-    var body: some View {
-        VStack {
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-    }
-}
 
 struct AccuracyItem: View {
     let title: String

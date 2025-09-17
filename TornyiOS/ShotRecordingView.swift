@@ -308,15 +308,24 @@ struct ShotRecordingView_Previews: PreviewProvider {
                 createdAt: Date(),
                 updatedAt: Date(),
                 totalShots: nil,
-                drawShots: nil,
-                weightedShots: nil,
+                _drawShots: nil,
+                _weightedShots: nil,
                 drawAccuracy: nil,
                 weightedAccuracy: nil,
                 overallAccuracy: nil,
                 startedAt: Date(),
                 endedAt: nil,
                 durationSeconds: nil,
-                _isActive: 1
+                _isActive: 1,
+                _totalPoints: nil,
+                _averageScore: nil,
+                _accuracyPercentage: nil,
+                _yardOnShots: nil,
+                yardOnAccuracy: nil,
+                _ditchWeightShots: nil,
+                ditchWeightAccuracy: nil,
+                _driveShots: nil,
+                driveAccuracy: nil
             ),
             onShotRecorded: {}
         )

@@ -700,6 +700,46 @@ struct TrainingShot: Codable, Identifiable {
         case notes
         case createdAt = "created_at"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(Int.self, forKey: .id)
+        sessionId = try container.decodeIfPresent(Int.self, forKey: .sessionId)
+        shotType = try container.decode(ShotType.self, forKey: .shotType)
+        hand = try container.decode(Hand.self, forKey: .hand)
+        length = try container.decode(Length.self, forKey: .length)
+        distanceFromJack = try container.decodeIfPresent(DistanceFromJack.self, forKey: .distanceFromJack)
+        _hitTarget = try container.decodeIfPresent(Int.self, forKey: ._hitTarget)
+        _withinFoot = try container.decodeIfPresent(Int.self, forKey: ._withinFoot)
+        _success = try container.decodeIfPresent(Int.self, forKey: ._success)
+        score = try container.decodeIfPresent(Int.self, forKey: .score)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+
+        // Decode date with flexible format support
+        let dateFormatter1 = DateFormatter()
+        dateFormatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        dateFormatter1.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter1.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let dateFormatter2 = DateFormatter()
+        dateFormatter2.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        dateFormatter2.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter2.timeZone = TimeZone(secondsFromGMT: 0)
+
+        let iso8601Formatter = ISO8601DateFormatter()
+
+        let dateString = try container.decode(String.self, forKey: .createdAt)
+        if let date = dateFormatter1.date(from: dateString) {
+            createdAt = date
+        } else if let date = dateFormatter2.date(from: dateString) {
+            createdAt = date
+        } else if let date = iso8601Formatter.date(from: dateString) {
+            createdAt = date
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Cannot decode date string \(dateString)")
+        }
+    }
 }
 
 struct SessionStatistics: Codable {
@@ -733,6 +773,9 @@ struct SessionStatistics: Codable {
     let weightedShots: String?
     let weightedPoints: String?
     let weightedAccuracyPercentage: String?
+
+    // Draw breakdown
+    let drawBreakdown: DrawBreakdown?
     
     enum CodingKeys: String, CodingKey {
         case totalShots = "total_shots"
@@ -760,11 +803,101 @@ struct SessionStatistics: Codable {
         case weightedShots = "weighted_shots"
         case weightedPoints = "weighted_points"
         case weightedAccuracyPercentage = "weighted_accuracy_percentage"
+
+        case drawBreakdown = "draw_breakdown"
     }
-    
+
+    // Memberwise initializer
+    init(totalShots: Int, totalPoints: String?, maxPossiblePoints: Int?, averageScore: String?, accuracyPercentage: String, drawShots: String?, drawPoints: String?, drawAccuracyPercentage: String?, yardOnShots: String?, yardOnPoints: String?, yardOnAccuracyPercentage: String?, ditchWeightShots: String?, ditchWeightPoints: String?, ditchWeightAccuracyPercentage: String?, driveShots: String?, drivePoints: String?, driveAccuracyPercentage: String?, weightedShots: String?, weightedPoints: String?, weightedAccuracyPercentage: String?, drawBreakdown: DrawBreakdown?) {
+        self.totalShots = totalShots
+        self.totalPoints = totalPoints
+        self.maxPossiblePoints = maxPossiblePoints
+        self.averageScore = averageScore
+        self.accuracyPercentage = accuracyPercentage
+        self.drawShots = drawShots
+        self.drawPoints = drawPoints
+        self.drawAccuracyPercentage = drawAccuracyPercentage
+        self.yardOnShots = yardOnShots
+        self.yardOnPoints = yardOnPoints
+        self.yardOnAccuracyPercentage = yardOnAccuracyPercentage
+        self.ditchWeightShots = ditchWeightShots
+        self.ditchWeightPoints = ditchWeightPoints
+        self.ditchWeightAccuracyPercentage = ditchWeightAccuracyPercentage
+        self.driveShots = driveShots
+        self.drivePoints = drivePoints
+        self.driveAccuracyPercentage = driveAccuracyPercentage
+        self.weightedShots = weightedShots
+        self.weightedPoints = weightedPoints
+        self.weightedAccuracyPercentage = weightedAccuracyPercentage
+        self.drawBreakdown = drawBreakdown
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Decode totalShots as Int
+        totalShots = try container.decode(Int.self, forKey: .totalShots)
+
+        // Decode maxPossiblePoints as Int?
+        maxPossiblePoints = try container.decodeIfPresent(Int.self, forKey: .maxPossiblePoints)
+
+        // Helper function to decode number or string as String
+        func decodeNumberOrString(_ key: CodingKeys) -> String? {
+            if let stringValue = try? container.decodeIfPresent(String.self, forKey: key) {
+                return stringValue
+            } else if let intValue = try? container.decodeIfPresent(Int.self, forKey: key) {
+                return String(intValue)
+            } else if let doubleValue = try? container.decodeIfPresent(Double.self, forKey: key) {
+                return String(format: "%.1f", doubleValue)
+            }
+            return nil
+        }
+
+        // Helper function to decode number or string as String (non-optional)
+        func decodeNumberOrStringRequired(_ key: CodingKeys) throws -> String {
+            if let stringValue = try? container.decode(String.self, forKey: key) {
+                return stringValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return String(intValue)
+            } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return String(format: "%.1f", doubleValue)
+            }
+            throw DecodingError.dataCorruptedError(forKey: key, in: container, debugDescription: "Cannot decode as String, Int, or Double")
+        }
+
+        // Decode fields that can be numbers or strings
+        totalPoints = decodeNumberOrString(.totalPoints)
+        averageScore = decodeNumberOrString(.averageScore)
+        accuracyPercentage = try decodeNumberOrStringRequired(.accuracyPercentage)
+
+        drawShots = decodeNumberOrString(.drawShots)
+        drawPoints = decodeNumberOrString(.drawPoints)
+        drawAccuracyPercentage = decodeNumberOrString(.drawAccuracyPercentage)
+
+        yardOnShots = decodeNumberOrString(.yardOnShots)
+        yardOnPoints = decodeNumberOrString(.yardOnPoints)
+        yardOnAccuracyPercentage = decodeNumberOrString(.yardOnAccuracyPercentage)
+
+        ditchWeightShots = decodeNumberOrString(.ditchWeightShots)
+        ditchWeightPoints = decodeNumberOrString(.ditchWeightPoints)
+        ditchWeightAccuracyPercentage = decodeNumberOrString(.ditchWeightAccuracyPercentage)
+
+        driveShots = decodeNumberOrString(.driveShots)
+        drivePoints = decodeNumberOrString(.drivePoints)
+        driveAccuracyPercentage = decodeNumberOrString(.driveAccuracyPercentage)
+
+        weightedShots = decodeNumberOrString(.weightedShots)
+        weightedPoints = decodeNumberOrString(.weightedPoints)
+        weightedAccuracyPercentage = decodeNumberOrString(.weightedAccuracyPercentage)
+
+        drawBreakdown = try container.decodeIfPresent(DrawBreakdown.self, forKey: .drawBreakdown)
+    }
+
     // Computed properties to match the old interface
     var successfulShots: Int {
-        return Int(totalPoints ?? "0") ?? 0
+        // Calculate successful shots from total shots and accuracy percentage
+        let accuracy = Double(accuracyPercentage) ?? 0.0
+        return Int(round(Double(totalShots) * accuracy / 100.0))
     }
     
     var overallAccuracy: Double {
@@ -857,12 +990,18 @@ struct SessionListResponse: Codable {
     let pagination: Pagination
 }
 
+struct DrawBreakdown: Codable {
+    let foot: Int
+    let yard: Int
+    let miss: Int
+}
+
 struct SessionDetailResponse: Codable {
     let session: TrainingSession
     let shots: [TrainingShot]
     let statistics: SessionStatistics
     let shotsByType: [String: [TrainingShot]]
-    
+
     enum CodingKeys: String, CodingKey {
         case session
         case shots

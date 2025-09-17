@@ -8,6 +8,7 @@ struct SessionHistoryView: View {
     @State private var alertMessage = ""
     @State private var hasMoreSessions = true
     @State private var currentOffset = 0
+    @Environment(\.dismiss) private var dismiss
 
     private let pageSize = 20
 
@@ -25,7 +26,23 @@ struct SessionHistoryView: View {
                 }
             }
             .navigationTitle("Session History")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.tornyBlue)
+                            Text("Back")
+                                .font(.body)
+                                .foregroundColor(.tornyBlue)
+                        }
+                    }
+                }
+            }
             .refreshable {
                 await loadSessionsAsync(refresh: true)
             }
@@ -104,9 +121,22 @@ struct SessionRowView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
+                // Duration on the right side
+                if let duration = session.durationSeconds, duration > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(formatDuration(duration))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
                 if let accuracy = session.overallAccuracy {
                     AccuracyBadge(accuracy: accuracy)
                 }
@@ -117,17 +147,17 @@ struct SessionRowView: View {
                     icon: session.location == .outdoor ? "sun.max" : "house",
                     text: session.location.rawValue.capitalized
                 )
-                
+
                 SessionInfoPill(
                     icon: "leaf",
                     text: session.greenType.rawValue.capitalized
                 )
-                
+
                 SessionInfoPill(
                     icon: "speedometer",
                     text: "\(session.greenSpeed)s"
                 )
-                
+
                 Spacer()
             }
             
@@ -193,6 +223,19 @@ struct SessionRowView: View {
         }
         .padding(.vertical, 4)
     }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else if minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "\(seconds)s"
+        }
+    }
 }
 
 struct SessionInfoPill: View {
@@ -218,25 +261,26 @@ struct ShotTypePill: View {
     let count: Int
     let accuracy: Double?
     let color: Color
-    
+
     var body: some View {
-        HStack(spacing: 4) {
-            Text(title)
-                .font(.caption2)
-                .fontWeight(.medium)
-            
-            Text("(\(count))")
-                .font(.caption2)
-            
+        VStack(spacing: 2) {
+            HStack(spacing: 2) {
+                Text(title)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+
+                Text("(\(count))")
+                    .font(.caption2)
+            }
+
             if let accuracy = accuracy {
                 Text("\(Int(accuracy))%")
                     .font(.caption2)
                     .fontWeight(.semibold)
-                    .foregroundColor(color)
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .background(color.opacity(0.1))
         .foregroundColor(color)
         .cornerRadius(8)
@@ -332,7 +376,13 @@ struct SessionDetailView: View {
                 } else if let detail = sessionDetail {
                     SessionHeaderCard(session: detail.session)
                     SessionStatsDetailCard(stats: detail.statistics)
-                    
+
+                    ScoringSystemCard()
+
+                    if !detail.shotsByType.isEmpty {
+                        ShotsByTypeCard(shotsByType: detail.shotsByType, statistics: detail.statistics)
+                    }
+
                     if !detail.shots.isEmpty {
                         ShotListCard(shots: detail.shots)
                     }
@@ -445,6 +495,9 @@ struct SessionHeaderCard: View {
                 HStack {
                     Label("Speed: \(session.greenSpeed)s", systemImage: "speedometer")
                     Spacer()
+                    if let duration = session.durationSeconds, duration > 0 {
+                        Label("Duration: \(formatDurationForDetails(duration))", systemImage: "clock")
+                    }
                 }
                 
                 if session.location == .outdoor {
@@ -472,6 +525,19 @@ struct SessionHeaderCard: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+    }
+
+    private func formatDurationForDetails(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else if minutes > 0 {
+            return "\(minutes)m"
+        } else {
+            return "\(seconds)s"
+        }
     }
 }
 
@@ -529,6 +595,7 @@ struct SessionStatsDetailCard: View {
                     ShotTypeDetailCard(
                         title: "Draw",
                         shots: stats.shotCountForType("draw"),
+                        points: stats.pointsForType("draw"),
                         accuracy: stats.displayAccuracyForType("draw"),
                         color: .blue
                     )
@@ -536,6 +603,7 @@ struct SessionStatsDetailCard: View {
                     ShotTypeDetailCard(
                         title: "Yard On",
                         shots: stats.shotCountForType("yard_on"),
+                        points: stats.pointsForType("yard_on"),
                         accuracy: stats.displayAccuracyForType("yard_on"),
                         color: .green
                     )
@@ -545,6 +613,7 @@ struct SessionStatsDetailCard: View {
                     ShotTypeDetailCard(
                         title: "Ditch Weight",
                         shots: stats.shotCountForType("ditch_weight"),
+                        points: stats.pointsForType("ditch_weight"),
                         accuracy: stats.displayAccuracyForType("ditch_weight"),
                         color: .orange
                     )
@@ -552,6 +621,7 @@ struct SessionStatsDetailCard: View {
                     ShotTypeDetailCard(
                         title: "Drive",
                         shots: stats.shotCountForType("drive"),
+                        points: stats.pointsForType("drive"),
                         accuracy: stats.displayAccuracyForType("drive"),
                         color: .purple
                     )
@@ -567,6 +637,7 @@ struct SessionStatsDetailCard: View {
 struct ShotTypeDetailCard: View {
     let title: String
     let shots: String
+    let points: String
     let accuracy: String?
     let color: Color
     
@@ -577,13 +648,25 @@ struct ShotTypeDetailCard: View {
                 .fontWeight(.semibold)
                 .foregroundColor(color)
             
-            VStack(spacing: 4) {
-                Text(shots)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Text("shots")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            HStack(spacing: 16) {
+                VStack(spacing: 4) {
+                    Text(shots)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text("shots")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(spacing: 4) {
+                    Text(points)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(color)
+                    Text("points")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             if let accuracy = accuracy, let accuracyValue = Double(accuracy) {
@@ -663,9 +746,25 @@ struct ShotRowView: View {
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Image(systemName: (shot.success ?? false) ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .foregroundColor((shot.success ?? false) ? .green : .red)
-                
+                if let distance = shot.distanceFromJack {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(colorForDistance(distance))
+                            .frame(width: 8, height: 8)
+                        Text(distance.rawValue.capitalized)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(colorForDistance(distance))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(colorForDistance(distance).opacity(0.1))
+                    .cornerRadius(8)
+                } else {
+                    Image(systemName: (shot.success ?? false) ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundColor((shot.success ?? false) ? .green : .red)
+                }
+
                 Text(shot.createdAt, style: .time)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -673,10 +772,31 @@ struct ShotRowView: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background((shot.success ?? false) ? Color.green.opacity(0.05) : Color.red.opacity(0.05))
+        .background(backgroundColorForShot(shot))
         .cornerRadius(8)
     }
-    
+
+    private func colorForDistance(_ distance: DistanceFromJack) -> Color {
+        switch distance {
+        case .foot: return .green
+        case .yard: return .orange
+        case .miss: return .red
+        }
+    }
+
+    private func backgroundColorForShot(_ shot: TrainingShot) -> Color {
+        return colorForShotType(shot.shotType).opacity(0.1)
+    }
+
+    private func colorForShotType(_ type: ShotType) -> Color {
+        switch type {
+        case .draw: return .blue
+        case .yardOn: return .green
+        case .ditchWeight: return .orange
+        case .drive: return .purple
+        }
+    }
+
     private func shotTypeDisplayName(_ type: ShotType) -> String {
         switch type {
         case .draw: return "Draw"
@@ -684,6 +804,241 @@ struct ShotRowView: View {
         case .ditchWeight: return "Ditch Weight"
         case .drive: return "Drive"
         }
+    }
+}
+
+struct ShotsByTypeCard: View {
+    let shotsByType: [String: [TrainingShot]]
+    let statistics: SessionStatistics
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Detailed Shot Breakdown")
+                .font(.headline)
+
+            ForEach(Array(shotsByType.keys.sorted()), id: \.self) { shotType in
+                let shots = shotsByType[shotType] ?? []
+                if !shots.isEmpty {
+                    ShotTypeSection(shotType: shotType, shots: shots, statistics: statistics)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
+
+struct ShotTypeSection: View {
+    let shotType: String
+    let shots: [TrainingShot]
+    let statistics: SessionStatistics
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(shotType.replacingOccurrences(of: "_", with: " ").capitalized)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(colorForShotType(shotType))
+
+                Spacer()
+
+                Text("\(shots.count) shots • \(totalPointsForShots(shots)) points")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            if let breakdown = statistics.drawBreakdown, shotType == "draw" {
+                DrawBreakdownView(breakdown: breakdown)
+            }
+
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 8) {
+                ForEach(shots) { shot in
+                    CompactShotRowView(shot: shot)
+                }
+            }
+        }
+        .padding(.vertical, 8)
+    }
+
+    private func colorForShotType(_ type: String) -> Color {
+        switch type {
+        case "draw": return .blue
+        case "yard_on": return .green
+        case "ditch_weight": return .orange
+        case "drive": return .purple
+        default: return .gray
+        }
+    }
+
+    private func totalPointsForShots(_ shots: [TrainingShot]) -> Int {
+        return shots.compactMap { $0.score }.reduce(0, +)
+    }
+}
+
+struct DrawBreakdownView: View {
+    let breakdown: DrawBreakdown
+
+    var body: some View {
+        HStack(spacing: 16) {
+            DrawBreakdownItem(label: "Foot", count: breakdown.foot, color: .green)
+            DrawBreakdownItem(label: "Yard", count: breakdown.yard, color: .orange)
+            DrawBreakdownItem(label: "Miss", count: breakdown.miss, color: .red)
+        }
+        .padding(.horizontal, 8)
+    }
+}
+
+struct DrawBreakdownItem: View {
+    let label: String
+    let count: Int
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("\(count)")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+struct CompactShotRowView: View {
+    let shot: TrainingShot
+
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(shot.hand.rawValue.capitalized)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                Text(shot.length.rawValue.capitalized)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(shot.score ?? 0) pts")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor((shot.score ?? 0) > 0 ? .green : .red)
+                if let distance = shot.distanceFromJack {
+                    HStack(spacing: 3) {
+                        Circle()
+                            .fill(colorForDistance(distance))
+                            .frame(width: 6, height: 6)
+                        Text(distance.rawValue.capitalized)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(colorForDistance(distance))
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(backgroundColorForShot(shot))
+        .cornerRadius(6)
+    }
+
+    private func colorForDistance(_ distance: DistanceFromJack) -> Color {
+        switch distance {
+        case .foot: return .green
+        case .yard: return .orange
+        case .miss: return .red
+        }
+    }
+
+    private func backgroundColorForShot(_ shot: TrainingShot) -> Color {
+        return colorForShotType(shot.shotType).opacity(0.1)
+    }
+
+    private func colorForShotType(_ type: ShotType) -> Color {
+        switch type {
+        case .draw: return .blue
+        case .yardOn: return .green
+        case .ditchWeight: return .orange
+        case .drive: return .purple
+        }
+    }
+}
+
+struct ScoringSystemCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "info.circle.fill")
+                    .foregroundColor(.blue)
+                    .font(.title3)
+                Text("Scoring System")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+            }
+
+            VStack(spacing: 8) {
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                        Text("2 points")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Within a foot of the jack")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.orange)
+                            .frame(width: 8, height: 8)
+                        Text("1 point")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Within a yard of the jack")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 8, height: 8)
+                        Text("0 points")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Miss (beyond a yard)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBlue).opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.systemBlue).opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(12)
     }
 }
 

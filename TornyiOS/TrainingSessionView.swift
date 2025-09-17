@@ -5,7 +5,7 @@ struct TrainingSessionView: View {
     let session: TrainingSession
     let onSessionEnd: (() -> Void)?
     @State private var currentShot = ShotData()
-    @State private var sessionStats = SessionStats(totalShots: 0, successfulShots: 0, accuracyPercentage: 0.0)
+    @State private var sessionStats = SessionStatistics(totalShots: 0, totalPoints: "0", maxPossiblePoints: 0, averageScore: "0.00", accuracyPercentage: "0.0", drawShots: "0", drawPoints: "0", drawAccuracyPercentage: nil, yardOnShots: "0", yardOnPoints: "0", yardOnAccuracyPercentage: nil, ditchWeightShots: "0", ditchWeightPoints: "0", ditchWeightAccuracyPercentage: nil, driveShots: "0", drivePoints: "0", driveAccuracyPercentage: nil, weightedShots: "0", weightedPoints: "0", weightedAccuracyPercentage: nil, drawBreakdown: nil)
     @State private var isRecording = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
@@ -444,14 +444,27 @@ struct TrainingSessionView: View {
     private func recordShot() {
         isRecording = true
         
+        // Convert UI values to API format
+        let distanceFromJack: DistanceFromJack
+        if currentShot.shotType == "draw" {
+            distanceFromJack = DistanceFromJack(rawValue: currentShot.distanceFromJack ?? "yard") ?? .yard
+        } else {
+            // For weighted shots, map hitTarget and withinFoot to DistanceFromJack
+            if currentShot.hitTarget == true {
+                distanceFromJack = .foot  // Hit target = within foot
+            } else if currentShot.withinFoot == true {
+                distanceFromJack = .yard  // Within foot of target = within yard
+            } else {
+                distanceFromJack = .miss  // Missed completely
+            }
+        }
+
         let shotRequest = RecordShotRequest(
             sessionId: session.id,
             shotType: ShotType(rawValue: currentShot.shotType) ?? .draw,
             hand: Hand(rawValue: currentShot.hand) ?? .forehand,
             length: Length(rawValue: currentShot.length) ?? .medium,
-            distanceFromJack: currentShot.shotType == "draw" ? DistanceFromJack(rawValue: currentShot.distanceFromJack ?? "") : nil,
-            hitTarget: currentShot.shotType != "draw" ? currentShot.hitTarget : nil,
-            withinFoot: currentShot.shotType != "draw" ? currentShot.withinFoot : nil,
+            distanceFromJack: distanceFromJack,
             notes: currentShot.notes.isEmpty ? nil : currentShot.notes
         )
         
@@ -517,7 +530,7 @@ struct ShotData {
 
 struct SessionEndView: View {
     let session: TrainingSession
-    let stats: SessionStats
+    let stats: SessionStatistics
     let onReturn: (() -> Void)?
     @Environment(\.presentationMode) var presentationMode
     
@@ -613,15 +626,24 @@ struct TrainingSessionView_Previews: PreviewProvider {
             createdAt: Date(),
             updatedAt: Date(),
             totalShots: nil,
-            drawShots: nil,
-            weightedShots: nil,
+            _drawShots: nil,
+            _weightedShots: nil,
             drawAccuracy: nil,
             weightedAccuracy: nil,
             overallAccuracy: nil,
             startedAt: Date(),
             endedAt: nil,
             durationSeconds: nil,
-            _isActive: 1
+            _isActive: 1,
+            _totalPoints: nil,
+            _averageScore: nil,
+            _accuracyPercentage: nil,
+            _yardOnShots: nil,
+            yardOnAccuracy: nil,
+            _ditchWeightShots: nil,
+            ditchWeightAccuracy: nil,
+            _driveShots: nil,
+            driveAccuracy: nil
         )
         
         TrainingSessionView(session: sampleSession, onSessionEnd: nil)
