@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct TrainingSessionView: View {
     @ObservedObject private var apiService = APIService.shared
@@ -10,18 +11,21 @@ struct TrainingSessionView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var showingSessionEnd = false
+    @State private var showingSuccessAlert = false
+    @State private var successMessage = ""
+    @State private var elapsedTime: TimeInterval = 0
+    @State private var timer: Timer?
     
     let shotTypes = ["draw", "yard_on", "ditch_weight", "drive"]
     let hands = ["forehand", "backhand"]
     let lengths = ["short", "medium", "long"]
-    let distanceOptions = ["foot", "yard"]
+    let distanceOptions = ["foot", "yard", "miss"]
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                TornyBackgroundView()
-                
-                VStack(spacing: 0) {
+        ZStack {
+            TornyBackgroundView()
+
+            VStack(spacing: 0) {
                     // Session Info Header
                     sessionInfoHeader
                     
@@ -41,17 +45,29 @@ struct TrainingSessionView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                     }
-                }
             }
-            .navigationBarHidden(true)
         }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
             Text(alertMessage)
         }
+        .alert("Shot Recorded!", isPresented: $showingSuccessAlert) {
+            Button("Great!") { }
+        } message: {
+            Text(successMessage)
+        }
         .sheet(isPresented: $showingSessionEnd) {
             SessionEndView(session: session, stats: sessionStats, onReturn: onSessionEnd)
+                .onAppear {
+                    print("📱 SessionEndView appeared")
+                }
+        }
+        .onAppear {
+            startTimer()
+        }
+        .onDisappear {
+            stopTimer()
         }
     }
     
@@ -72,15 +88,26 @@ struct TrainingSessionView: View {
                     .font(TornyFonts.body)
                     .fontWeight(.semibold)
                     .foregroundColor(.tornyTextPrimary)
-                
+
                 Text("\(session.greenType.rawValue.capitalized) • \(session.greenSpeed)s • \(session.location.rawValue.capitalized)")
                     .font(TornyFonts.bodySecondary)
                     .foregroundColor(.tornyTextSecondary)
+
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                        .foregroundColor(.tornyBlue)
+                    Text(formatElapsedTime(elapsedTime))
+                        .font(TornyFonts.bodySecondary)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tornyBlue)
+                }
             }
             
             Spacer()
-            
+
             Button(action: {
+                print("🔚 End button tapped - showing session end sheet")
                 showingSessionEnd = true
             }) {
                 Text("End")
@@ -117,7 +144,7 @@ struct TrainingSessionView: View {
                 
                 StatItem(
                     title: "Accuracy",
-                    value: "\(Int(sessionStats.accuracyPercentage))%",
+                    value: "\(Int(Double(sessionStats.accuracyPercentage) ?? 0))%",
                     color: .tornyPurple
                 )
             }
@@ -242,12 +269,8 @@ struct TrainingSessionView: View {
                     .frame(maxWidth: .infinity)
                 }
                 
-                // Shot-specific fields
-                if currentShot.shotType == "draw" {
-                    drawShotFields
-                } else if ["yard_on", "ditch_weight", "drive"].contains(currentShot.shotType) {
-                    weightedShotFields
-                }
+                // Distance from Jack (same for all shot types)
+                distanceFromJackFields
                 
                 // Notes
                 VStack(alignment: .leading, spacing: 8) {
@@ -263,32 +286,32 @@ struct TrainingSessionView: View {
         }
     }
     
-    private var drawShotFields: some View {
+    private var distanceFromJackFields: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Distance from Jack")
                 .font(TornyFonts.body)
                 .fontWeight(.medium)
                 .foregroundColor(.tornyTextPrimary)
             
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
                 ForEach(distanceOptions, id: \.self) { distance in
                     Button(action: {
                         currentShot.distanceFromJack = distance
                     }) {
                         HStack {
                             Image(systemName: currentShot.distanceFromJack == distance ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(distance == "foot" ? .tornyGreen : .tornyPurple)
-                            
+                                .foregroundColor(distanceIconColor(for: distance))
+
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(distance == "foot" ? "Within Foot" : "Within Yard")
+                                Text(distanceDisplayName(for: distance))
                                     .font(TornyFonts.body)
                                     .foregroundColor(.tornyTextPrimary)
-                                
-                                Text(distance == "foot" ? "Success!" : "Close")
+
+                                Text(distanceDescription(for: distance))
                                     .font(TornyFonts.bodySecondary)
-                                    .foregroundColor(distance == "foot" ? .tornyGreen : .tornyTextSecondary)
+                                    .foregroundColor(distanceColor(for: distance))
                             }
-                            
+
                             Spacer()
                         }
                         .padding(.horizontal, 16)
@@ -308,103 +331,6 @@ struct TrainingSessionView: View {
         }
     }
     
-    private var weightedShotFields: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Hit Target?")
-                    .font(TornyFonts.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.tornyTextPrimary)
-                
-                HStack(spacing: 12) {
-                    Button(action: {
-                        currentShot.hitTarget = true
-                        currentShot.withinFoot = nil // Clear this when hit target is true
-                    }) {
-                        HStack {
-                            Image(systemName: currentShot.hitTarget == true ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(.tornyGreen)
-                            Text("Yes - Success!")
-                                .font(TornyFonts.body)
-                                .foregroundColor(.tornyTextPrimary)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(currentShot.hitTarget == true ? Color.tornyGreen.opacity(0.1) : Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(currentShot.hitTarget == true ? Color.tornyGreen : Color.tornyLightBlue, lineWidth: 1)
-                                )
-                        )
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Button(action: {
-                        currentShot.hitTarget = false
-                    }) {
-                        HStack {
-                            Image(systemName: currentShot.hitTarget == false ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(.tornyPurple)
-                            Text("No - Missed")
-                                .font(TornyFonts.body)
-                                .foregroundColor(.tornyTextPrimary)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(currentShot.hitTarget == false ? Color.tornyPurple.opacity(0.1) : Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(currentShot.hitTarget == false ? Color.tornyPurple : Color.tornyLightBlue, lineWidth: 1)
-                                )
-                        )
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
-            
-            // Within foot option (only if missed target)
-            if currentShot.hitTarget == false {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Within a Foot of Target?")
-                        .font(TornyFonts.body)
-                        .fontWeight(.medium)
-                        .foregroundColor(.tornyTextPrimary)
-                    
-                    HStack(spacing: 12) {
-                        Button(action: {
-                            currentShot.withinFoot = true
-                        }) {
-                            HStack {
-                                Image(systemName: currentShot.withinFoot == true ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(.tornyBlue)
-                                Text("Yes")
-                                    .font(TornyFonts.body)
-                                    .foregroundColor(.tornyTextPrimary)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        Button(action: {
-                            currentShot.withinFoot = false
-                        }) {
-                            HStack {
-                                Image(systemName: currentShot.withinFoot == false ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(.tornyBlue)
-                                Text("No")
-                                    .font(TornyFonts.body)
-                                    .foregroundColor(.tornyTextPrimary)
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-            }
-        }
-    }
     
     private var recordShotButton: some View {
         Button(action: recordShot) {
@@ -440,24 +366,79 @@ struct TrainingSessionView: View {
         default: return type.capitalized
         }
     }
-    
+
+    private func distanceDisplayName(for distance: String) -> String {
+        switch distance {
+        case "foot": return "Within Foot"
+        case "yard": return "Within Yard"
+        case "miss": return "Miss"
+        default: return distance.capitalized
+        }
+    }
+
+    private func distanceDescription(for distance: String) -> String {
+        switch distance {
+        case "foot": return "Success!"
+        case "yard": return "Close"
+        case "miss": return "Missed"
+        default: return ""
+        }
+    }
+
+    private func distanceColor(for distance: String) -> Color {
+        switch distance {
+        case "foot": return .tornyGreen
+        case "yard": return .tornyTextSecondary
+        case "miss": return .red
+        default: return .tornyTextSecondary
+        }
+    }
+
+    private func distanceIconColor(for distance: String) -> Color {
+        switch distance {
+        case "foot": return .tornyGreen
+        case "yard": return .tornyPurple
+        case "miss": return .red
+        default: return .tornyBlue
+        }
+    }
+
+    private func formatElapsedTime(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = Int(timeInterval) % 3600 / 60
+        let seconds = Int(timeInterval) % 60
+
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
+    }
+
+    private func startTimer() {
+        stopTimer() // Stop any existing timer
+
+        if let startedAt = session.startedAt {
+            elapsedTime = Date().timeIntervalSince(startedAt)
+        }
+
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if let startedAt = session.startedAt {
+                elapsedTime = Date().timeIntervalSince(startedAt)
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+
     private func recordShot() {
         isRecording = true
         
-        // Convert UI values to API format
-        let distanceFromJack: DistanceFromJack
-        if currentShot.shotType == "draw" {
-            distanceFromJack = DistanceFromJack(rawValue: currentShot.distanceFromJack ?? "yard") ?? .yard
-        } else {
-            // For weighted shots, map hitTarget and withinFoot to DistanceFromJack
-            if currentShot.hitTarget == true {
-                distanceFromJack = .foot  // Hit target = within foot
-            } else if currentShot.withinFoot == true {
-                distanceFromJack = .yard  // Within foot of target = within yard
-            } else {
-                distanceFromJack = .miss  // Missed completely
-            }
-        }
+        // Convert UI values to API format (same for all shot types)
+        let distanceFromJack = DistanceFromJack(rawValue: currentShot.distanceFromJack ?? "miss") ?? .miss
 
         let shotRequest = RecordShotRequest(
             sessionId: session.id,
@@ -475,7 +456,13 @@ struct TrainingSessionView: View {
                 await MainActor.run {
                     isRecording = false
                     sessionStats = response.sessionStats
-                    currentShot = ShotData() // Reset form
+                    currentShot.reset() // Reset form
+
+                    // Show success message
+                    let shotTypeDisplay = shotTypeDisplayName(for: shotRequest.shotType.rawValue)
+                    let distanceDisplay = distanceDisplayName(for: distanceFromJack.rawValue)
+                    successMessage = "\(shotTypeDisplay) shot recorded successfully!\nResult: \(distanceDisplay)"
+                    showingSuccessAlert = true
                 }
             } catch {
                 await MainActor.run {
@@ -515,16 +502,18 @@ struct ShotData {
     var hand: String = "forehand"
     var length: String = "medium"
     var distanceFromJack: String? = nil
-    var hitTarget: Bool? = nil
-    var withinFoot: Bool? = nil
     var notes: String = ""
-    
+
     var isValid: Bool {
-        if shotType == "draw" {
-            return distanceFromJack != nil
-        } else {
-            return hitTarget != nil
-        }
+        return distanceFromJack != nil
+    }
+
+    mutating func reset() {
+        shotType = "draw"
+        hand = "forehand"
+        length = "medium"
+        distanceFromJack = nil
+        notes = ""
     }
 }
 
@@ -533,11 +522,14 @@ struct SessionEndView: View {
     let stats: SessionStatistics
     let onReturn: (() -> Void)?
     @Environment(\.presentationMode) var presentationMode
+    @State private var isEndingSession = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+    @ObservedObject private var apiService = APIService.shared
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                TornyBackgroundView()
+        ZStack {
+            TornyBackgroundView()
                 
                 VStack(spacing: 32) {
                     VStack(spacing: 16) {
@@ -583,7 +575,7 @@ struct SessionEndView: View {
                                 
                                 StatItem(
                                     title: "Accuracy",
-                                    value: "\(Int(stats.accuracyPercentage))%",
+                                    value: "\(Int(Double(stats.accuracyPercentage) ?? 0))%",
                                     color: .tornyPurple
                                 )
                             }
@@ -591,20 +583,60 @@ struct SessionEndView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    Button("Return to Dashboard") {
-                        presentationMode.wrappedValue.dismiss()
-                        onReturn?()
+                    Button(action: endSessionAndReturn) {
+                        HStack {
+                            if isEndingSession {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                                Text("Ending Session...")
+                            } else {
+                                Text("Return to Dashboard")
+                            }
+                        }
                     }
                     .buttonStyle(TornyPrimaryButton(isLarge: true))
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal, 20)
+                    .disabled(isEndingSession)
                     
                     Spacer()
-                }
-                .padding(.top, 40)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarHidden(true)
+            .padding(.top, 40)
+        }
+        .alert("Error", isPresented: $showingAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
+    }
+
+    private func endSessionAndReturn() {
+        print("🚀 endSessionAndReturn called")
+        isEndingSession = true
+
+        Task {
+            do {
+                let now = Date()
+                let duration = Int(now.timeIntervalSince(session.startedAt ?? now))
+                let request = EndSessionRequest(
+                    endedAt: ISO8601DateFormatter().string(from: now),
+                    durationSeconds: duration
+                )
+                _ = try await apiService.endSession(session.id, request: request)
+
+                await MainActor.run {
+                    isEndingSession = false
+                    presentationMode.wrappedValue.dismiss()
+                    onReturn?()
+                }
+            } catch {
+                await MainActor.run {
+                    isEndingSession = false
+                    alertMessage = "Failed to end session: \(error.localizedDescription)"
+                    showingAlert = true
+                }
+            }
         }
     }
 }

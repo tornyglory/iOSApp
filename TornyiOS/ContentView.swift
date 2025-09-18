@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 
 struct ContentView: View {
@@ -80,7 +81,8 @@ struct MainTabView: View {
 
 struct ProfileView: View {
     @ObservedObject private var apiService = APIService.shared
-    
+    @State private var isRefreshing = false
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -100,7 +102,18 @@ struct ProfileView: View {
                         .padding(.top, 20)
                         
                         // User Info Card
-                        if let user = apiService.currentUser {
+                        if isRefreshing {
+                            TornyCard {
+                                VStack(spacing: 16) {
+                                    TornyLoadingView(color: .tornyBlue)
+                                    Text("Refreshing profile...")
+                                        .font(TornyFonts.body)
+                                        .foregroundColor(.tornyTextSecondary)
+                                }
+                                .frame(minHeight: 200)
+                            }
+                            .padding(.horizontal, 20)
+                        } else if let user = apiService.currentUser {
                             TornyCard {
                                 VStack(alignment: .leading, spacing: 16) {
                                     Text("Account Information")
@@ -149,6 +162,46 @@ struct ProfileView: View {
                 }
             }
             .navigationBarHidden(true)
+        }
+        .onAppear {
+            refreshProfile()
+        }
+        .refreshable {
+            await refreshProfileAsync()
+        }
+    }
+
+    private func refreshProfile() {
+        guard !isRefreshing else { return }
+
+        Task {
+            await refreshProfileAsync()
+        }
+    }
+
+    private func refreshProfileAsync() async {
+        guard let userIdString = UserDefaults.standard.string(forKey: "current_user_id"),
+              let userId = Int(userIdString) else {
+            print("❌ No stored user ID found for profile refresh")
+            return
+        }
+
+        await MainActor.run {
+            isRefreshing = true
+        }
+
+        do {
+            let updatedUser = try await apiService.getUserProfile(userId)
+            await MainActor.run {
+                apiService.currentUser = updatedUser
+                isRefreshing = false
+                print("✅ Profile refreshed successfully")
+            }
+        } catch {
+            await MainActor.run {
+                isRefreshing = false
+                print("❌ Failed to refresh profile: \(error.localizedDescription)")
+            }
         }
     }
 }
@@ -401,6 +454,7 @@ struct MainDashboardView: View {
                         .onTapGesture { showSidebar = false }
                     
                     HStack {
+                        Spacer()
                         TornySidebar(isPresented: $showSidebar) { view in
                             if view == .history {
                                 showingHistory = true
@@ -410,9 +464,8 @@ struct MainDashboardView: View {
                                 selectedView = view
                             }
                         }
-                        Spacer()
                     }
-                    .transition(.move(edge: .leading))
+                    .transition(.move(edge: .trailing))
                 }
             }
         }

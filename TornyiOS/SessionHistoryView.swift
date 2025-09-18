@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct SessionHistoryView: View {
     @ObservedObject private var apiService = APIService.shared
@@ -63,37 +64,37 @@ struct SessionHistoryView: View {
             }
         }
     }
-    
+
     private func loadMoreSessions() {
         guard !isLoading && hasMoreSessions else { return }
-        
+
         Task {
             await loadSessionsAsync()
         }
     }
-    
+
     private func loadSessionsAsync(refresh: Bool = false) async {
         if refresh {
             currentOffset = 0
             sessions.removeAll()
             hasMoreSessions = true
         }
-        
+
         isLoading = true
-        
+
         do {
             let response = try await apiService.getSessions(
                 limit: pageSize,
                 offset: currentOffset
             )
-            
+
             await MainActor.run {
                 if refresh {
                     sessions = response.sessions
                 } else {
                     sessions.append(contentsOf: response.sessions)
                 }
-                
+
                 currentOffset += response.sessions.count
                 hasMoreSessions = response.pagination.hasMore
                 isLoading = false
@@ -108,9 +109,57 @@ struct SessionHistoryView: View {
     }
 }
 
+struct EmptyHistoryView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "clock")
+                .font(.system(size: 50))
+                .foregroundColor(.gray)
+
+            Text("No Training Sessions")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text("Start your first training session to see your history here.")
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+        }
+    }
+}
+
+struct LoadMoreRow: View {
+    let isLoading: Bool
+    let loadMore: () -> Void
+
+    var body: some View {
+        HStack {
+            Spacer()
+            if isLoading {
+                ProgressView()
+                    .scaleEffect(0.8)
+            } else {
+                Button("Load More") {
+                    loadMore()
+                }
+                .font(.caption)
+            }
+            Spacer()
+        }
+        .padding()
+        .onAppear {
+            if !isLoading {
+                loadMore()
+            }
+        }
+    }
+}
+
+// MARK: - Session Row Components
+
 struct SessionRowView: View {
     let session: TrainingSession
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -124,7 +173,6 @@ struct SessionRowView: View {
 
                 Spacer()
 
-                // Duration on the right side
                 if let duration = session.durationSeconds, duration > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "clock")
@@ -141,7 +189,7 @@ struct SessionRowView: View {
                     AccuracyBadge(accuracy: accuracy)
                 }
             }
-            
+
             HStack {
                 SessionInfoPill(
                     icon: session.location == .outdoor ? "sun.max" : "house",
@@ -160,16 +208,16 @@ struct SessionRowView: View {
 
                 Spacer()
             }
-            
+
             if let totalShots = session.totalShots {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("\(totalShots) total shots")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         Spacer()
-                        
+
                         if let accuracy = session.overallAccuracy {
                             Text("\(Int(accuracy))% accuracy")
                                 .font(.caption)
@@ -177,8 +225,7 @@ struct SessionRowView: View {
                                 .foregroundColor(.primary)
                         }
                     }
-                    
-                    // Shot type breakdown
+
                     HStack(spacing: 8) {
                         if let drawShots = session.drawShots, drawShots > 0 {
                             ShotTypePill(
@@ -241,7 +288,7 @@ struct SessionRowView: View {
 struct SessionInfoPill: View {
     let icon: String
     let text: String
-    
+
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
@@ -289,7 +336,7 @@ struct ShotTypePill: View {
 
 struct AccuracyBadge: View {
     let accuracy: Double
-    
+
     var body: some View {
         Text(String(format: "%.1f%%", accuracy))
             .font(.caption)
@@ -300,7 +347,7 @@ struct AccuracyBadge: View {
             .foregroundColor(accuracyColor)
             .cornerRadius(8)
     }
-    
+
     private var accuracyColor: Color {
         if accuracy >= 80 {
             return .green
@@ -312,51 +359,7 @@ struct AccuracyBadge: View {
     }
 }
 
-struct LoadMoreRow: View {
-    let isLoading: Bool
-    let loadMore: () -> Void
-    
-    var body: some View {
-        HStack {
-            Spacer()
-            if isLoading {
-                ProgressView()
-                    .scaleEffect(0.8)
-            } else {
-                Button("Load More") {
-                    loadMore()
-                }
-                .font(.caption)
-            }
-            Spacer()
-        }
-        .padding()
-        .onAppear {
-            if !isLoading {
-                loadMore()
-            }
-        }
-    }
-}
-
-struct EmptyHistoryView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "clock")
-                .font(.system(size: 50))
-                .foregroundColor(.gray)
-            
-            Text("No Training Sessions")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Start your first training session to see your history here.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
-        }
-    }
-}
+// MARK: - Session Detail View
 
 struct SessionDetailView: View {
     let session: TrainingSession
@@ -366,7 +369,7 @@ struct SessionDetailView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var showingDeleteAlert = false
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -423,7 +426,7 @@ struct SessionDetailView: View {
             Text(alertMessage)
         }
     }
-    
+
     private func loadSessionDetail() async {
         do {
             let detail = try await apiService.getSessionDetails(session.id)
@@ -439,7 +442,7 @@ struct SessionDetailView: View {
             }
         }
     }
-    
+
     private func deleteSession() {
         Task {
             do {
@@ -455,9 +458,17 @@ struct SessionDetailView: View {
     }
 }
 
+struct SessionHistoryView_Previews: PreviewProvider {
+    static var previews: some View {
+        SessionHistoryView()
+    }
+}
+
+// MARK: - Session Detail Components
+
 struct SessionHeaderCard: View {
     let session: TrainingSession
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -470,7 +481,7 @@ struct SessionHeaderCard: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-                
+
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("Session #\(session.id)")
                         .font(.caption)
@@ -482,16 +493,16 @@ struct SessionHeaderCard: View {
                     }
                 }
             }
-            
+
             Divider()
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Label(session.location.rawValue.capitalized, systemImage: session.location == .outdoor ? "sun.max" : "house")
                     Spacer()
                     Label(session.greenType.rawValue.capitalized, systemImage: "leaf")
                 }
-                
+
                 HStack {
                     Label("Speed: \(session.greenSpeed)s", systemImage: "speedometer")
                     Spacer()
@@ -499,7 +510,7 @@ struct SessionHeaderCard: View {
                         Label("Duration: \(formatDurationForDetails(duration))", systemImage: "clock")
                     }
                 }
-                
+
                 if session.location == .outdoor {
                     HStack {
                         if let weather = session.weather {
@@ -513,7 +524,7 @@ struct SessionHeaderCard: View {
                 }
             }
             .font(.subheadline)
-            
+
             if let notes = session.notes, !notes.isEmpty {
                 Divider()
                 Text("Notes")
@@ -543,12 +554,12 @@ struct SessionHeaderCard: View {
 
 struct SessionStatsDetailCard: View {
     let stats: SessionStatistics
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Session Statistics")
                 .font(.headline)
-            
+
             HStack {
                 VStack {
                     Text("\(stats.totalShots)")
@@ -558,9 +569,9 @@ struct SessionStatsDetailCard: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 VStack {
                     Text("\(stats.successfulShots)")
                         .font(.title)
@@ -570,9 +581,9 @@ struct SessionStatsDetailCard: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 VStack {
                     Text(String(format: "%.1f%%", stats.overallAccuracy))
                         .font(.title)
@@ -583,13 +594,13 @@ struct SessionStatsDetailCard: View {
                         .foregroundColor(.secondary)
                 }
             }
-            
+
             Divider()
-            
+
             Text("Shot Type Breakdown")
                 .font(.subheadline)
                 .fontWeight(.semibold)
-            
+
             VStack(spacing: 8) {
                 HStack {
                     ShotTypeDetailCard(
@@ -599,7 +610,7 @@ struct SessionStatsDetailCard: View {
                         accuracy: stats.displayAccuracyForType("draw"),
                         color: .blue
                     )
-                    
+
                     ShotTypeDetailCard(
                         title: "Yard On",
                         shots: stats.shotCountForType("yard_on"),
@@ -608,7 +619,7 @@ struct SessionStatsDetailCard: View {
                         color: .green
                     )
                 }
-                
+
                 HStack {
                     ShotTypeDetailCard(
                         title: "Ditch Weight",
@@ -617,7 +628,7 @@ struct SessionStatsDetailCard: View {
                         accuracy: stats.displayAccuracyForType("ditch_weight"),
                         color: .orange
                     )
-                    
+
                     ShotTypeDetailCard(
                         title: "Drive",
                         shots: stats.shotCountForType("drive"),
@@ -640,14 +651,14 @@ struct ShotTypeDetailCard: View {
     let points: String
     let accuracy: String?
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(color)
-            
+
             HStack(spacing: 16) {
                 VStack(spacing: 4) {
                     Text(shots)
@@ -668,14 +679,23 @@ struct ShotTypeDetailCard: View {
                         .foregroundColor(.secondary)
                 }
             }
-            
-            if let accuracy = accuracy, let accuracyValue = Double(accuracy) {
-                Text(String(format: "%.1f%%", accuracyValue))
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(color)
+
+            if let accuracy = accuracy, !accuracy.isEmpty {
+                // Remove the % sign if present and convert to Double
+                let cleanAccuracy = accuracy.replacingOccurrences(of: "%", with: "")
+                if let accuracyValue = Double(cleanAccuracy) {
+                    Text(String(format: "%.1f%%", accuracyValue))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(color)
+                } else {
+                    Text("0.0%")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                }
             } else {
-                Text("0.0%")
+                Text("No shots")
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.secondary)
@@ -689,14 +709,85 @@ struct ShotTypeDetailCard: View {
     }
 }
 
+struct ScoringSystemCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "info.circle.fill")
+                    .foregroundColor(.blue)
+                    .font(.title3)
+                Text("Scoring System")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+            }
+
+            VStack(spacing: 8) {
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 8, height: 8)
+                        Text("2 points")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Within a foot of the jack")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.orange)
+                            .frame(width: 8, height: 8)
+                        Text("1 point")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Within a yard of the jack")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 8, height: 8)
+                        Text("0 points")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    Spacer()
+                    Text("Miss (beyond a yard)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBlue).opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.systemBlue).opacity(0.2), lineWidth: 1)
+        )
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Shot Components
+
 struct ShotListCard: View {
     let shots: [TrainingShot]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Shot History (\(shots.count) shots)")
                 .font(.headline)
-            
+
             LazyVStack(spacing: 8) {
                 ForEach(shots) { shot in
                     ShotRowView(shot: shot)
@@ -711,7 +802,7 @@ struct ShotListCard: View {
 
 struct ShotRowView: View {
     let shot: TrainingShot
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -719,14 +810,14 @@ struct ShotRowView: View {
                     Text(shotTypeDisplayName(shot.shotType))
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                    
+
                     Text(shot.hand.rawValue.capitalized)
                         .font(.caption)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color(.systemGray5))
                         .cornerRadius(4)
-                    
+
                     Text(shot.length.rawValue.capitalized)
                         .font(.caption)
                         .padding(.horizontal, 6)
@@ -734,7 +825,7 @@ struct ShotRowView: View {
                         .background(Color(.systemGray5))
                         .cornerRadius(4)
                 }
-                
+
                 if let notes = shot.notes, !notes.isEmpty {
                     Text(notes)
                         .font(.caption)
@@ -742,9 +833,9 @@ struct ShotRowView: View {
                         .lineLimit(2)
                 }
             }
-            
+
             Spacer()
-            
+
             VStack(alignment: .trailing, spacing: 4) {
                 if let distance = shot.distanceFromJack {
                     HStack(spacing: 4) {
@@ -970,80 +1061,5 @@ struct CompactShotRowView: View {
         case .ditchWeight: return .orange
         case .drive: return .purple
         }
-    }
-}
-
-struct ScoringSystemCard: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.blue)
-                    .font(.title3)
-                Text("Scoring System")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-
-            VStack(spacing: 8) {
-                HStack {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 8, height: 8)
-                        Text("2 points")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                    }
-                    Spacer()
-                    Text("Within a foot of the jack")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-
-                HStack {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.orange)
-                            .frame(width: 8, height: 8)
-                        Text("1 point")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                    }
-                    Spacer()
-                    Text("Within a yard of the jack")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-
-                HStack {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.red)
-                            .frame(width: 8, height: 8)
-                        Text("0 points")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                    }
-                    Spacer()
-                    Text("Miss (beyond a yard)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBlue).opacity(0.05))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(.systemBlue).opacity(0.2), lineWidth: 1)
-        )
-        .cornerRadius(12)
-    }
-}
-
-struct SessionHistoryView_Previews: PreviewProvider {
-    static var previews: some View {
-        SessionHistoryView()
     }
 }
