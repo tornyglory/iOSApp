@@ -1,4 +1,5 @@
 import Foundation
+import Foundation
 
 class APIService: ObservableObject {
     static let shared = APIService()
@@ -431,10 +432,17 @@ class APIService: ObservableObject {
     
     func getTrainingProgress(groupBy: String = "week", limit: Int = 12) async throws -> TrainingProgressResponse {
         let endpoint = "/progress?group_by=\(groupBy)&limit=\(limit)"
-        
+
         return try await makeRequest(
             endpoint: endpoint,
             responseType: TrainingProgressResponse.self
+        )
+    }
+
+    func getSessionChartData(_ sessionId: Int) async throws -> ChartDataResponse {
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)/chart-data",
+            responseType: ChartDataResponse.self
         )
     }
 }

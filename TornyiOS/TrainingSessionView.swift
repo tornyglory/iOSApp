@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import Charts
 
 struct TrainingSessionView: View {
     @ObservedObject private var apiService = APIService.shared
@@ -15,6 +16,10 @@ struct TrainingSessionView: View {
     @State private var successMessage = ""
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
+    @State private var chartData: ChartViewData?
+    @State private var isLoadingChartData = false
+    @State private var chartError: String?
+    @State private var showCharts = false
     
     let shotTypes = ["draw", "yard_on", "ditch_weight", "drive"]
     let hands = ["forehand", "backhand"]
@@ -33,13 +38,16 @@ struct TrainingSessionView: View {
                         VStack(spacing: 24) {
                             // Live Stats
                             liveStatsCard
-                            
+
+                            // Charts toggle and display
+                            chartsSection
+
                             // Shot Recording Form
                             shotRecordingForm
-                            
+
                             // Record Shot Button
                             recordShotButton
-                            
+
                             Spacer(minLength: 100)
                         }
                         .padding(.horizontal, 20)
@@ -129,24 +137,147 @@ struct TrainingSessionView: View {
                     value: "\(sessionStats.totalShots)",
                     color: .tornyBlue
                 )
-                
+
                 Divider()
                     .frame(height: 40)
-                
+
                 StatItem(
                     title: "Successful",
                     value: "\(sessionStats.successfulShots)",
                     color: .tornyGreen
                 )
-                
+
                 Divider()
                     .frame(height: 40)
-                
+
                 StatItem(
                     title: "Accuracy",
                     value: "\(Int(Double(sessionStats.accuracyPercentage) ?? 0))%",
                     color: .tornyPurple
                 )
+            }
+        }
+    }
+
+    private var chartsSection: some View {
+        VStack(spacing: 16) {
+            // Charts toggle button
+            TornyCard {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showCharts.toggle()
+                    }
+                    // Fetch chart data when opening charts section
+                    if showCharts {
+                        fetchChartData()
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .font(.title2)
+                            .foregroundColor(.tornyBlue)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Live Charts")
+                                .font(TornyFonts.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.tornyTextPrimary)
+
+                            Text("View real-time performance data")
+                                .font(TornyFonts.bodySecondary)
+                                .foregroundColor(.tornyTextSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: showCharts ? "chevron.up" : "chevron.down")
+                            .font(.body)
+                            .foregroundColor(.tornyTextSecondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+
+            // Charts content
+            if showCharts {
+                if isLoadingChartData {
+                    TornyCard {
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                            Text("Loading chart data...")
+                                .font(TornyFonts.body)
+                                .foregroundColor(.tornyTextSecondary)
+                        }
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                    }
+                } else if let error = chartError {
+                    TornyCard {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.title)
+                                .foregroundColor(.red)
+                            Text("Chart Error")
+                                .font(TornyFonts.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.tornyTextPrimary)
+                            Text(error)
+                                .font(TornyFonts.bodySecondary)
+                                .foregroundColor(.tornyTextSecondary)
+                                .multilineTextAlignment(.center)
+                            Button("Retry") {
+                                fetchChartData()
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding()
+                    }
+                } else if let chartViewData = chartData {
+                    VStack(spacing: 12) {
+                        // Refresh button
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                fetchChartData()
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "arrow.clockwise")
+                                        .font(.caption)
+                                    Text("Refresh Data")
+                                        .font(TornyFonts.bodySecondary)
+                                }
+                                .foregroundColor(.tornyBlue)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.tornyBlue.opacity(0.1))
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .disabled(isLoadingChartData)
+                        }
+                        .padding(.horizontal)
+
+                        LiveChartsComponent(chartData: chartViewData)
+                            .transition(.opacity.combined(with: .scale))
+                    }
+                } else {
+                    TornyCard {
+                        VStack(spacing: 12) {
+                            Image(systemName: "chart.line.downtrend.xyaxis")
+                                .font(.title)
+                                .foregroundColor(.tornyTextSecondary)
+                            Text("No chart data available")
+                                .font(TornyFonts.body)
+                                .foregroundColor(.tornyTextSecondary)
+                        }
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                    }
+                }
             }
         }
     }
@@ -434,6 +565,170 @@ struct TrainingSessionView: View {
         timer = nil
     }
 
+
+    // Helper function to calculate current and best streaks
+    private func calculateStreaks(from shots: [ShotTypeSeries]) -> (current: Int, best: Int) {
+        guard !shots.isEmpty else { return (0, 0) }
+
+        var currentStreak = 0
+        var bestStreak = 0
+        var tempStreak = 0
+
+        // Calculate streaks from the shot data (assuming shots are in chronological order)
+        for shot in shots {
+            if shot.score > 0 {
+                tempStreak += 1
+                bestStreak = max(bestStreak, tempStreak)
+            } else {
+                tempStreak = 0
+            }
+        }
+
+        // Current streak is the streak at the end
+        var reverseStreak = 0
+        for shot in shots.reversed() {
+            if shot.score > 0 {
+                reverseStreak += 1
+            } else {
+                break
+            }
+        }
+
+        currentStreak = reverseStreak
+        return (currentStreak, bestStreak)
+    }
+
+    // Helper function to determine improvement trend
+    private func determineTrend(from accuracyPoints: [AccuracyPointSimple]) -> String {
+        guard accuracyPoints.count >= 2 else { return "stable" }
+
+        let firstHalf = accuracyPoints.prefix(accuracyPoints.count / 2)
+        let secondHalf = accuracyPoints.suffix(accuracyPoints.count / 2)
+
+        let firstAvg = firstHalf.map(\.y).reduce(0, +) / Double(firstHalf.count)
+        let secondAvg = secondHalf.map(\.y).reduce(0, +) / Double(secondHalf.count)
+
+        let difference = secondAvg - firstAvg
+
+        if difference > 5 {
+            return "improving"
+        } else if difference < -5 {
+            return "declining"
+        } else {
+            return "stable"
+        }
+    }
+
+    private func fetchChartData() {
+        guard !isLoadingChartData else { return }
+
+        isLoadingChartData = true
+        chartError = nil
+
+        Task {
+            do {
+                let response = try await apiService.getSessionChartData(session.id)
+
+                await MainActor.run {
+                    isLoadingChartData = false
+
+                    // Convert the simple API response to our chart view data
+                    let accuracyPoints = response.chartData.accuracyOverTime.map { point in
+                        AccuracyPoint(
+                            shotNumber: point.x,
+                            cumulativeAccuracy: point.y,
+                            timestamp: Date()
+                        )
+                    }
+
+                    // Create shot type data from the shot type series
+                    let shotTypeData: [ShotTypeData] = {
+                        var typeMap: [String: (count: Int, totalScore: Int)] = [:]
+
+                        for shot in response.chartData.shotTypeSeries {
+                            let current = typeMap[shot.type] ?? (count: 0, totalScore: 0)
+                            typeMap[shot.type] = (count: current.count + 1, totalScore: current.totalScore + shot.score)
+                        }
+
+                        let totalShots = max(response.totalShots, 1)
+
+                        return typeMap.map { (type, data) in
+                            let percentage = Double(data.count) / Double(totalShots) * 100.0
+                            let maxPossibleScore = data.count * 2
+                            let accuracy = maxPossibleScore > 0 ? (Double(data.totalScore) / Double(maxPossibleScore)) * 100.0 : 0.0
+
+                            return ShotTypeData(
+                                type: type,
+                                count: data.count,
+                                percentage: percentage,
+                                averageAccuracy: accuracy
+                            )
+                        }
+                    }()
+
+                    // Calculate streaks from shot data
+                    let (currentStreak, bestStreak) = calculateStreaks(from: response.chartData.shotTypeSeries)
+
+                    // Calculate successful shots more accurately
+                    let successfulShots = response.chartData.shotTypeSeries.filter { $0.score > 0 }.count
+
+                    // Create performance metrics
+                    let metrics = PerformanceMetrics(
+                        totalShots: response.totalShots,
+                        successfulShots: successfulShots,
+                        overallAccuracy: response.overallAccuracy,
+                        currentStreak: currentStreak,
+                        bestStreak: bestStreak,
+                        averageDistanceFromTarget: nil,
+                        improvementTrend: determineTrend(from: response.chartData.accuracyOverTime)
+                    )
+
+                    // Parse dates
+                    let dateFormatter = ISO8601DateFormatter()
+                    let startTime = dateFormatter.date(from: response.startedAt) ?? Date()
+                    let lastUpdated = dateFormatter.date(from: response.lastUpdated) ?? Date()
+
+                    let metadata = ChartMetadata(
+                        lastUpdated: lastUpdated,
+                        sessionStartTime: startTime,
+                        refreshIntervalSeconds: 0, // Manual refresh only
+                        dataPoints: response.totalShots
+                    )
+
+                    // Create recent shots data from the last few shots
+                    let recentShots = response.chartData.shotTypeSeries.suffix(5).map { shot in
+                        let wasSuccessful = shot.score > 0
+                        print("📊 Shot \(shot.x): type=\(shot.type), score=\(shot.score), successful=\(wasSuccessful)")
+
+                        return RecentShotData(
+                            shotNumber: shot.x,
+                            type: shot.type,
+                            points: shot.score,
+                            distanceFromTarget: nil,
+                            notes: nil,
+                            timestamp: Date(),
+                            wasSuccessful: wasSuccessful
+                        )
+                    }
+
+                    chartData = ChartViewData(
+                        accuracyPoints: accuracyPoints,
+                        shotTypeData: shotTypeData,
+                        metrics: metrics,
+                        recentShots: Array(recentShots),
+                        metadata: metadata
+                    )
+                }
+            } catch {
+                await MainActor.run {
+                    isLoadingChartData = false
+                    chartError = "Failed to load chart data: \(error.localizedDescription)"
+                    print("❌ Chart data fetch error: \(error)")
+                }
+            }
+        }
+    }
+
     private func recordShot() {
         isRecording = true
         
@@ -463,6 +758,7 @@ struct TrainingSessionView: View {
                     let distanceDisplay = distanceDisplayName(for: distanceFromJack.rawValue)
                     successMessage = "\(shotTypeDisplay) shot recorded successfully!\nResult: \(distanceDisplay)"
                     showingSuccessAlert = true
+
                 }
             } catch {
                 await MainActor.run {

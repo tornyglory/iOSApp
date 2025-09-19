@@ -25,6 +25,18 @@
 		D8A1B5CA2B8E4FC100123456 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */; };
 		96DBB43E64DF44AC858364AA /* TrainingSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */; };
 		87A81E2DC11D4ACABB22FD76 /* TrainingSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */; };
+		AE3B9C1D2C9A4B5E00789012 /* AnalyticsDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C1C2C9A4B5E00789012 /* AnalyticsDetailView.swift */; };
+		AE3B9C1F2C9A4B6000789012 /* AnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */; };
+		AE3B9C212C9A4B6200789012 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */; };
+		AE3B9C232C9A4B6400789012 /* SessionDetailCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */; };
+		AE3B9C252C9A4B6600789012 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C242C9A4B6600789012 /* DashboardView.swift */; };
+		AE3B9C272C9A4B6800789012 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */; };
+		AE3B9C292C9A4B6A00789012 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */; };
+		AE3B9C2B2C9A4B6C00789012 /* ProfileSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */; };
+		AE3B9C2D2C9A4B6E00789012 /* SessionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */; };
+		AE3B9C2F2C9A4B7000789012 /* TrainingSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2E2C9A4B7000789012 /* TrainingSessionViewModel.swift */; };
+		996DB73FB681CC6F193F0473 /* ChartModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB1DDCE0FB21BC1426A46D7 /* ChartModels.swift */; };
+		A1A9FA99417CDB1BC3914084 /* LiveChartsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4FF61E0D356C6A4983379AB /* LiveChartsComponent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +59,18 @@
 		D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionView.swift; sourceTree = "<group>"; };
 		A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSetupView.swift; sourceTree = "<group>"; };
+		AE3B9C1C2C9A4B5E00789012 /* AnalyticsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/AnalyticsDetailView.swift"; sourceTree = "<group>"; };
+		AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Analytics/AnalyticsModels.swift"; sourceTree = "<group>"; };
+		AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AnalyticsViewModel.swift"; sourceTree = "<group>"; };
+		AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailCards.swift; sourceTree = "<group>"; };
+		AE3B9C242C9A4B6600789012 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupViewModel.swift; sourceTree = "<group>"; };
+		AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryViewModel.swift; sourceTree = "<group>"; };
+		AE3B9C2E2C9A4B7000789012 /* TrainingSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/TrainingSessionViewModel.swift"; sourceTree = "<group>"; };
+		8BB1DDCE0FB21BC1426A46D7 /* ChartModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChartModels.swift; path = Models/Training/ChartModels.swift; sourceTree = "<group>"; };
+		E4FF61E0D356C6A4983379AB /* LiveChartsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiveChartsComponent.swift; path = Components/LiveChartsComponent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +115,18 @@
 				D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */,
 				DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */,
 				A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */,
+				AE3B9C1C2C9A4B5E00789012 /* AnalyticsDetailView.swift */,
+				AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */,
+				AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */,
+				AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */,
+				AE3B9C242C9A4B6600789012 /* DashboardView.swift */,
+				AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */,
+				AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */,
+				AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */,
+				AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */,
+				AE3B9C2E2C9A4B7000789012 /* TrainingSessionViewModel.swift */,
+				8BB1DDCE0FB21BC1426A46D7 /* ChartModels.swift */,
+				E4FF61E0D356C6A4983379AB /* LiveChartsComponent.swift */,
 				D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */,
 				D8A1B5C42B8E4F9A00123456 /* TornyColors.swift */,
 				D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */,
@@ -195,6 +231,19 @@
 				D8A1B5CA2B8E4FC100123456 /* ImagePicker.swift in Sources */,
 				D8A1B5C52B8E4F9A00123456 /* TornyColors.swift in Sources */,
 				D8A1B5C72B8E4FA500123456 /* TornyComponents.swift in Sources */,
+				AE3B9C1D2C9A4B5E00789012 /* AnalyticsDetailView.swift in Sources */,
+				AE3B9C1F2C9A4B6000789012 /* AnalyticsModels.swift in Sources */,
+				AE3B9C212C9A4B6200789012 /* AnalyticsViewModel.swift in Sources */,
+				AE3B9C232C9A4B6400789012 /* SessionDetailCards.swift in Sources */,
+				AE3B9C252C9A4B6600789012 /* DashboardView.swift in Sources */,
+				AE3B9C272C9A4B6800789012 /* DashboardViewModel.swift in Sources */,
+				AE3B9C292C9A4B6A00789012 /* AuthViewModel.swift in Sources */,
+				AE3B9C2B2C9A4B6C00789012 /* ProfileSetupViewModel.swift in Sources */,
+				AE3B9C2D2C9A4B6E00789012 /* SessionHistoryViewModel.swift in Sources */,
+				AE3B9C2F2C9A4B7000789012 /* TrainingSessionViewModel.swift in Sources */,
+			
+				996DB73FB681CC6F193F0473 /* ChartModels.swift in Sources */,
+				A1A9FA99417CDB1BC3914084 /* LiveChartsComponent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

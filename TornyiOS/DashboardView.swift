@@ -1,9 +1,10 @@
 import SwiftUI
+import Foundation
 
 struct DashboardView: View {
     @ObservedObject private var apiService = APIService.shared
     @State private var showSidebar = false
-    @State private var selectedView: TornyComponents.DashboardView? = nil
+    @State private var selectedView: DashboardNavigationType? = nil
     
     var body: some View {
         ZStack {
@@ -25,7 +26,7 @@ struct DashboardView: View {
                                     .foregroundColor(.tornyTextPrimary)
                                     .multilineTextAlignment(.center)
                                 
-                                Text("Ready to improve your bowling game?")
+                                Text("Practice like a pro")
                                     .font(TornyFonts.body)
                                     .foregroundColor(.tornyTextSecondary)
                                     .multilineTextAlignment(.center)
@@ -141,7 +142,10 @@ struct DashboardView: View {
                     .onTapGesture { showSidebar = false }
                 
                 HStack {
-                    TornySidebar(isPresented: $showSidebar)
+                    TornySidebar(isPresented: $showSidebar, onNavigate: { navType in
+                        selectedView = navType
+                        showSidebar = false
+                    })
                     Spacer()
                 }
                 .transition(.move(edge: .leading))
