@@ -232,7 +232,12 @@ class APIService: ObservableObject {
     func logout() {
         clearAuthToken()
     }
-    
+
+    func resetPassword(_ request: PasswordResetRequest) async throws {
+        // TODO: Implement password reset functionality
+        throw NSError(domain: "PasswordReset", code: 500, userInfo: [NSLocalizedDescriptionKey: "Password reset not implemented"])
+    }
+
     func clearAllStoredData() {
         UserDefaults.standard.removeObject(forKey: "auth_token")
         UserDefaults.standard.removeObject(forKey: "current_user_id")
@@ -262,15 +267,15 @@ class APIService: ObservableObject {
     }
     
     func getProfile(userId: String) async throws -> User {
-        let user: User = try await makeRequest(
+        let response: ProfileResponse = try await makeRequest(
             endpoint: "/profile/\(userId)",
             method: .GET,
-            responseType: User.self,
+            responseType: ProfileResponse.self,
             useAuthBase: true
         )
-        
-        self.currentUser = user
-        return user
+
+        self.currentUser = response.data
+        return response.data
     }
     
     // MARK: - Clubs Methods
@@ -320,11 +325,13 @@ class APIService: ObservableObject {
     }
     
     func getUserProfile(_ userId: Int) async throws -> User {
-        return try await makeRequest(
+        let response: ProfileResponse = try await makeRequest(
             endpoint: "/profile/\(userId)",
-            responseType: User.self,
+            responseType: ProfileResponse.self,
             useAuthBase: true
         )
+
+        return response.data
     }
     
     // MARK: - Training Methods
@@ -439,10 +446,27 @@ class APIService: ObservableObject {
         )
     }
 
-    func getSessionChartData(_ sessionId: Int) async throws -> ChartDataResponse {
+    // MARK: - Analytics Methods
+
+    func getComparativeAnalytics(query: ComparativeAnalyticsQuery) async throws -> ComparativeAnalyticsResponse {
+        var components = URLComponents()
+        components.queryItems = query.queryItems
+        let queryString = components.percentEncodedQuery ?? ""
+
         return try await makeRequest(
-            endpoint: "/sessions/\(sessionId)/chart-data",
-            responseType: ChartDataResponse.self
+            endpoint: "/analytics/comparative?\(queryString)",
+            responseType: ComparativeAnalyticsResponse.self
+        )
+    }
+
+    func getProgressChartData(query: ProgressChartQuery) async throws -> ProgressChartResponse {
+        var components = URLComponents()
+        components.queryItems = query.queryItems
+        let queryString = components.percentEncodedQuery ?? ""
+
+        return try await makeRequest(
+            endpoint: "/progress/chart?\(queryString)",
+            responseType: ProgressChartResponse.self
         )
     }
 }
