@@ -154,26 +154,6 @@ struct LoadMoreRow: View {
     }
 }
 
-struct SessionDetailView: View {
-    let session: TrainingSession
-
-    var body: some View {
-        Text("Session Details")
-            .navigationTitle("Session \(session.id)")
-    }
-}
-
-struct SessionRowView: View {
-    let session: TrainingSession
-
-    var body: some View {
-        HStack {
-            Text("Session \(session.id)")
-            Spacer()
-            Text("\(session.totalShots ?? 0) shots")
-        }
-    }
-}
 
 struct SessionHistoryView_Previews: PreviewProvider {
     static var previews: some View {
