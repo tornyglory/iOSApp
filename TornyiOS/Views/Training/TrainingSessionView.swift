@@ -153,7 +153,7 @@ struct TrainingSessionView: View {
                 
                 StatItem(
                     title: "Successful",
-                    value: "\(sessionStats.successfulShots)",
+                    value: "\(self.calculateSuccessfulShots(from: sessionStats))",
                     color: .tornyGreen
                 )
                 
@@ -574,6 +574,11 @@ struct TrainingSessionView: View {
         }
     }
 
+    private func calculateSuccessfulShots(from stats: SessionStatistics) -> Int {
+        let accuracy = Double(stats.accuracyPercentage) ?? 0.0
+        return Int(round(Double(stats.totalShots) * accuracy / 100.0))
+    }
+
     private func loadChartData() {
         print("loadChartData() called - starting to load")
         isLoadingChartData = true
@@ -751,7 +756,7 @@ struct SessionEndView: View {
                                 
                                 StatItem(
                                     title: "Successful",
-                                    value: "\(stats.successfulShots)",
+                                    value: "\(self.calculateSuccessfulShots(from: stats))",
                                     color: .tornyGreen
                                 )
                                 
@@ -783,6 +788,11 @@ struct SessionEndView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(true)
         }
+    }
+
+    private func calculateSuccessfulShots(from stats: SessionStatistics) -> Int {
+        let accuracy = Double(stats.accuracyPercentage) ?? 0.0
+        return Int(round(Double(stats.totalShots) * accuracy / 100.0))
     }
 }
 

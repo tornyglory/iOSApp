@@ -678,6 +678,13 @@ struct TrainingSession: Codable, Identifiable {
         guard let accuracy = accuracyForType(type) else { return nil }
         return String(format: "%.1f", accuracy)
     }
+
+    // Computed property to calculate successful shots based on overall accuracy
+    var successfulShots: Int {
+        guard let totalShots = self.totalShots, totalShots > 0 else { return 0 }
+        let accuracy = self.overallAccuracy ?? 0.0
+        return Int(round(Double(totalShots) * accuracy / 100.0))
+    }
 }
 
 struct TrainingShot: Codable, Identifiable {
@@ -917,16 +924,6 @@ struct SessionStatistics: Codable {
         drawBreakdown = try container.decodeIfPresent(DrawBreakdown.self, forKey: .drawBreakdown)
     }
 
-    // Computed properties to match the old interface
-    var successfulShots: Int {
-        // Calculate successful shots from total shots and accuracy percentage
-        let accuracy = Double(accuracyPercentage) ?? 0.0
-        return Int(round(Double(totalShots) * accuracy / 100.0))
-    }
-    
-    var overallAccuracy: Double {
-        return Double(accuracyPercentage) ?? 0.0
-    }
     
     var drawAccuracy: Double {
         return Double(drawAccuracyPercentage ?? "0.0") ?? 0.0

@@ -28,6 +28,8 @@
 		AE3B9C1F2C9A4B6000789012 /* AnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */; };
 		AE3B9C212C9A4B6200789012 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */; };
 		AE3B9C232C9A4B6400789012 /* SessionDetailCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */; };
+		AE3B9C312C9A4B7200789012 /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C302C9A4B7200789012 /* SessionDetailView.swift */; };
+		AE3B9C332C9A4B7400789012 /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C322C9A4B7400789012 /* SessionRowView.swift */; };
 		AE3B9C252C9A4B6600789012 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C242C9A4B6600789012 /* DashboardView.swift */; };
 		AE3B9C272C9A4B6800789012 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */; };
 		AE3B9C292C9A4B6A00789012 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */; };
@@ -66,6 +68,8 @@
 		AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Analytics/AnalyticsModels.swift"; sourceTree = "<group>"; };
 		AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AnalyticsViewModel.swift"; sourceTree = "<group>"; };
 		AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Session/SessionDetailCards.swift"; sourceTree = "<group>"; };
+		AE3B9C302C9A4B7200789012 /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/Session/SessionDetailView.swift"; sourceTree = "<group>"; };
+		AE3B9C322C9A4B7400789012 /* SessionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/Session/SessionRowView.swift"; sourceTree = "<group>"; };
 		AE3B9C242C9A4B6600789012 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Dashboard/DashboardView.swift"; sourceTree = "<group>"; };
 		AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/DashboardViewModel.swift"; sourceTree = "<group>"; };
 		AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AuthViewModel.swift"; sourceTree = "<group>"; };
@@ -246,6 +250,8 @@
 				AE3B9C1F2C9A4B6000789012 /* AnalyticsModels.swift in Sources */,
 				AE3B9C212C9A4B6200789012 /* AnalyticsViewModel.swift in Sources */,
 				AE3B9C232C9A4B6400789012 /* SessionDetailCards.swift in Sources */,
+				AE3B9C312C9A4B7200789012 /* SessionDetailView.swift in Sources */,
+				AE3B9C332C9A4B7400789012 /* SessionRowView.swift in Sources */,
 				AE3B9C252C9A4B6600789012 /* DashboardView.swift in Sources */,
 				AE3B9C272C9A4B6800789012 /* DashboardViewModel.swift in Sources */,
 				AE3B9C292C9A4B6A00789012 /* AuthViewModel.swift in Sources */,

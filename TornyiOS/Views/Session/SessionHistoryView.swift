@@ -15,17 +15,23 @@ struct SessionHistoryView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(sessions) { session in
-                    NavigationLink(destination: SessionDetailView(session: session)) {
-                        SessionRowView(session: session)
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(sessions) { session in
+                        NavigationLink(destination: SessionDetailView(session: session)) {
+                            SessionRowView(session: session)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+
+                    if hasMoreSessions && !sessions.isEmpty {
+                        LoadMoreRow(isLoading: isLoading, loadMore: loadMoreSessions)
                     }
                 }
-
-                if hasMoreSessions && !sessions.isEmpty {
-                    LoadMoreRow(isLoading: isLoading, loadMore: loadMoreSessions)
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Session History")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -23,105 +23,218 @@ struct SessionRowView: View {
         }
     }
 
+    private func calculateSuccessfulShots() -> Int {
+        guard let totalShots = session.totalShots,
+              totalShots > 0 else {
+            return 0
+        }
+        if let accuracy = session.overallAccuracy {
+            return Int(round(Double(totalShots) * accuracy / 100.0))
+        }
+        return 0
+    }
+
     private var accuracyColor: Color {
         guard let totalShots = session.totalShots,
-              let successfulShots = session.successfulShots,
               totalShots > 0 else {
             return .gray
         }
+        let successfulShots = calculateSuccessfulShots()
         let accuracy = Double(successfulShots) / Double(totalShots)
         if accuracy >= 0.8 { return .green }
         if accuracy >= 0.6 { return .orange }
         return .red
     }
 
+    private var shotTypeBadges: [ShotTypeBadgeData] {
+        var badges: [ShotTypeBadgeData] = []
+
+        // Draw shots
+        if let drawShots = session.drawShots, drawShots > 0 {
+            let accuracy = session.drawAccuracy ?? 0.0
+            badges.append(ShotTypeBadgeData(
+                type: "Draw",
+                count: drawShots,
+                accuracy: Int(accuracy),
+                color: .blue
+            ))
+        }
+
+        // Yard on shots (Ditch in the screenshot)
+        if let yardOnShots = session.yardOnShots, yardOnShots > 0 {
+            let accuracy = session.yardOnAccuracy ?? 0.0
+            badges.append(ShotTypeBadgeData(
+                type: "Ditch",
+                count: yardOnShots,
+                accuracy: Int(accuracy),
+                color: .orange
+            ))
+        }
+
+        // Drive shots
+        if let driveShots = session.driveShots, driveShots > 0 {
+            let accuracy = session.driveAccuracy ?? 0.0
+            badges.append(ShotTypeBadgeData(
+                type: "Drive",
+                count: driveShots,
+                accuracy: Int(accuracy),
+                color: .purple
+            ))
+        }
+
+        // Ditch weight shots
+        if let ditchWeightShots = session.ditchWeightShots, ditchWeightShots > 0 {
+            let accuracy = session.ditchWeightAccuracy ?? 0.0
+            badges.append(ShotTypeBadgeData(
+                type: "Weight",
+                count: ditchWeightShots,
+                accuracy: Int(accuracy),
+                color: .green
+            ))
+        }
+
+        return badges
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Top row: Date/Time and Stats
+        VStack(alignment: .leading, spacing: 12) {
+            // Top row: Date/Time and Duration
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(formattedDate)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.sessionDate, style: .date)
                         .font(.headline)
+                        .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    HStack(spacing: 12) {
-                        Label(session.location.rawValue.capitalized,
-                              systemImage: session.location == .outdoor ? "sun.max.fill" : "house.fill")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Label("\(session.greenSpeed)s", systemImage: "speedometer")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                Spacer()
-
-                // Stats on the right
-                HStack(spacing: 16) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(session.totalShots ?? 0)")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                        Text("Shots")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-
-                    VStack(alignment: .trailing, spacing: 2) {
-                        if let totalShots = session.totalShots,
-                           let successfulShots = session.successfulShots,
-                           totalShots > 0 {
-                            let accuracy = Int((Double(successfulShots) / Double(totalShots)) * 100)
-                            Text("\(accuracy)%")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(accuracyColor)
-                        } else {
-                            Text("--")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.gray)
-                        }
-                        Text("Accuracy")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-
-            // Bottom row: Additional info
-            HStack {
-                if let weather = session.weather, session.location == .outdoor {
-                    Label(weather.rawValue.capitalized, systemImage: weatherIcon(for: weather))
-                        .font(.caption)
+                    Text(session.sessionDate, style: .time)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
-                Label(formattedDuration, systemImage: "clock")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
                 Spacer()
 
-                if session.notes?.isEmpty == false {
-                    Image(systemName: "note.text")
+                // Duration badge
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
                         .font(.caption)
-                        .foregroundColor(.tornyBlue)
+                    Text(formattedDuration)
+                        .font(.caption)
+                }
+                .foregroundColor(.secondary)
+            }
+
+            // Location and conditions row
+            HStack(spacing: 12) {
+                // Location badge
+                HStack(spacing: 4) {
+                    Image(systemName: session.location == .outdoor ? "sun.max" : "house")
+                        .font(.caption)
+                    Text(session.location.rawValue.capitalized)
+                        .font(.caption)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+
+                // Green type badge
+                HStack(spacing: 4) {
+                    Image(systemName: "leaf")
+                        .font(.caption)
+                    Text(session.greenType.rawValue.capitalized)
+                        .font(.caption)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+
+                // Speed badge
+                HStack(spacing: 4) {
+                    Image(systemName: "speedometer")
+                        .font(.caption)
+                    Text("\(session.greenSpeed)s")
+                        .font(.caption)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+
+                Spacer()
+            }
+            .foregroundColor(.secondary)
+
+            // Total shots
+            Text("\(session.totalShots ?? 0) total shots")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            // Shot type badges
+            LazyVGrid(columns: [
+                GridItem(.flexible(), alignment: .leading),
+                GridItem(.flexible(), alignment: .leading),
+                GridItem(.flexible(), alignment: .leading)
+            ], alignment: .leading, spacing: 8) {
+                ForEach(shotTypeBadges, id: \.type) { badge in
+                    ShotTypeBadge(
+                        type: badge.type,
+                        count: badge.count,
+                        accuracy: badge.accuracy,
+                        color: badge.color
+                    )
                 }
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 
     private func weatherIcon(for weather: Weather) -> String {
         switch weather {
-        case .sunny: return "sun.max.fill"
-        case .cloudy: return "cloud.fill"
-        case .rainy: return "cloud.rain.fill"
-        case .windy: return "wind"
+        case .hot: return "thermometer.sun.fill"
+        case .warm: return "thermometer.medium"
+        case .cold: return "thermometer.snowflake"
         }
+    }
+}
+
+struct ShotTypeBadgeData {
+    let type: String
+    let count: Int
+    let accuracy: Int
+    let color: Color
+}
+
+struct ShotTypeBadge: View {
+    let type: String
+    let count: Int
+    let accuracy: Int
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Text(type)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                Text("(\(count))")
+                    .font(.caption)
+                    .fontWeight(.medium)
+            }
+            .foregroundColor(color)
+
+            Text("\(accuracy)%")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(color)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(color.opacity(0.15))
+        .cornerRadius(8)
     }
 }

@@ -1,51 +1,16 @@
 import SwiftUI
 import Charts
 
-extension SessionStatistics {
-    func shotCountForType(_ type: String) -> String {
-        switch type {
-        case "draw":
-            return drawShots ?? "0"
-        case "yard_on":
-            return yardOnShots ?? "0"
-        case "ditch_weight":
-            return ditchWeightShots ?? "0"
-        case "drive":
-            return driveShots ?? "0"
-        default:
-            return "0"
-        }
+// Helper function to calculate successful shots
+private func calculateSuccessfulShots(for session: TrainingSession) -> Int {
+    guard let totalShots = session.totalShots,
+          totalShots > 0 else {
+        return 0
     }
-
-    func pointsForType(_ type: String) -> String {
-        switch type {
-        case "draw":
-            return drawPoints ?? "0"
-        case "yard_on":
-            return yardOnPoints ?? "0"
-        case "ditch_weight":
-            return ditchWeightPoints ?? "0"
-        case "drive":
-            return drivePoints ?? "0"
-        default:
-            return "0"
-        }
+    if let accuracy = session.overallAccuracy {
+        return Int(round(Double(totalShots) * accuracy / 100.0))
     }
-
-    func displayAccuracyForType(_ type: String) -> String? {
-        switch type {
-        case "draw":
-            return drawAccuracyPercentage
-        case "yard_on":
-            return yardOnAccuracyPercentage
-        case "ditch_weight":
-            return ditchWeightAccuracyPercentage
-        case "drive":
-            return driveAccuracyPercentage
-        default:
-            return nil
-        }
-    }
+    return 0
 }
 
 struct SessionHeaderCard: View {
@@ -381,14 +346,14 @@ struct StatsGridCard: View {
 
             StatCard(
                 title: "Successful",
-                value: "\(session.successfulShots ?? 0)",
+                value: "\(calculateSuccessfulShots(for: session))",
                 icon: "checkmark.circle.fill",
                 color: .green
             )
 
             if let totalShots = session.totalShots,
-               let successfulShots = session.successfulShots,
                totalShots > 0 {
+                let successfulShots = calculateSuccessfulShots(for: session)
                 let accuracy = (Double(successfulShots) / Double(totalShots)) * 100
                 StatCard(
                     title: "Accuracy",
@@ -450,26 +415,6 @@ struct StatCard: View {
     }
 }
 
-struct ShotTypeBreakdownCard: View {
-    let session: TrainingSession
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Shot Type Breakdown")
-                .font(.headline)
-                .fontWeight(.semibold)
-
-            // This would show shot type distribution
-            // You'd need to add shot type counts to your session model
-            Text("Shot type analysis will appear here")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-}
 
 struct NotesCard: View {
     let notes: String
@@ -549,48 +494,6 @@ struct ShotRowCard: View {
     }
 }
 
-struct PerformanceMetricsCard: View {
-    let session: TrainingSession
-    let stats: SessionStatistics?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Performance Metrics")
-                .font(.headline)
-                .fontWeight(.semibold)
-
-            if let stats = stats {
-                VStack(spacing: 8) {
-                    if let averageScore = stats.averageScore {
-                        MetricRow(label: "Average Score", value: averageScore)
-                    }
-                    if let totalPoints = stats.totalPoints {
-                        MetricRow(label: "Total Points", value: totalPoints)
-                    }
-                    MetricRow(label: "Points per Shot", value: calculatePointsPerShot())
-                }
-            } else {
-                Text("Loading metrics...")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-
-    private func calculatePointsPerShot() -> String {
-        guard let stats = stats,
-              let totalPoints = stats.totalPoints,
-              let pointsValue = Double(totalPoints),
-              stats.totalShots > 0 else {
-            return "0.0"
-        }
-        let pps = pointsValue / Double(stats.totalShots)
-        return String(format: "%.2f", pps)
-    }
-}
 
 struct MetricRow: View {
     let label: String
@@ -679,8 +582,8 @@ struct RecommendationsCard: View {
         var recommendations: [String] = []
 
         if let totalShots = session.totalShots,
-           let successfulShots = session.successfulShots,
            totalShots > 0 {
+            let successfulShots = calculateSuccessfulShots(for: session)
             let accuracy = Double(successfulShots) / Double(totalShots)
 
             if accuracy < 0.5 {
