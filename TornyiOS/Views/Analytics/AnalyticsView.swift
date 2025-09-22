@@ -12,8 +12,12 @@ struct AnalyticsView: View {
             TornyBackgroundView()
 
             if viewModel.isLoading {
-                ProgressView("Loading analytics...")
-                    .progressViewStyle(CircularProgressViewStyle())
+                VStack(spacing: 12) {
+                    TornyLoadingView(color: .tornyBlue)
+                    Text("Loading analytics...")
+                        .font(TornyFonts.body)
+                        .foregroundColor(.tornyTextSecondary)
+                }
             } else if let errorMessage = viewModel.errorMessage {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle")
@@ -145,7 +149,7 @@ struct AnalyticsView: View {
                 }
             } else {
                 // Initial loading state
-                ProgressView()
+                TornyLoadingView(color: .tornyBlue)
                     .onAppear {
                         viewModel.fetchAnalytics()
                     }

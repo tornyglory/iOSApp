@@ -538,7 +538,7 @@ struct TornyBottomNavigation: View {
                 icon: selectedTab == 2 ? "chart.bar.fill" : "chart.bar",
                 title: "Analytics",
                 isSelected: selectedTab == 2,
-                notification: "3"
+                notification: nil
             ) {
                 selectedTab = 2
                 onAnalyticsTap?()

@@ -23,8 +23,12 @@ struct ComparativeAnalysisView: View {
                     .ignoresSafeArea()
 
                 if viewModel.isLoading {
-                    ProgressView("Loading comparative analysis...")
-                        .progressViewStyle(CircularProgressViewStyle())
+                    VStack(spacing: 12) {
+                        TornyLoadingView(color: .tornyBlue)
+                        Text("Loading comparative analysis...")
+                            .font(TornyFonts.body)
+                            .foregroundColor(.tornyTextSecondary)
+                    }
                 } else if let errorMessage = viewModel.errorMessage {
                     ComparativeErrorView(
                         message: errorMessage,

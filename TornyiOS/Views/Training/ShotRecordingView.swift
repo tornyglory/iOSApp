@@ -169,9 +169,7 @@ struct ShotRecordingView: View {
                 Button(action: recordShot) {
                     HStack {
                         if isLoading {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                                .tint(.white)
+                            TornyLoadingView(color: .white)
                         } else {
                             Image(systemName: "plus.circle.fill")
                         }

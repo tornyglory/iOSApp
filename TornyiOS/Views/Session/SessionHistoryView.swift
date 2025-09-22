@@ -136,8 +136,7 @@ struct LoadMoreRow: View {
         HStack {
             Spacer()
             if isLoading {
-                ProgressView()
-                    .scaleEffect(0.8)
+                TornyLoadingView(color: .tornyBlue)
             } else {
                 Button("Load More") {
                     loadMore()

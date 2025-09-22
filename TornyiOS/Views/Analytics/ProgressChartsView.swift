@@ -30,8 +30,12 @@ struct ProgressChartsView: View {
                     .ignoresSafeArea()
 
                 if viewModel.isLoading {
-                    ProgressView("Loading progress data...")
-                        .progressViewStyle(CircularProgressViewStyle())
+                    VStack(spacing: 12) {
+                        TornyLoadingView(color: .tornyBlue)
+                        Text("Loading progress data...")
+                            .font(TornyFonts.body)
+                            .foregroundColor(.tornyTextSecondary)
+                    }
                 } else if let errorMessage = viewModel.errorMessage {
                     ProgressErrorView(
                         message: errorMessage,

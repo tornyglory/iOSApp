@@ -18,9 +18,14 @@ struct ShotAnalysisContentView: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     if viewModel.isLoading {
-                        ProgressView("Loading shot analysis...")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding()
+                        VStack(spacing: 12) {
+                            TornyLoadingView(color: .tornyBlue)
+                            Text("Loading shot analysis...")
+                                .font(TornyFonts.body)
+                                .foregroundColor(.tornyTextSecondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding()
                     } else if let analytics = viewModel.analytics {
                         // Header Section
                         LifetimeStatsHeader(
