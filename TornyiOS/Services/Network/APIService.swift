@@ -403,7 +403,141 @@ class APIService: ObservableObject {
             return nil
         }
     }
-    
+
+    func getLiveChartData(sessionId: Int) async throws -> ChartDataResponse {
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)/chart-data",
+            method: .GET,
+            responseType: ChartDataResponse.self
+        )
+    }
+
+    func getLiveChartViewData(sessionId: Int) async throws -> ChartViewData {
+        let response = try await getLiveChartData(sessionId: sessionId)
+        return convertToChartViewData(response)
+    }
+
+    private func convertToChartViewData(_ response: ChartDataResponse) -> ChartViewData {
+        // Convert API response to ChartViewData
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        // Convert accuracy points
+        let accuracyPoints = response.chartData.accuracyOverTime.map { point in
+            let timestamp = dateFormatter.date(from: point.timestamp) ?? Date()
+            return AccuracyPoint(shotNumber: point.x, cumulativeAccuracy: point.y, timestamp: timestamp)
+        }
+
+        // Convert shot type data
+        let shotTypeData = response.chartData.shotTypeSeries
+            .reduce(into: [String: (count: Int, total: Double)]()) { dict, series in
+                if dict[series.type] == nil {
+                    dict[series.type] = (count: 0, total: 0.0)
+                }
+                dict[series.type]!.count += 1
+                dict[series.type]!.total += Double(series.score)
+            }
+            .map { (type, data) in
+                let percentage = Double(data.count) / Double(response.totalShots) * 100.0
+                let averageAccuracy = data.count > 0 ? data.total / Double(data.count) * 100.0 : 0.0
+                return ShotTypeData(type: type, count: data.count, percentage: percentage, averageAccuracy: averageAccuracy)
+            }
+
+        // Convert recent shots
+        let recentShots = response.chartData.shotTypeSeries.suffix(10).enumerated().map { (index, series) in
+            let timestamp = dateFormatter.date(from: series.timestamp) ?? Date()
+            return RecentShotData(
+                shotNumber: series.x,
+                type: series.type,
+                points: series.score,
+                distanceFromTarget: nil,
+                notes: nil,
+                timestamp: timestamp,
+                wasSuccessful: series.score > 0
+            )
+        }
+
+        // Create performance metrics
+        let successfulShots = response.currentScore
+        let currentStreak = calculateCurrentStreak(from: response.chartData.shotTypeSeries)
+        let bestStreak = calculateBestStreak(from: response.chartData.shotTypeSeries)
+
+        let metrics = PerformanceMetrics(
+            totalShots: response.totalShots,
+            successfulShots: successfulShots,
+            overallAccuracy: response.overallAccuracy,
+            currentStreak: currentStreak,
+            bestStreak: bestStreak,
+            averageDistanceFromTarget: nil,
+            improvementTrend: determineImprovementTrend(from: accuracyPoints)
+        )
+
+        // Create metadata
+        let lastUpdated = dateFormatter.date(from: response.lastUpdated) ?? Date()
+        let sessionStart = dateFormatter.date(from: response.startedAt) ?? Date()
+
+        let metadata = ChartMetadata(
+            lastUpdated: lastUpdated,
+            sessionStartTime: sessionStart,
+            refreshIntervalSeconds: 30,
+            dataPoints: response.totalShots
+        )
+
+        return ChartViewData(
+            accuracyPoints: accuracyPoints,
+            shotTypeData: shotTypeData,
+            metrics: metrics,
+            recentShots: recentShots,
+            metadata: metadata
+        )
+    }
+
+    private func calculateCurrentStreak(from series: [ShotTypeSeries]) -> Int {
+        var streak = 0
+        for shot in series.reversed() {
+            if shot.score > 0 {
+                streak += 1
+            } else {
+                break
+            }
+        }
+        return streak
+    }
+
+    private func calculateBestStreak(from series: [ShotTypeSeries]) -> Int {
+        var bestStreak = 0
+        var currentStreak = 0
+
+        for shot in series {
+            if shot.score > 0 {
+                currentStreak += 1
+                bestStreak = max(bestStreak, currentStreak)
+            } else {
+                currentStreak = 0
+            }
+        }
+
+        return bestStreak
+    }
+
+    private func determineImprovementTrend(from accuracyPoints: [AccuracyPoint]) -> String {
+        guard accuracyPoints.count >= 3 else { return "stable" }
+
+        let recentPoints = accuracyPoints.suffix(3)
+        let firstAccuracy = recentPoints.first?.cumulativeAccuracy ?? 0
+        let lastAccuracy = recentPoints.last?.cumulativeAccuracy ?? 0
+
+        let change = lastAccuracy - firstAccuracy
+
+        if change > 5.0 {
+            return "improving"
+        } else if change < -5.0 {
+            return "declining"
+        } else {
+            return "stable"
+        }
+    }
+
     func recordShot(_ shot: RecordShotRequest) async throws -> RecordShotResponse {
         let encoder = JSONEncoder()
         let data = try encoder.encode(shot)

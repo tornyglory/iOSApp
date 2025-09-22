@@ -1,10 +1,18 @@
 import Foundation
+import Foundation
 
 // MARK: - Error Response
 
 struct ErrorResponse: Codable {
     let status: String?
     let message: String?
+}
+
+// MARK: - API Response Wrappers
+
+struct ProfileResponse: Codable {
+    let status: String
+    let data: User
 }
 
 // MARK: - User Models
@@ -146,6 +154,12 @@ struct AuthResponse: Codable {
 struct RegisterResponse: Codable {
     let status: String
     let message: String
+    let token: String
+    let user: User
+}
+
+struct PasswordResetRequest: Codable {
+    let email: String
 }
 
 // MARK: - Profile Models
@@ -202,6 +216,16 @@ struct Club: Codable, Identifiable {
     // Computed property for string ID compatibility
     var stringId: String {
         return String(id)
+    }
+
+    // Computed property to get the banner image URL
+    var displayBannerUrl: String? {
+        return bannerImage.isEmpty ? nil : bannerImage
+    }
+
+    // Computed property to get the logo URL
+    var displayLogoUrl: String? {
+        return avatar.isEmpty ? nil : avatar
     }
 }
 

@@ -9,16 +9,12 @@ struct ContentView: View {
     @State private var hasCompletedProfile = false
     
     var body: some View {
-        Group {
+        ZStack {
             if apiService.isAuthenticated {
                 if hasCompletedProfile && !showingProfileSetup {
                     MainDashboardView()
                 } else {
-                    ProfileSetupView {
-                        // Profile completion callback
-                        hasCompletedProfile = true
-                        showingProfileSetup = false
-                    }
+                    ProfileSetupView()
                 }
             } else {
                 AuthView()
@@ -47,7 +43,7 @@ struct MainTabView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            SessionView()
+            TrainingSetupView()
                 .tabItem {
                     Image(systemName: "figure.bowling")
                     Text("Training")
@@ -81,127 +77,197 @@ struct MainTabView: View {
 
 struct ProfileView: View {
     @ObservedObject private var apiService = APIService.shared
-    @State private var isRefreshing = false
 
     var body: some View {
         NavigationView {
             ZStack {
                 TornyBackgroundView()
-                
+
                 ScrollView {
-                    VStack(spacing: 24) {
-                        // Header
-                        VStack(spacing: 16) {
-                            TornyLogoView(size: CGSize(width: 60, height: 60))
-                            
-                            Text("Profile")
-                                .font(TornyFonts.title1)
-                                .foregroundColor(.tornyTextPrimary)
-                                .fontWeight(.bold)
-                        }
-                        .padding(.top, 20)
-                        
-                        // User Info Card
-                        if isRefreshing {
-                            TornyCard {
-                                VStack(spacing: 16) {
-                                    TornyLoadingView(color: .tornyBlue)
-                                    Text("Refreshing profile...")
-                                        .font(TornyFonts.body)
-                                        .foregroundColor(.tornyTextSecondary)
+                    VStack(spacing: 0) {
+                        // Club Banner Section
+                        if let user = apiService.currentUser,
+                           let clubData = user.clubData,
+                           let bannerUrl = clubData.displayBannerUrl {
+                            ZStack(alignment: .bottomLeading) {
+                                // Banner Image
+                                AsyncImage(url: URL(string: bannerUrl)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(height: 200)
+                                        .clipped()
+                                } placeholder: {
+                                    Rectangle()
+                                        .fill(LinearGradient(
+                                            gradient: Gradient(colors: [.tornyBlue.opacity(0.3), .tornyPurple.opacity(0.3)]),
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ))
+                                        .frame(height: 200)
                                 }
-                                .frame(minHeight: 200)
+
+                                // Gradient overlay for better text visibility
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.clear, .black.opacity(0.5)]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .frame(height: 100)
+                                .frame(maxHeight: .infinity, alignment: .bottom)
+
+                                // Club info overlay
+                                HStack(spacing: 12) {
+                                    if let logoUrl = clubData.displayLogoUrl {
+                                        AsyncImage(url: URL(string: logoUrl)) { image in
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 60, height: 60)
+                                                .clipShape(Circle())
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color.white, lineWidth: 2)
+                                                )
+                                        } placeholder: {
+                                            Circle()
+                                                .fill(Color.white.opacity(0.3))
+                                                .frame(width: 60, height: 60)
+                                        }
+                                    }
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(clubData.name)
+                                            .font(TornyFonts.title3)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+
+                                        Text(clubData.region)
+                                            .font(TornyFonts.caption)
+                                            .foregroundColor(.white.opacity(0.9))
+                                    }
+
+                                    Spacer()
+                                }
+                                .padding()
+                            }
+                            .frame(height: 200)
+                        } else {
+                            // Fallback header when no club banner
+                            VStack(spacing: 16) {
+                                TornyLogoView(size: CGSize(width: 60, height: 60))
+
+                                Text("Profile")
+                                    .font(TornyFonts.title1)
+                                    .foregroundColor(.tornyTextPrimary)
+                                    .fontWeight(.bold)
+                            }
+                            .padding(.top, 20)
+                            .padding(.bottom, 24)
+                        }
+
+                        VStack(spacing: 24) {
+                            // User Avatar and Basic Info Card
+                            if let user = apiService.currentUser {
+                                TornyCard {
+                                    VStack(spacing: 20) {
+                                        // User Avatar Section
+                                        HStack(spacing: 16) {
+                                            if let avatarUrl = user.avatarUrl {
+                                                AsyncImage(url: URL(string: avatarUrl)) { image in
+                                                    image
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fill)
+                                                        .frame(width: 80, height: 80)
+                                                        .clipShape(Circle())
+                                                } placeholder: {
+                                                    Circle()
+                                                        .fill(Color.tornyBlue.opacity(0.1))
+                                                        .frame(width: 80, height: 80)
+                                                        .overlay(
+                                                            Image(systemName: "person.fill")
+                                                                .font(.largeTitle)
+                                                                .foregroundColor(.tornyBlue.opacity(0.5))
+                                                        )
+                                                }
+                                            } else {
+                                                Circle()
+                                                    .fill(Color.tornyBlue.opacity(0.1))
+                                                    .frame(width: 80, height: 80)
+                                                    .overlay(
+                                                        Image(systemName: "person.fill")
+                                                            .font(.largeTitle)
+                                                            .foregroundColor(.tornyBlue.opacity(0.5))
+                                                    )
+                                            }
+
+                                            VStack(alignment: .leading, spacing: 6) {
+                                                Text(user.name)
+                                                    .font(TornyFonts.title2)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundColor(.tornyTextPrimary)
+
+                                                Text(user.userType.capitalized)
+                                                    .font(TornyFonts.body)
+                                                    .foregroundColor(.tornyBlue)
+
+                                                if let created = user.created {
+                                                    let year = String(created.prefix(4))
+                                                    Text("Member since \(year)")
+                                                        .font(TornyFonts.caption)
+                                                        .foregroundColor(.tornyTextSecondary)
+                                                }
+                                            }
+
+                                            Spacer()
+                                        }
+
+                                        Divider()
+
+                                        // Account Details
+                                        VStack(alignment: .leading, spacing: 12) {
+                                            ProfileRow(label: "Email", value: user.email)
+
+                                            if let phone = user.phone {
+                                                ProfileRow(label: "Phone", value: phone)
+                                            }
+
+                                            if let sport = user.sport {
+                                                ProfileRow(label: "Sport", value: sport)
+                                            }
+
+                                            if let club = user.club {
+                                                ProfileRow(label: "Club", value: club)
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                            }
+
+                            // Actions
+                            VStack(spacing: 16) {
+                                Button("Edit Profile") {
+                                    // TODO: Implement edit profile
+                                }
+                                .buttonStyle(TornySecondaryButton(isLarge: true))
+                                .frame(maxWidth: .infinity)
+
+                                Button("Sign Out") {
+                                    apiService.logout()
+                                }
+                                .buttonStyle(TornyPrimaryButton(isLarge: true))
+                                .frame(maxWidth: .infinity)
                             }
                             .padding(.horizontal, 20)
-                        } else if let user = apiService.currentUser {
-                            TornyCard {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    Text("Account Information")
-                                        .font(TornyFonts.title3)
-                                        .foregroundColor(.tornyTextPrimary)
-                                    
-                                    ProfileRow(label: "Name", value: user.name)
-                                    ProfileRow(label: "Email", value: user.email)
-                                    ProfileRow(label: "User Type", value: user.userType.capitalized)
-                                    
-                                    if let phone = user.phone {
-                                        ProfileRow(label: "Phone", value: phone)
-                                    }
-                                    
-                                    if let sport = user.sport {
-                                        ProfileRow(label: "Sport", value: sport)
-                                    }
-                                    
-                                    if let club = user.club {
-                                        ProfileRow(label: "Club", value: club)
-                                    }
-                                }
-                            }
-                            .padding(.horizontal, 20)
+
+                            Spacer()
                         }
-                        
-                        // Actions
-                        VStack(spacing: 16) {
-                            Button("Edit Profile") {
-                                // TODO: Implement edit profile
-                            }
-                            .buttonStyle(TornySecondaryButton(isLarge: true))
-                            .frame(maxWidth: .infinity)
-                            
-                            Button("Sign Out") {
-                                apiService.logout()
-                            }
-                            .buttonStyle(TornyPrimaryButton(isLarge: true))
-                            .frame(maxWidth: .infinity)
-                        }
-                        .padding(.horizontal, 20)
-                        
-                        Spacer()
+                        .padding(.vertical)
                     }
-                    .padding(.vertical)
                 }
             }
             .navigationBarHidden(true)
-        }
-        .onAppear {
-            refreshProfile()
-        }
-        .refreshable {
-            await refreshProfileAsync()
-        }
-    }
-
-    private func refreshProfile() {
-        guard !isRefreshing else { return }
-
-        Task {
-            await refreshProfileAsync()
-        }
-    }
-
-    private func refreshProfileAsync() async {
-        guard let userIdString = UserDefaults.standard.string(forKey: "current_user_id"),
-              let userId = Int(userIdString) else {
-            print("❌ No stored user ID found for profile refresh")
-            return
-        }
-
-        await MainActor.run {
-            isRefreshing = true
-        }
-
-        do {
-            let updatedUser = try await apiService.getUserProfile(userId)
-            await MainActor.run {
-                apiService.currentUser = updatedUser
-                isRefreshing = false
-                print("✅ Profile refreshed successfully")
-            }
-        } catch {
-            await MainActor.run {
-                isRefreshing = false
-                print("❌ Failed to refresh profile: \(error.localizedDescription)")
-            }
         }
     }
 }
@@ -229,7 +295,7 @@ struct ProfileRow: View {
 struct MainDashboardView: View {
     @ObservedObject private var apiService = APIService.shared
     @State private var showSidebar = false
-    @State private var selectedView: DashboardView? = nil
+    @State private var selectedView: DashboardNavigationType? = nil
     @State private var showingTrainingSetup = false
     @State private var showingHistory = false
     @State private var showingAnalytics = false
@@ -254,25 +320,22 @@ struct MainDashboardView: View {
                         VStack(spacing: 0) {
                             // Navigation bar
                             TornyNavBar(showSidebar: $showSidebar)
-                            
-                            // Settings content
-                            ProfileSetupView {
-                                // Settings completion callback - go back to dashboard
-                                selectedView = nil
-                            }
-                            
+
+                            // Profile content with banner
+                            ProfileView()
+
                             // Bottom navigation
                             TornyBottomNavigation(
                                 selectedTab: $selectedBottomTab,
-                                onHomeTap: { 
+                                onHomeTap: {
                                     selectedView = nil
                                     selectedBottomTab = 0
                                 },
-                                onTrainingTap: { 
+                                onTrainingTap: {
                                     showingTrainingSetup = true
                                     selectedBottomTab = 1
                                 },
-                                onAnalyticsTap: { 
+                                onAnalyticsTap: {
                                     selectedView = .analytics
                                     selectedBottomTab = 2
                                 },
@@ -325,7 +388,7 @@ struct MainDashboardView: View {
                                         .foregroundColor(.tornyTextPrimary)
                                         .multilineTextAlignment(.center)
                                     
-                                    Text("Ready to improve your bowling game?")
+                                    Text("Practice like a pro!")
                                         .font(TornyFonts.body)
                                         .foregroundColor(.tornyTextSecondary)
                                         .multilineTextAlignment(.center)
@@ -454,7 +517,6 @@ struct MainDashboardView: View {
                         .onTapGesture { showSidebar = false }
                     
                     HStack {
-                        Spacer()
                         TornySidebar(isPresented: $showSidebar) { view in
                             if view == .history {
                                 showingHistory = true
@@ -464,8 +526,9 @@ struct MainDashboardView: View {
                                 selectedView = view
                             }
                         }
+                        Spacer()
                     }
-                    .transition(.move(edge: .trailing))
+                    .transition(.move(edge: .leading))
                 }
             }
         }
