@@ -1,1 +1,0 @@
-Views/Training/ShotRecordingView.swift
