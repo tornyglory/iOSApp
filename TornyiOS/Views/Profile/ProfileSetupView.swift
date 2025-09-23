@@ -62,14 +62,12 @@ struct ProfileHeaderSection: View {
     @ObservedObject var viewModel: ProfileSetupViewModel
     @State private var showingBannerPicker = false
     @State private var showingAvatarPicker = false
-    @State private var bannerImage: UIImage?
-    @State private var avatarImage: UIImage?
 
     var body: some View {
         ZStack(alignment: .top) {
             // Banner Background
             ZStack(alignment: .topTrailing) {
-                if let bannerImage = bannerImage {
+                if let bannerImage = viewModel.banner {
                     Image(uiImage: bannerImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -78,8 +76,8 @@ struct ProfileHeaderSection: View {
                 } else {
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color(red: 0.1, green: 0.3, blue: 0.4),
-                            Color(red: 0.2, green: 0.5, blue: 0.7)
+                            Color(red: 0.0, green: 0.8, blue: 0.8),  // Aqua
+                            Color(red: 0.5, green: 0.0, blue: 0.8)   // Purple
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -158,12 +156,19 @@ struct ProfileHeaderSection: View {
                                 .overlay(Circle().stroke(Color.white, lineWidth: 4))
                         } else {
                             Circle()
-                                .fill(Color.white)
+                                .fill(LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 0.0, green: 0.8, blue: 0.8),  // Aqua
+                                        Color(red: 0.5, green: 0.0, blue: 0.8)   // Purple
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ))
                                 .frame(width: 120, height: 120)
                                 .overlay(
-                                    Image(systemName: "person.fill")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.gray.opacity(0.5))
+                                    Text("T")
+                                        .font(.system(size: 48, weight: .bold))
+                                        .foregroundColor(.white)
                                 )
                                 .overlay(Circle().stroke(Color.white, lineWidth: 4))
                         }
@@ -219,7 +224,7 @@ struct ProfileHeaderSection: View {
             ImagePicker(selectedImage: $viewModel.avatar)
         }
         .sheet(isPresented: $showingBannerPicker) {
-            ImagePicker(selectedImage: $bannerImage)
+            ImagePicker(selectedImage: $viewModel.banner)
         }
     }
 }
@@ -267,6 +272,7 @@ struct SportPreferenceSection: View {
 // MARK: - Club Selection Section
 struct ClubSelectionSection: View {
     @ObservedObject var viewModel: ProfileSetupViewModel
+    @State private var showingSearch = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -279,30 +285,67 @@ struct ClubSelectionSection: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                // Search Input Field
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    TextField("Search clubs (min 3 characters)", text: $viewModel.clubSearchText)
-                        .onChange(of: viewModel.clubSearchText) { _ in
-                            viewModel.searchClubs()
+                // Current Club Display (if any)
+                if !viewModel.club.isEmpty {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Current Club")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(viewModel.club)
+                                .font(.body)
+                                .fontWeight(.medium)
                         }
-                    if !viewModel.clubSearchText.isEmpty {
-                        Button("Clear") {
+                        Spacer()
+                        Button("Change") {
+                            showingSearch = true
                             viewModel.clubSearchText = ""
                             viewModel.searchResults = []
                         }
                         .font(.caption)
                         .foregroundColor(.tornyBlue)
                     }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 }
-                .padding()
-                .background(Color(.systemBackground))
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.separator), lineWidth: 1)
-                )
+
+                // Search Input Field (show when no club or when searching)
+                if viewModel.club.isEmpty || showingSearch {
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.secondary)
+                        TextField("Search clubs (min 3 characters)", text: $viewModel.clubSearchText)
+                            .onChange(of: viewModel.clubSearchText) { _ in
+                                viewModel.searchClubs()
+                            }
+                        if !viewModel.clubSearchText.isEmpty {
+                            Button("Clear") {
+                                viewModel.clubSearchText = ""
+                                viewModel.searchResults = []
+                            }
+                            .font(.caption)
+                            .foregroundColor(.tornyBlue)
+                        }
+
+                        if !viewModel.club.isEmpty && showingSearch {
+                            Button("Cancel") {
+                                showingSearch = false
+                                viewModel.clubSearchText = ""
+                                viewModel.searchResults = []
+                            }
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color(.separator), lineWidth: 1)
+                    )
+                }
 
                 // Preview List
                 if !viewModel.searchResults.isEmpty {
@@ -310,6 +353,7 @@ struct ClubSelectionSection: View {
                         ForEach(viewModel.searchResults.prefix(3)) { club in
                             ClubPreviewRow(club: club) {
                                 viewModel.selectClub(club)
+                                showingSearch = false
                             }
                         }
 
@@ -560,8 +604,8 @@ struct SaveButtonSection: View {
                 }
             }) {
                 if viewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    TornyLoadingView(color: .white)
+                        .scaleEffect(0.8)
                 } else {
                     Text("Save Changes")
                         .fontWeight(.semibold)

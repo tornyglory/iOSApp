@@ -426,17 +426,7 @@ struct TornySidebar: View {
                     
                     Divider()
                         .padding(.vertical, 16)
-                    
-                    SidebarLink(icon: "questionmark.circle", title: "Help & Support", notification: nil) {
-                        // Help action
-                        isPresented = false
-                    }
-                    
-                    SidebarLink(icon: "gear", title: "Settings & Privacy", notification: nil) {
-                        onNavigate?(.settings)
-                        isPresented = false
-                    }
-                    
+
                     SidebarLink(icon: "arrow.right.square", title: "Logout", notification: nil) {
                         // Logout action
                         apiService.logout()

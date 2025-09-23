@@ -247,9 +247,7 @@ struct ProfileView: View {
 
                             // Actions
                             VStack(spacing: 16) {
-                                Button("Edit Profile") {
-                                    // TODO: Implement edit profile
-                                }
+                                NavigationLink("Edit Profile", destination: ProfileSetupView())
                                 .buttonStyle(TornySecondaryButton(isLarge: true))
                                 .frame(maxWidth: .infinity)
 
@@ -299,6 +297,7 @@ struct MainDashboardView: View {
     @State private var showingTrainingSetup = false
     @State private var showingHistory = false
     @State private var showingAnalytics = false
+    @State private var showingProfileSetup = false
     @State private var currentTrainingSession: TrainingSession? = nil
     @State private var selectedBottomTab = 0
     
@@ -340,7 +339,7 @@ struct MainDashboardView: View {
                                     selectedBottomTab = 2
                                 },
                                 onProfileTap: {
-                                    selectedView = .settings
+                                    showingProfileSetup = true
                                     selectedBottomTab = 3
                                 }
                             )
@@ -439,7 +438,7 @@ struct MainDashboardView: View {
                                         subtitle: "Manage settings",
                                         color: .orange
                                     ) {
-                                        selectedView = .settings
+                                        showingProfileSetup = true
                                     }
                                 }
                                 .padding(.horizontal, 20)
@@ -504,7 +503,7 @@ struct MainDashboardView: View {
                             selectedBottomTab = 2
                         },
                         onProfileTap: {
-                            selectedView = .settings
+                            showingProfileSetup = true
                             selectedBottomTab = 3
                         }
                     )
@@ -522,6 +521,8 @@ struct MainDashboardView: View {
                                 showingHistory = true
                             } else if view == .analytics {
                                 showingAnalytics = true
+                            } else if view == .settings {
+                                showingProfileSetup = true
                             } else {
                                 selectedView = view
                             }
@@ -569,6 +570,9 @@ struct MainDashboardView: View {
         }
         .sheet(isPresented: $showingAnalytics) {
             AnalyticsView()
+        }
+        .sheet(isPresented: $showingProfileSetup) {
+            ProfileSetupView()
         }
     }
 }
