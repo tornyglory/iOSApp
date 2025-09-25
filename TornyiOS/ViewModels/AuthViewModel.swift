@@ -152,9 +152,31 @@ class AuthViewModel: ObservableObject {
     }
 
     func checkAuthenticationStatus() {
-        isAuthenticated = apiService.isAuthenticated
-        if let user = apiService.currentUser {
-            needsProfileSetup = user.profileCompleted != 1
+        // Check if session is still valid
+        if apiService.validateSession() {
+            isAuthenticated = apiService.isAuthenticated
+            if let user = apiService.currentUser {
+                needsProfileSetup = user.profileCompleted != 1
+            }
+        } else {
+            // Session expired, clear authentication
+            logout()
+        }
+    }
+
+    func getSessionTimeRemaining() -> String {
+        let timeRemaining = apiService.sessionTimeRemaining()
+        guard timeRemaining > 0 else { return "Session expired" }
+
+        let days = Int(timeRemaining) / (24 * 60 * 60)
+        let hours = Int(timeRemaining) % (24 * 60 * 60) / (60 * 60)
+
+        if days > 0 {
+            return "\(days) day\(days == 1 ? "" : "s")"
+        } else if hours > 0 {
+            return "\(hours) hour\(hours == 1 ? "" : "s")"
+        } else {
+            return "Less than 1 hour"
         }
     }
 }

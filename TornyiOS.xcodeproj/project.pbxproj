@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D8A1B5A92B8E4F2A00123456 /* TornyiOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */; };
 		D8A1B5AB2B8E4F2A00123456 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */; };
+		FC5AE5650A00473BB84DF31B /* LaunchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE43554FA1894A4FA992EDAA /* LaunchScreen.swift */; };
+		B57852151DA14D3C9EF49437 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A2AC2A9C9464B9128851D /* KeychainService.swift */; };
 		D8A1B5AD2B8E4F2C00123456 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */; };
 		D8A1B5B02B8E4F2C00123456 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */; };
 		D8A1B5B72B8E4F4D00123456 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5B62B8E4F4D00123456 /* APIService.swift */; };
@@ -49,6 +51,8 @@
 		D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TornyiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyiOSApp.swift; sourceTree = "<group>"; };
 		D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Common/ContentView.swift"; sourceTree = "<group>"; };
+		AE43554FA1894A4FA992EDAA /* LaunchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Common/LaunchScreen.swift"; sourceTree = "<group>"; };
+		4C1A2AC2A9C9464B9128851D /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Security/KeychainService.swift"; sourceTree = "<group>"; };
 		D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D8A1B5B62B8E4F4D00123456 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Network/APIService.swift"; sourceTree = "<group>"; };
@@ -117,11 +121,13 @@
 			children = (
 				D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */,
 				D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */,
+				AE43554FA1894A4FA992EDAA /* LaunchScreen.swift */,
 				D8A1B5B82B8E4F5800123456 /* Models.swift */,
 				B3C2A1F9E8D7C6B5A4F3E2D1 /* ChartModels.swift */,
 				C5D4B3A2F1E0D9C8B7A6F5E4 /* ProgressChartModels.swift */,
 				D6E5C4B3A2F1E0D9C8B7A6F5 /* ComparativeAnalyticsModels.swift */,
 				D8A1B5B62B8E4F4D00123456 /* APIService.swift */,
+				4C1A2AC2A9C9464B9128851D /* KeychainService.swift */,
 				D8A1B5BC2B8E4F6E00123456 /* ShotRecordingView.swift */,
 				D8A1B5BE2B8E4F7900123456 /* AnalyticsView.swift */,
 				E2D1C0B9A8F7E6D5C4B3A2F1 /* DetailedAnalyticsView.swift */,
@@ -233,6 +239,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8A1B5AB2B8E4F2A00123456 /* ContentView.swift in Sources */,
+				FC5AE5650A00473BB84DF31B /* LaunchScreen.swift in Sources */,
+				B57852151DA14D3C9EF49437 /* KeychainService.swift in Sources */,
 				D8A1B5BD2B8E4F6E00123456 /* ShotRecordingView.swift in Sources */,
 				D8A1B5B92B8E4F5800123456 /* Models.swift in Sources */,
 				D8A1B5BF2B8E4F7900123456 /* AnalyticsView.swift in Sources */,
@@ -409,6 +417,8 @@
 				INFOPLIST_KEY_UIAppFonts = (
 					"PermanentMarker-Regular.ttf",
 				);
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Torny needs access to your photos to let you select profile pictures and banner images for your account.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Torny can save training session photos to your photo library for easy sharing and record keeping.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -441,6 +451,8 @@
 				INFOPLIST_KEY_UIAppFonts = (
 					"PermanentMarker-Regular.ttf",
 				);
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Torny needs access to your photos to let you select profile pictures and banner images for your account.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Torny can save training session photos to your photo library for easy sharing and record keeping.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

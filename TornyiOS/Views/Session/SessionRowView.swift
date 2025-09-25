@@ -171,11 +171,7 @@ struct SessionRowView: View {
                 .foregroundColor(.secondary)
 
             // Shot type badges
-            LazyVGrid(columns: [
-                GridItem(.flexible(), alignment: .leading),
-                GridItem(.flexible(), alignment: .leading),
-                GridItem(.flexible(), alignment: .leading)
-            ], alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(shotTypeBadges, id: \.type) { badge in
                     ShotTypeBadge(
                         type: badge.type,
@@ -183,6 +179,12 @@ struct SessionRowView: View {
                         accuracy: badge.accuracy,
                         color: badge.color
                     )
+                    .frame(maxWidth: .infinity)
+                }
+
+                // Add spacer if less than 4 badges to push badges to the left
+                if shotTypeBadges.count < 4 {
+                    Spacer()
                 }
             }
         }

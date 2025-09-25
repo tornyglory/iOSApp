@@ -7,19 +7,26 @@ struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
     @State private var hasCompletedProfile = false
-    
+    @State private var showingSplashScreen = true
+
     var body: some View {
         ZStack {
-            if apiService.isAuthenticated {
-                if hasCompletedProfile && !showingProfileSetup {
-                    MainDashboardView()
-                } else {
-                    ProfileSetupView()
-                }
+            if showingSplashScreen {
+                LaunchScreen()
+                    .transition(.opacity)
             } else {
-                AuthView()
+                if apiService.isAuthenticated {
+                    if hasCompletedProfile && !showingProfileSetup {
+                        MainDashboardView()
+                    } else {
+                        ProfileSetupView()
+                    }
+                } else {
+                    AuthView()
+                }
             }
         }
+        .animation(.easeInOut(duration: 0.8), value: showingSplashScreen)
         .onChange(of: apiService.isAuthenticated) { isAuthenticated in
             if isAuthenticated {
                 // Check profile completion status when user logs in
@@ -32,6 +39,13 @@ struct ContentView: View {
             if apiService.isAuthenticated {
                 hasCompletedProfile = UserDefaults.standard.bool(forKey: "profile_completed") || apiService.currentUser?.profileCompleted == 1
                 showingProfileSetup = !hasCompletedProfile
+            }
+
+            // Hide splash screen after a brief delay to show the launch screen
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation {
+                    showingSplashScreen = false
+                }
             }
         }
     }

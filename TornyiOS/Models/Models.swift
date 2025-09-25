@@ -25,6 +25,7 @@ struct User: Codable, Identifiable {
     let phone: String?
     let address: String?
     let description: String?
+    let shortDescription: String?
     let avatarUrl: String?
     let bannerUrl: String?
     let created: String?
@@ -44,6 +45,7 @@ struct User: Codable, Identifiable {
         case id, email, name
         case userType = "user_type"
         case phone, address, description
+        case shortDescription = "short_description"
         case avatarUrl = "avatar_url"
         case bannerUrl = "banner_url"
         case created, updated
@@ -63,6 +65,7 @@ struct User: Codable, Identifiable {
         phone = try container.decodeIfPresent(String.self, forKey: .phone)
         address = try container.decodeIfPresent(String.self, forKey: .address)
         description = try container.decodeIfPresent(String.self, forKey: .description)
+        shortDescription = try container.decodeIfPresent(String.self, forKey: .shortDescription)
         avatarUrl = try container.decodeIfPresent(String.self, forKey: .avatarUrl)
         bannerUrl = try container.decodeIfPresent(String.self, forKey: .bannerUrl)
         created = try container.decodeIfPresent(String.self, forKey: .created)
@@ -236,13 +239,13 @@ struct ClubsSearchResponse: Codable {
 
 struct UpdateProfileResponse: Codable {
     let status: String
-    let message: String
+    let message: String?
     let data: ProfileUpdateData?
-    
+
     struct ProfileUpdateData: Codable {
         let avatarUrl: String?
         let bannerUrl: String?
-        
+
         enum CodingKeys: String, CodingKey {
             case avatarUrl = "avatar_url"
             case bannerUrl = "banner_url"

@@ -329,6 +329,41 @@ struct SessionStatisticsCard: View {
 struct ShotTypeBreakdownSection: View {
     let session: TrainingSession
 
+    private func calculatePointsForShotType(shots: Int, accuracy: Double) -> Int {
+        guard shots > 0 else { return 0 }
+
+        // Calculate points based on accuracy percentage and scoring system:
+        // - 2 points for within a foot (high accuracy)
+        // - 1 point for within a yard (medium accuracy)
+        // - 0 points for miss (low accuracy)
+
+        // Estimate point distribution based on accuracy percentage
+        if accuracy >= 90 {
+            // Very high accuracy: mostly 2-point shots
+            let twoPointShots = Int(Double(shots) * 0.9)
+            let onePointShots = shots - twoPointShots
+            return (twoPointShots * 2) + (onePointShots * 1)
+        } else if accuracy >= 70 {
+            // Good accuracy: mix favoring 2-point
+            let twoPointShots = Int(Double(shots) * 0.6)
+            let onePointShots = Int(Double(shots) * 0.3)
+            return (twoPointShots * 2) + (onePointShots * 1)
+        } else if accuracy >= 50 {
+            // Moderate accuracy: balanced mix
+            let twoPointShots = Int(Double(shots) * 0.3)
+            let onePointShots = Int(Double(shots) * 0.4)
+            return (twoPointShots * 2) + (onePointShots * 1)
+        } else if accuracy >= 25 {
+            // Lower accuracy: mostly 1-point shots
+            let onePointShots = Int(Double(shots) * accuracy / 100.0)
+            return onePointShots * 1
+        } else {
+            // Very low accuracy: mostly misses with few 1-point
+            let onePointShots = Int(Double(shots) * accuracy / 100.0)
+            return onePointShots * 1
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Shot Type Breakdown")
@@ -342,44 +377,48 @@ struct ShotTypeBreakdownSection: View {
             ], spacing: 12) {
                 // Draw
                 if let drawShots = session.drawShots, drawShots > 0 {
+                    let drawAccuracy = session.drawAccuracy ?? 0.0
                     SessionShotTypeCard(
                         title: "Draw",
                         shots: drawShots,
-                        points: 3, // Example
-                        accuracy: session.drawAccuracy ?? 0.0,
+                        points: calculatePointsForShotType(shots: drawShots, accuracy: drawAccuracy),
+                        accuracy: drawAccuracy,
                         color: .blue
                     )
                 }
 
                 // Yard On
                 if let yardOnShots = session.yardOnShots, yardOnShots > 0 {
+                    let yardOnAccuracy = session.yardOnAccuracy ?? 0.0
                     SessionShotTypeCard(
                         title: "Yard On",
                         shots: yardOnShots,
-                        points: 0, // Example
-                        accuracy: session.yardOnAccuracy ?? 0.0,
+                        points: calculatePointsForShotType(shots: yardOnShots, accuracy: yardOnAccuracy),
+                        accuracy: yardOnAccuracy,
                         color: .green
                     )
                 }
 
                 // Ditch Weight
                 if let ditchWeightShots = session.ditchWeightShots, ditchWeightShots > 0 {
+                    let ditchWeightAccuracy = session.ditchWeightAccuracy ?? 0.0
                     SessionShotTypeCard(
                         title: "Ditch Weight",
                         shots: ditchWeightShots,
-                        points: 2, // Example
-                        accuracy: session.ditchWeightAccuracy ?? 0.0,
+                        points: calculatePointsForShotType(shots: ditchWeightShots, accuracy: ditchWeightAccuracy),
+                        accuracy: ditchWeightAccuracy,
                         color: .orange
                     )
                 }
 
                 // Drive
                 if let driveShots = session.driveShots, driveShots > 0 {
+                    let driveAccuracy = session.driveAccuracy ?? 0.0
                     SessionShotTypeCard(
                         title: "Drive",
                         shots: driveShots,
-                        points: 2, // Example
-                        accuracy: session.driveAccuracy ?? 0.0,
+                        points: calculatePointsForShotType(shots: driveShots, accuracy: driveAccuracy),
+                        accuracy: driveAccuracy,
                         color: .purple
                     )
                 }
@@ -394,6 +433,12 @@ struct SessionShotTypeCard: View {
     let points: Int
     let accuracy: Double
     let color: Color
+
+    private var pointsBasedPercentage: Double {
+        guard shots > 0 else { return 0.0 }
+        let maxPossiblePoints = shots * 2 // Each shot can earn max 2 points
+        return (Double(points) / Double(maxPossiblePoints)) * 100.0
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -423,7 +468,7 @@ struct SessionShotTypeCard: View {
                 }
             }
 
-            Text(String(format: "%.1f%%", accuracy))
+            Text(String(format: "%.1f%%", pointsBasedPercentage))
                 .font(.subheadline)
                 .fontWeight(.medium)
         }

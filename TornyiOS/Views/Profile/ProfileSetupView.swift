@@ -94,9 +94,7 @@ struct ProfileHeaderSection: View {
                 .frame(height: 280)
 
                 // Camera button for banner
-                Button(action: {
-                    showingBannerPicker = true
-                }) {
+                PhotosPicker(selection: $viewModel.bannerItem, matching: .images, photoLibrary: .shared()) {
                     Image(systemName: "camera.fill")
                         .foregroundColor(.white)
                         .padding(8)
@@ -104,6 +102,9 @@ struct ProfileHeaderSection: View {
                         .clipShape(Circle())
                 }
                 .padding()
+                .onChange(of: viewModel.bannerItem) { _ in
+                    viewModel.loadBannerFromItem()
+                }
             }
 
             VStack(spacing: 16) {
@@ -173,15 +174,16 @@ struct ProfileHeaderSection: View {
                                 .overlay(Circle().stroke(Color.white, lineWidth: 4))
                         }
 
-                        Button(action: {
-                            showingAvatarPicker = true
-                        }) {
+                        PhotosPicker(selection: $viewModel.avatarItem, matching: .images, photoLibrary: .shared()) {
                             Image(systemName: "camera.fill")
                                 .font(.caption)
                                 .foregroundColor(.white)
                                 .padding(6)
                                 .background(Color.black.opacity(0.7))
                                 .clipShape(Circle())
+                        }
+                        .onChange(of: viewModel.avatarItem) { _ in
+                            viewModel.loadAvatarFromItem()
                         }
                     }
                     .padding(.leading, 20)
@@ -219,12 +221,6 @@ struct ProfileHeaderSection: View {
                 Spacer()
                     .frame(height: 10)
             }
-        }
-        .sheet(isPresented: $showingAvatarPicker) {
-            ImagePicker(selectedImage: $viewModel.avatar)
-        }
-        .sheet(isPresented: $showingBannerPicker) {
-            ImagePicker(selectedImage: $viewModel.banner)
         }
     }
 }

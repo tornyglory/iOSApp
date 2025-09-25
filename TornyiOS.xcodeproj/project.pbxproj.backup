@@ -13,7 +13,6 @@
 		D8A1B5B02B8E4F2C00123456 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */; };
 		D8A1B5B72B8E4F4D00123456 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5B62B8E4F4D00123456 /* APIService.swift */; };
 		D8A1B5B92B8E4F5800123456 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5B82B8E4F5800123456 /* Models.swift */; };
-		D8A1B5BB2B8E4F6300123456 /* SessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5BA2B8E4F6300123456 /* SessionView.swift */; };
 		D8A1B5BD2B8E4F6E00123456 /* ShotRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5BC2B8E4F6E00123456 /* ShotRecordingView.swift */; };
 		D8A1B5BF2B8E4F7900123456 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5BE2B8E4F7900123456 /* AnalyticsView.swift */; };
 		D8A1B5C12B8E4F8400123456 /* SessionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */; };
@@ -35,38 +34,51 @@
 		AE3B9C2B2C9A4B6C00789012 /* ProfileSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */; };
 		AE3B9C2D2C9A4B6E00789012 /* SessionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */; };
 		AE3B9C2F2C9A4B7000789012 /* TrainingSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B9C2E2C9A4B7000789012 /* TrainingSessionViewModel.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* DetailedAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D1C0B9A8F7E6D5C4B3A2F1 /* DetailedAnalyticsView.swift */; };
+		A4F3E2D1C0B9A8F7E6D5C4B3 /* ChartModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C2A1F9E8D7C6B5A4F3E2D1 /* ChartModels.swift */; };
+		E7F6C5B4A3F2E1D0C9B8A7F6 /* ProgressChartModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D4B3A2F1E0D9C8B7A6F5E4 /* ProgressChartModels.swift */; };
+		F8A7D6C5B4A3F2E1D0C9B8A7 /* ComparativeAnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E5C4B3A2F1E0D9C8B7A6F5 /* ComparativeAnalyticsModels.swift */; };
+		B2A1C0D9F8E7D6C5B4A3F2E1 /* LiveChartsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */; };
+		C4B3A2F1E0D9C8B7A6F5E4D3 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */; };
+		D5C4B3A2F1E0D9C8B7A6F5E4 /* ComparativeAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TornyiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyiOSApp.swift; sourceTree = "<group>"; };
-		D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Common/ContentView.swift"; sourceTree = "<group>"; };
 		D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D8A1B5AF2B8E4F2C00123456 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		D8A1B5B62B8E4F4D00123456 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
-		D8A1B5B82B8E4F5800123456 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		D8A1B5BA2B8E4F6300123456 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
-		D8A1B5BC2B8E4F6E00123456 /* ShotRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShotRecordingView.swift; sourceTree = "<group>"; };
-		D8A1B5BE2B8E4F7900123456 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
-		D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryView.swift; sourceTree = "<group>"; };
-		D8A1B5C22B8E4F8F00123456 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
-		D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
-		D8A1B5C42B8E4F9A00123456 /* TornyColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyColors.swift; sourceTree = "<group>"; };
-		D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TornyComponents.swift; sourceTree = "<group>"; };
-		D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PermanentMarker-Regular.ttf"; sourceTree = "<group>"; };
-		D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
-		DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionView.swift; sourceTree = "<group>"; };
-		A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSetupView.swift; sourceTree = "<group>"; };
+		D8A1B5B62B8E4F4D00123456 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Network/APIService.swift"; sourceTree = "<group>"; };
+		D8A1B5B82B8E4F5800123456 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Models.swift"; sourceTree = "<group>"; };
+		D8A1B5BC2B8E4F6E00123456 /* ShotRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Training/ShotRecordingView.swift"; sourceTree = "<group>"; };
+		D8A1B5BE2B8E4F7900123456 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/AnalyticsView.swift"; sourceTree = "<group>"; };
+		D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Session/SessionHistoryView.swift"; sourceTree = "<group>"; };
+		D8A1B5C22B8E4F8F00123456 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/AuthView.swift"; sourceTree = "<group>"; };
+		D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Profile/ProfileSetupView.swift"; sourceTree = "<group>"; };
+		D8A1B5C42B8E4F9A00123456 /* TornyColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/TornyColors.swift"; sourceTree = "<group>"; };
+		D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/TornyComponents.swift"; sourceTree = "<group>"; };
+		D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Resources/Fonts/PermanentMarker-Regular.ttf"; sourceTree = "<group>"; };
+		D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/ImagePicker.swift"; sourceTree = "<group>"; };
+		DDFA6DAA7DC74EAF9CFB2808 /* TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Training/TrainingSessionView.swift"; sourceTree = "<group>"; };
+		A59FDC8B1DBA4AC0A71A0E6D /* TrainingSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Training/TrainingSetupView.swift"; sourceTree = "<group>"; };
 		AE3B9C1C2C9A4B5E00789012 /* AnalyticsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/AnalyticsDetailView.swift"; sourceTree = "<group>"; };
 		AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Analytics/AnalyticsModels.swift"; sourceTree = "<group>"; };
 		AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AnalyticsViewModel.swift"; sourceTree = "<group>"; };
-		AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailCards.swift; sourceTree = "<group>"; };
-		AE3B9C242C9A4B6600789012 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
-		AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
-		AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupViewModel.swift; sourceTree = "<group>"; };
-		AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryViewModel.swift; sourceTree = "<group>"; };
+		AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Session/SessionDetailCards.swift"; sourceTree = "<group>"; };
+		AE3B9C242C9A4B6600789012 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Dashboard/DashboardView.swift"; sourceTree = "<group>"; };
+		AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/DashboardViewModel.swift"; sourceTree = "<group>"; };
+		AE3B9C282C9A4B6A00789012 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AuthViewModel.swift"; sourceTree = "<group>"; };
+		AE3B9C2A2C9A4B6C00789012 /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/ProfileSetupViewModel.swift"; sourceTree = "<group>"; };
+		AE3B9C2C2C9A4B6E00789012 /* SessionHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/SessionHistoryViewModel.swift"; sourceTree = "<group>"; };
 		AE3B9C2E2C9A4B7000789012 /* TrainingSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/TrainingSessionViewModel.swift"; sourceTree = "<group>"; };
+		E2D1C0B9A8F7E6D5C4B3A2F1 /* DetailedAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/DetailedAnalyticsView.swift"; sourceTree = "<group>"; };
+		B3C2A1F9E8D7C6B5A4F3E2D1 /* ChartModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Training/ChartModels.swift"; sourceTree = "<group>"; };
+		C5D4B3A2F1E0D9C8B7A6F5E4 /* ProgressChartModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Analytics/ProgressChartModels.swift"; sourceTree = "<group>"; };
+		D6E5C4B3A2F1E0D9C8B7A6F5 /* ComparativeAnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/Analytics/ComparativeAnalyticsModels.swift"; sourceTree = "<group>"; };
+		A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/LiveChartsComponent.swift"; sourceTree = "<group>"; };
+		F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/ProgressChartsView.swift"; sourceTree = "<group>"; };
+		A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/ComparativeAnalysisView.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,10 +114,15 @@
 				D8A1B5A82B8E4F2A00123456 /* TornyiOSApp.swift */,
 				D8A1B5AA2B8E4F2A00123456 /* ContentView.swift */,
 				D8A1B5B82B8E4F5800123456 /* Models.swift */,
+				B3C2A1F9E8D7C6B5A4F3E2D1 /* ChartModels.swift */,
+				C5D4B3A2F1E0D9C8B7A6F5E4 /* ProgressChartModels.swift */,
+				D6E5C4B3A2F1E0D9C8B7A6F5 /* ComparativeAnalyticsModels.swift */,
 				D8A1B5B62B8E4F4D00123456 /* APIService.swift */,
-				D8A1B5BA2B8E4F6300123456 /* SessionView.swift */,
 				D8A1B5BC2B8E4F6E00123456 /* ShotRecordingView.swift */,
 				D8A1B5BE2B8E4F7900123456 /* AnalyticsView.swift */,
+				E2D1C0B9A8F7E6D5C4B3A2F1 /* DetailedAnalyticsView.swift */,
+				F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */,
+				A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */,
 				D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */,
 				D8A1B5C22B8E4F8F00123456 /* AuthView.swift */,
 				D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */,
@@ -124,6 +141,7 @@
 				D8A1B5C92B8E4FC100123456 /* ImagePicker.swift */,
 				D8A1B5C42B8E4F9A00123456 /* TornyColors.swift */,
 				D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */,
+				A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */,
 				D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */,
 				D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */,
 				D8A1B5AE2B8E4F2C00123456 /* Preview Content */,
@@ -212,7 +230,6 @@
 			files = (
 				D8A1B5AB2B8E4F2A00123456 /* ContentView.swift in Sources */,
 				D8A1B5BD2B8E4F6E00123456 /* ShotRecordingView.swift in Sources */,
-				D8A1B5BB2B8E4F6300123456 /* SessionView.swift in Sources */,
 				D8A1B5B92B8E4F5800123456 /* Models.swift in Sources */,
 				D8A1B5BF2B8E4F7900123456 /* AnalyticsView.swift in Sources */,
 				D8A1B5A92B8E4F2A00123456 /* TornyiOSApp.swift in Sources */,
@@ -235,6 +252,13 @@
 				AE3B9C2B2C9A4B6C00789012 /* ProfileSetupViewModel.swift in Sources */,
 				AE3B9C2D2C9A4B6E00789012 /* SessionHistoryViewModel.swift in Sources */,
 				AE3B9C2F2C9A4B7000789012 /* TrainingSessionViewModel.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* DetailedAnalyticsView.swift in Sources */,
+				A4F3E2D1C0B9A8F7E6D5C4B3 /* ChartModels.swift in Sources */,
+				E7F6C5B4A3F2E1D0C9B8A7F6 /* ProgressChartModels.swift in Sources */,
+				F8A7D6C5B4A3F2E1D0C9B8A7 /* ComparativeAnalyticsModels.swift in Sources */,
+				B2A1C0D9F8E7D6C5B4A3F2E1 /* LiveChartsComponent.swift in Sources */,
+				C4B3A2F1E0D9C8B7A6F5E4D3 /* ProgressChartsView.swift in Sources */,
+				D5C4B3A2F1E0D9C8B7A6F5E4 /* ComparativeAnalysisView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

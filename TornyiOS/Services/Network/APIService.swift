@@ -83,8 +83,17 @@ class APIService: ObservableObject {
         if let responseString = String(data: data, encoding: .utf8) {
             print("📥 Response Body: \(responseString)")
         }
-        
+
         guard 200...299 ~= httpResponse.statusCode else {
+            // Handle unauthorized (401) responses - token expired
+            if httpResponse.statusCode == 401 {
+                print("🔑 Received 401 unauthorized - clearing stored credentials")
+                await MainActor.run {
+                    clearAuthToken()
+                }
+                throw APIError.unauthorized
+            }
+
             // Try to parse error message from response body
             if let errorData = try? JSONDecoder().decode(ErrorResponse.self, from: data),
                let message = errorData.message {
@@ -136,7 +145,11 @@ class APIService: ObservableObject {
     // MARK: - Authentication Token Management
     
     private func loadAuthToken() {
-        if let token = UserDefaults.standard.string(forKey: "auth_token"), !token.isEmpty {
+        // First, try to migrate old UserDefaults tokens to Keychain
+        migrateTokensFromUserDefaults()
+
+        // Load token from secure Keychain storage
+        if let token = KeychainService.shared.getAuthToken() {
             self.authToken = token
             self.isAuthenticated = true
             // Fetch current user profile when token is loaded
@@ -149,9 +162,44 @@ class APIService: ObservableObject {
         }
     }
 
+    /// Migrate existing tokens from UserDefaults to Keychain (one-time migration)
+    private func migrateTokensFromUserDefaults() {
+        // Check if we've already migrated
+        if UserDefaults.standard.bool(forKey: "keychain_migration_completed") {
+            return
+        }
+
+        // Migrate auth token
+        if let token = UserDefaults.standard.string(forKey: "auth_token"),
+           !token.isEmpty {
+            let expiryDate = UserDefaults.standard.object(forKey: "token_expiry") as? Date ?? Date().addingTimeInterval(30 * 24 * 60 * 60)
+
+            if KeychainService.shared.saveAuthToken(token, expiryDate: expiryDate) {
+                print("🔑 Successfully migrated auth token to Keychain")
+
+                // Migrate user ID if available
+                if let userId = UserDefaults.standard.string(forKey: "current_user_id") {
+                    KeychainService.shared.saveCurrentUserId(userId)
+                    print("🔑 Successfully migrated user ID to Keychain")
+                }
+
+                // Clear old UserDefaults data
+                UserDefaults.standard.removeObject(forKey: "auth_token")
+                UserDefaults.standard.removeObject(forKey: "token_expiry")
+                UserDefaults.standard.removeObject(forKey: "current_user_id")
+                UserDefaults.standard.set(true, forKey: "keychain_migration_completed")
+
+                print("🔑 Token migration completed and UserDefaults cleaned up")
+            }
+        } else {
+            // No token to migrate, just mark migration as completed
+            UserDefaults.standard.set(true, forKey: "keychain_migration_completed")
+        }
+    }
+
     private func fetchCurrentUserProfile() async {
-        // We need to get the user ID from somewhere. Let's check if it's stored.
-        guard let userIdString = UserDefaults.standard.string(forKey: "current_user_id"),
+        // Get user ID from secure Keychain storage
+        guard let userIdString = KeychainService.shared.getCurrentUserId(),
               let userId = Int(userIdString) else {
             print("❌ No stored user ID found")
             return
@@ -173,17 +221,33 @@ class APIService: ObservableObject {
     }
     
     private func saveAuthToken(_ token: String) {
-        UserDefaults.standard.set(token, forKey: "auth_token")
-        self.authToken = token
-        self.isAuthenticated = true
+        // Set token expiry to 30 days from now for extended session
+        let expiryDate = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date().addingTimeInterval(30 * 24 * 60 * 60)
+
+        // Save token securely in Keychain
+        if KeychainService.shared.saveAuthToken(token, expiryDate: expiryDate) {
+            self.authToken = token
+            self.isAuthenticated = true
+            print("🔑 Token saved securely to Keychain with expiry: \(expiryDate)")
+        } else {
+            print("❌ Failed to save token to Keychain")
+        }
     }
     
     private func clearAuthToken() {
+        // Clear secure Keychain storage
+        KeychainService.shared.clearAuthToken()
+
+        // Also clear any remaining UserDefaults data (legacy cleanup)
         UserDefaults.standard.removeObject(forKey: "auth_token")
         UserDefaults.standard.removeObject(forKey: "current_user_id")
+        UserDefaults.standard.removeObject(forKey: "token_expiry")
+
         self.authToken = nil
         self.isAuthenticated = false
         self.currentUser = nil
+
+        print("🔑 Auth token cleared from all storage")
     }
     
     // MARK: - Authentication Methods
@@ -219,8 +283,8 @@ class APIService: ObservableObject {
         )
 
         saveAuthToken(response.token)
-        // Store the user ID for future profile loading
-        UserDefaults.standard.set(String(response.user.id), forKey: "current_user_id")
+        // Store the user ID securely in Keychain for future profile loading
+        KeychainService.shared.saveCurrentUserId(String(response.user.id))
         DispatchQueue.main.async {
             self.currentUser = response.user
             self.objectWillChange.send()
@@ -239,11 +303,36 @@ class APIService: ObservableObject {
     }
 
     func clearAllStoredData() {
+        // Clear secure Keychain storage
+        KeychainService.shared.clearAuthToken()
+
+        // Also clear any remaining UserDefaults data (legacy cleanup)
         UserDefaults.standard.removeObject(forKey: "auth_token")
         UserDefaults.standard.removeObject(forKey: "current_user_id")
+        UserDefaults.standard.removeObject(forKey: "token_expiry")
+
         self.authToken = nil
         self.isAuthenticated = false
         self.currentUser = nil
+
+        print("🔑 All stored data cleared from secure storage")
+    }
+
+    // MARK: - Session Management
+
+    /// Check if the current session is still valid
+    func validateSession() -> Bool {
+        return KeychainService.shared.isAuthTokenValid()
+    }
+
+    /// Get time remaining until session expires
+    func sessionTimeRemaining() -> TimeInterval {
+        return KeychainService.shared.getTokenTimeRemaining()
+    }
+
+    /// Check if session will expire soon (within 24 hours)
+    func sessionExpiringSoon() -> Bool {
+        return KeychainService.shared.isTokenExpiringSoon()
     }
     
     // MARK: - Profile Methods
@@ -251,7 +340,7 @@ class APIService: ObservableObject {
     func updateProfile(userId: String, profile: ProfileUpdateRequest) async throws -> UpdateProfileResponse {
         let encoder = JSONEncoder()
         let data = try encoder.encode(profile)
-        
+
         let response: UpdateProfileResponse = try await makeRequest(
             endpoint: "/profile/\(userId)",
             method: .PUT,
@@ -259,10 +348,15 @@ class APIService: ObservableObject {
             responseType: UpdateProfileResponse.self,
             useAuthBase: true
         )
-        
-        // Note: The API doesn't return the updated user object in this response
-        // We might need to fetch the updated profile separately if needed
-        
+
+        // Since the update response doesn't return the full user data,
+        // fetch the updated profile to refresh our data
+        if response.status == "success" {
+            if let userId = Int(userId) {
+                let _ = try await getUserProfile(userId)
+            }
+        }
+
         return response
     }
     
@@ -330,6 +424,11 @@ class APIService: ObservableObject {
             responseType: ProfileResponse.self,
             useAuthBase: true
         )
+
+        // Update currentUser if it's the same user
+        if currentUser?.id == userId {
+            currentUser = response.data
+        }
 
         return response.data
     }
@@ -618,7 +717,8 @@ enum APIError: Error, LocalizedError {
     case serverError(Int)
     case serverErrorWithMessage(Int, String)
     case decodingError(Error)
-    
+    case unauthorized
+
     var errorDescription: String? {
         switch self {
         case .invalidURL:
@@ -631,6 +731,8 @@ enum APIError: Error, LocalizedError {
             return message
         case .decodingError(let error):
             return "Decoding error: \(error.localizedDescription)"
+        case .unauthorized:
+            return "Your session has expired. Please log in again."
         }
     }
 }

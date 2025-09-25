@@ -7,7 +7,7 @@ struct ShotAnalysisView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVStack(spacing: 0) {
+                VStack(spacing: 16) {
                     if viewModel.isLoading {
                         VStack(spacing: 12) {
                             TornyLoadingView(color: .tornyBlue)
@@ -15,7 +15,7 @@ struct ShotAnalysisView: View {
                                 .font(TornyFonts.body)
                                 .foregroundColor(.tornyTextSecondary)
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(maxWidth: .infinity, minHeight: 300)
                         .padding()
                     } else if let analytics = viewModel.analytics {
                         // Header Section
@@ -24,50 +24,34 @@ struct ShotAnalysisView: View {
                             analytics: analytics,
                             onPeriodChanged: viewModel.loadAnalytics
                         )
-                        .background(Color(.systemGray6))
-                        .padding(.bottom, 16)
 
                         // Session Statistics
                         LifetimeSessionStats(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Shot Type Breakdown Cards
                         LifetimeShotTypeBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Scoring System Info
                         ScoringSystemInfo()
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Detailed Shot Breakdown by Type
                         DetailedShotBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Length & Hand Analysis
                         LengthHandAnalysis(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Green Type & Conditions Breakdown
                         ConditionsBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
 
                         // Green Types & Speeds Detailed Analysis
                         GreenTypesSpeedsAnalysis(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 20)
 
                     } else if let error = viewModel.error {
                         ErrorView(
@@ -78,6 +62,7 @@ struct ShotAnalysisView: View {
                         .padding()
                     }
                 }
+                .padding(.vertical, 16)
             }
             .background(Color(.systemGray6))
             .navigationTitle("Shot Analysis")
@@ -274,15 +259,27 @@ struct LifetimeShotTypeBreakdown: View {
                 .fontWeight(.bold)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                ForEach(shotTypeStats, id: \.type) { stat in
-                    ShotTypeBreakdownCard(
-                        shotType: stat.type,
-                        shots: stat.shots,
-                        points: stat.points,
-                        accuracy: stat.accuracy,
-                        color: shotTypeColor(stat.type)
-                    )
+            VStack(spacing: 12) {
+                let columns = Array(shotTypeStats.chunked(into: 2))
+                ForEach(Array(columns.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: 12) {
+                        ForEach(row, id: \.type) { stat in
+                            ShotTypeBreakdownCard(
+                                shotType: stat.type,
+                                shots: stat.shots,
+                                points: stat.points,
+                                accuracy: stat.accuracy,
+                                color: shotTypeColor(stat.type)
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+
+                        // Add spacer if odd number of items in last row
+                        if row.count == 1 {
+                            Spacer()
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
                 }
             }
         }
@@ -493,11 +490,17 @@ struct LengthHandAnalysis: View {
                 Text("Performance by Length")
                     .font(.headline)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
+                HStack(spacing: 8) {
                     LengthPerformanceCard(title: "Short", data: analytics.lengthMatrix.short, color: .green)
+                        .frame(maxWidth: .infinity)
                     LengthPerformanceCard(title: "Medium", data: analytics.lengthMatrix.medium, color: .orange)
+                        .frame(maxWidth: .infinity)
                     if let long = analytics.lengthMatrix.long {
                         LengthPerformanceCard(title: "Long", data: long, color: .red)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Spacer()
+                            .frame(maxWidth: .infinity)
                     }
                 }
             }
@@ -563,13 +566,24 @@ struct ConditionsBreakdown: View {
                 Text("Green Type Performance")
                     .font(.headline)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                    ForEach(greenTypePerformance, id: \.type) { greenType in
-                        GreenTypePerformanceCard(
-                            greenType: greenType.type,
-                            accuracy: greenType.accuracy,
-                            sessions: greenType.sessions
-                        )
+                VStack(spacing: 8) {
+                    let columns = Array(greenTypePerformance.chunked(into: 2))
+                    ForEach(Array(columns.enumerated()), id: \.offset) { _, row in
+                        HStack(spacing: 8) {
+                            ForEach(row, id: \.type) { greenType in
+                                GreenTypePerformanceCard(
+                                    greenType: greenType.type,
+                                    accuracy: greenType.accuracy,
+                                    sessions: greenType.sessions
+                                )
+                                .frame(maxWidth: .infinity)
+                            }
+
+                            if row.count == 1 {
+                                Spacer()
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
                     }
                 }
             }
@@ -655,15 +669,26 @@ struct GreenTypesSpeedsAnalysis: View {
                 Text("Performance by Green Type")
                     .font(.headline)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                    ForEach(greenTypeStats, id: \.type) { greenType in
-                        DetailedGreenTypeCard(
-                            greenType: greenType.type,
-                            accuracy: greenType.accuracy,
-                            sessions: greenType.sessions,
-                            shots: greenType.shots,
-                            averageSpeed: greenType.averageSpeed
-                        )
+                VStack(spacing: 12) {
+                    let columns = Array(greenTypeStats.chunked(into: 2))
+                    ForEach(Array(columns.enumerated()), id: \.offset) { _, row in
+                        HStack(spacing: 12) {
+                            ForEach(row, id: \.type) { greenType in
+                                DetailedGreenTypeCard(
+                                    greenType: greenType.type,
+                                    accuracy: greenType.accuracy,
+                                    sessions: greenType.sessions,
+                                    shots: greenType.shots,
+                                    averageSpeed: greenType.averageSpeed
+                                )
+                                .frame(maxWidth: .infinity)
+                            }
+
+                            if row.count == 1 {
+                                Spacer()
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
                     }
                 }
             }
@@ -675,7 +700,7 @@ struct GreenTypesSpeedsAnalysis: View {
                 Text("Performance by Green Speed")
                     .font(.headline)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
+                HStack(spacing: 8) {
                     ForEach(speedRangeStats, id: \.range) { speedRange in
                         GreenSpeedCard(
                             speedRange: speedRange.range,
@@ -683,6 +708,13 @@ struct GreenTypesSpeedsAnalysis: View {
                             sessions: speedRange.sessions,
                             description: speedRange.description
                         )
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    // Add spacers for remaining slots if less than 3 items
+                    ForEach(0..<(3 - speedRangeStats.count), id: \.self) { _ in
+                        Spacer()
+                            .frame(maxWidth: .infinity)
                     }
                 }
             }
@@ -828,6 +860,16 @@ struct GreenTypesSpeedsAnalysis: View {
                 averageSpeed: $0.value.totalSpeed / Double($0.value.count)
             )
         }.sorted { $0.accuracy > $1.accuracy }
+    }
+}
+
+// MARK: - Extensions
+
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0..<Swift.min($0 + size, count)])
+        }
     }
 }
 

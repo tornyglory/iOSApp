@@ -67,7 +67,7 @@ struct AnalyticsView: View {
                                 ], spacing: 16) {
                                     QuickStatItem(
                                         title: "Overall Accuracy",
-                                        value: String(format: "%.1f%%", analytics.overallAccuracy),
+                                        value: String(format: "%.1f%%", pointsBasedAccuracy(analytics: analytics)),
                                         icon: "target",
                                         color: .tornyBlue
                                     )
@@ -171,6 +171,20 @@ struct AnalyticsView: View {
         .sheet(isPresented: $showComparativeAnalysis) {
             ComparativeAnalysisView()
         }
+    }
+
+    // MARK: - Helper Functions
+
+    private func pointsBasedAccuracy(analytics: AnalyticsResponse) -> Double {
+        guard analytics.maxPossiblePoints > 0 else { return 0.0 }
+
+        // Parse totalPoints from String to Int
+        let totalPointsEarned = Int(analytics.totalPoints) ?? 0
+
+        // Calculate accuracy as: (Points Earned / Maximum Possible Points) × 100
+        let accuracy = (Double(totalPointsEarned) / Double(analytics.maxPossiblePoints)) * 100.0
+
+        return accuracy
     }
 }
 

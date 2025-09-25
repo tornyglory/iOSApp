@@ -68,7 +68,7 @@ class AnalyticsViewModel: ObservableObject {
 
     var overallAccuracyDouble: Double {
         guard let analytics = analytics else { return 0 }
-        return Double(analytics.overallAccuracy) ?? 0
+        return pointsBasedAccuracy(analytics: analytics)
     }
 
     var drawAccuracyDouble: Double {
@@ -79,5 +79,19 @@ class AnalyticsViewModel: ObservableObject {
     var weightedAccuracyDouble: Double {
         guard let analytics = analytics else { return 0 }
         return Double(analytics.weightedAccuracy) ?? 0
+    }
+
+    // MARK: - Points-Based Calculations
+
+    private func pointsBasedAccuracy(analytics: AnalyticsResponse) -> Double {
+        guard analytics.maxPossiblePoints > 0 else { return 0.0 }
+
+        // Parse totalPoints from String to Int
+        let totalPointsEarned = Int(analytics.totalPoints) ?? 0
+
+        // Calculate accuracy as: (Points Earned / Maximum Possible Points) × 100
+        let accuracy = (Double(totalPointsEarned) / Double(analytics.maxPossiblePoints)) * 100.0
+
+        return accuracy
     }
 }
