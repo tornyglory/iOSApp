@@ -3,13 +3,30 @@ import Foundation
 import PhotosUI
 import UIKit
 
+// Wrapper for backward compatibility
 struct ProfileSetupView: View {
-    @StateObject private var viewModel = ProfileSetupViewModel()
-    @ObservedObject private var apiService = APIService.shared
-    @Environment(\.dismiss) private var dismiss
+    @State private var isPresented = true
 
     var body: some View {
         NavigationView {
+            ProfileSetupViewContent(isPresented: $isPresented, showDoneButton: false)
+        }
+    }
+}
+
+struct ProfileSetupViewContent: View {
+    @StateObject private var viewModel = ProfileSetupViewModel()
+    @ObservedObject private var apiService = APIService.shared
+    @Binding var isPresented: Bool
+    let showDoneButton: Bool
+
+    init(isPresented: Binding<Bool>, showDoneButton: Bool = true) {
+        self._isPresented = isPresented
+        self.showDoneButton = showDoneButton
+    }
+
+    var body: some View {
+        NavigationStack {
             ZStack {
                 // Background
                 Color(.systemGroupedBackground)
@@ -35,13 +52,25 @@ struct ProfileSetupView: View {
                             LocationSection(viewModel: viewModel)
 
                             // Save Button
-                            SaveButtonSection(viewModel: viewModel, dismiss: dismiss)
+                            SaveButtonSection(viewModel: viewModel, isPresented: $isPresented)
                         }
                         .padding()
                     }
                 }
             }
-            .navigationBarHidden(true)
+            .navigationTitle("Profile Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if showDoneButton {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            isPresented = false
+                        }
+                        .foregroundColor(.tornyBlue)
+                        .fontWeight(.medium)
+                    }
+                }
+            }
         }
         .sheet(isPresented: $viewModel.showingClubSearch) {
             ClubSearchView(viewModel: viewModel)
@@ -518,8 +547,26 @@ struct LocationSection: View {
                     .foregroundColor(.secondary)
 
                 Menu {
-                    Button("Australia") { viewModel.selectedCountry = "Australia" }
-                    Button("New Zealand") { viewModel.selectedCountry = "New Zealand" }
+                    Button("Australia") {
+                        viewModel.selectedCountry = "Australia"
+                        viewModel.selectedState = "Select State"
+                    }
+                    Button("New Zealand") {
+                        viewModel.selectedCountry = "New Zealand"
+                        viewModel.selectedState = "Select Region"
+                    }
+                    Button("England") {
+                        viewModel.selectedCountry = "England"
+                        viewModel.selectedState = "Select Region"
+                    }
+                    Button("Canada") {
+                        viewModel.selectedCountry = "Canada"
+                        viewModel.selectedState = "Select Province/Territory"
+                    }
+                    Button("South Africa") {
+                        viewModel.selectedCountry = "South Africa"
+                        viewModel.selectedState = "Select Province"
+                    }
                 } label: {
                     HStack {
                         Text(viewModel.selectedCountry)
@@ -539,14 +586,14 @@ struct LocationSection: View {
             }
 
             // State/Region
-            if viewModel.selectedCountry == "Australia" {
+            if !viewModel.selectedCountry.isEmpty && viewModel.selectedCountry != "Select Country" {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("State")
+                    Text(getStateRegionLabel(for: viewModel.selectedCountry))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
                     Menu {
-                        ForEach(["Victoria", "New South Wales", "Queensland", "Western Australia", "South Australia", "Tasmania", "Northern Territory", "Australian Capital Territory"], id: \.self) { state in
+                        ForEach(getStatesRegions(for: viewModel.selectedCountry), id: \.self) { state in
                             Button(state) { viewModel.selectedState = state }
                         }
                     } label: {
@@ -574,20 +621,148 @@ struct LocationSection: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                TextField("City/Region", text: $viewModel.region)
+                TextField(getCityPlaceholder(for: viewModel.selectedCountry, state: viewModel.selectedState), text: $viewModel.region)
                     .textFieldStyle(BorderedTextFieldStyle())
+
+                // Show popular cities for the selected state/region
+                if !viewModel.selectedState.isEmpty && !["Select State", "Select Region", "Select Province/Territory", "Select Province"].contains(viewModel.selectedState) {
+                    let popularCities = getPopularCities(for: viewModel.selectedCountry, state: viewModel.selectedState)
+                    if !popularCities.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Popular locations:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            LazyVGrid(columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ], spacing: 4) {
+                                ForEach(popularCities, id: \.self) { city in
+                                    Button(city) {
+                                        viewModel.region = city
+                                    }
+                                    .font(.caption2)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(.systemGray6))
+                                    .foregroundColor(.primary)
+                                    .cornerRadius(4)
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                }
             }
         }
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
     }
+
+    private func getStateRegionLabel(for country: String) -> String {
+        switch country {
+        case "Australia": return "State"
+        case "New Zealand": return "Region"
+        case "England": return "Region"
+        case "Canada": return "Province/Territory"
+        case "South Africa": return "Province"
+        default: return "State/Region"
+        }
+    }
+
+    private func getStatesRegions(for country: String) -> [String] {
+        switch country {
+        case "Australia":
+            return ["New South Wales", "Victoria", "Queensland", "South Australia", "Western Australia", "Tasmania", "Northern Territory", "Australian Capital Territory"]
+        case "New Zealand":
+            return ["Northland", "Auckland", "Waikato", "Bay of Plenty", "Gisborne", "Hawke's Bay", "Taranaki", "Manawatu-Wanganui", "Wellington", "Tasman", "Nelson", "Marlborough", "West Coast", "Canterbury", "Otago", "Southland"]
+        case "England":
+            return ["Greater London", "South East", "South West", "West Midlands", "East Midlands", "East of England", "Yorkshire and Humber", "North West", "North East"]
+        case "Canada":
+            return ["Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba", "Saskatchewan", "Nova Scotia", "New Brunswick", "Newfoundland and Labrador", "Prince Edward Island", "Northwest Territories", "Yukon", "Nunavut"]
+        case "South Africa":
+            return ["Western Cape", "Gauteng", "KwaZulu-Natal", "Eastern Cape", "Free State", "Limpopo", "Mpumalanga", "North West", "Northern Cape"]
+        default:
+            return []
+        }
+    }
+
+    private func getCityPlaceholder(for country: String, state: String) -> String {
+        if state.isEmpty || ["Select State", "Select Region", "Select Province/Territory", "Select Province"].contains(state) {
+            return "City/Region"
+        }
+        return "Enter city or region in \(state)"
+    }
+
+    private func getPopularCities(for country: String, state: String) -> [String] {
+        let key = "\(country)_\(state)"
+
+        let cityData: [String: [String]] = [
+            // Australia
+            "Australia_New South Wales": ["Sydney", "Central Coast", "Hunter Valley", "North Coast"],
+            "Australia_Victoria": ["Melbourne", "Gippsland", "Mornington Peninsula", "Geelong"],
+            "Australia_Queensland": ["Brisbane", "Gold Coast", "Sunshine Coast", "Cairns"],
+            "Australia_South Australia": ["Adelaide", "Barossa Valley", "Limestone Coast", "Eyre Peninsula"],
+            "Australia_Western Australia": ["Perth", "Kimberley", "Pilbara", "Goldfields-Esperance"],
+            "Australia_Tasmania": ["Hobart", "Launceston", "East Coast", "West Coast"],
+            "Australia_Northern Territory": ["Darwin", "Alice Springs", "Kakadu", "Arnhem Land"],
+            "Australia_Australian Capital Territory": ["Canberra"],
+
+            // New Zealand
+            "New Zealand_Northland": ["Whangarei", "Bay of Islands"],
+            "New Zealand_Auckland": ["Auckland City", "North Shore", "West Auckland", "South Auckland"],
+            "New Zealand_Waikato": ["Hamilton", "Thames Valley"],
+            "New Zealand_Bay of Plenty": ["Tauranga", "Rotorua", "Whakatane"],
+            "New Zealand_Gisborne": ["Gisborne City"],
+            "New Zealand_Hawke's Bay": ["Napier", "Hastings"],
+            "New Zealand_Taranaki": ["New Plymouth", "South Taranaki"],
+            "New Zealand_Manawatu-Wanganui": ["Palmerston North", "Whanganui"],
+            "New Zealand_Wellington": ["Wellington City", "Lower Hutt", "Upper Hutt", "Porirua"],
+            "New Zealand_Canterbury": ["Christchurch", "Timaru", "Ashburton"],
+            "New Zealand_Otago": ["Dunedin", "Queenstown", "Wanaka"],
+
+            // England
+            "England_Greater London": ["London", "Westminster", "Camden", "Islington"],
+            "England_South East": ["Brighton", "Canterbury", "Dover", "Guildford"],
+            "England_South West": ["Bristol", "Bath", "Exeter", "Plymouth"],
+            "England_West Midlands": ["Birmingham", "Coventry", "Wolverhampton", "Walsall"],
+            "England_East Midlands": ["Nottingham", "Leicester", "Derby", "Lincoln"],
+            "England_East of England": ["Cambridge", "Norwich", "Ipswich", "Luton"],
+            "England_Yorkshire and Humber": ["Leeds", "Sheffield", "Bradford", "Hull"],
+            "England_North West": ["Manchester", "Liverpool", "Preston", "Lancaster"],
+            "England_North East": ["Newcastle", "Sunderland", "Middlesbrough", "Durham"],
+
+            // Canada
+            "Canada_Ontario": ["Toronto", "Ottawa", "Hamilton", "London"],
+            "Canada_Quebec": ["Montreal", "Quebec City", "Gatineau", "Sherbrooke"],
+            "Canada_British Columbia": ["Vancouver", "Victoria", "Surrey", "Burnaby"],
+            "Canada_Alberta": ["Calgary", "Edmonton", "Red Deer", "Lethbridge"],
+            "Canada_Manitoba": ["Winnipeg", "Brandon", "Steinbach", "Thompson"],
+            "Canada_Saskatchewan": ["Saskatoon", "Regina", "Prince Albert", "Moose Jaw"],
+            "Canada_Nova Scotia": ["Halifax", "Sydney", "Dartmouth", "Truro"],
+            "Canada_New Brunswick": ["Saint John", "Moncton", "Fredericton", "Bathurst"],
+
+            // South Africa
+            "South Africa_Western Cape": ["Cape Town", "Stellenbosch", "Paarl", "George"],
+            "South Africa_Gauteng": ["Johannesburg", "Pretoria", "Soweto", "Sandton"],
+            "South Africa_KwaZulu-Natal": ["Durban", "Pietermaritzburg", "Newcastle", "Richards Bay"],
+            "South Africa_Eastern Cape": ["Port Elizabeth", "East London", "Uitenhage", "King William's Town"],
+            "South Africa_Free State": ["Bloemfontein", "Welkom", "Kroonstad", "Bethlehem"],
+            "South Africa_Limpopo": ["Polokwane", "Tzaneen", "Mokopane", "Thohoyandou"],
+            "South Africa_Mpumalanga": ["Nelspruit", "Witbank", "Secunda", "Standerton"],
+            "South Africa_North West": ["Rustenburg", "Klerksdorp", "Potchefstroom", "Mahikeng"],
+            "South Africa_Northern Cape": ["Kimberley", "Upington", "Kuruman", "De Aar"]
+        ]
+
+        return cityData[key] ?? []
+    }
 }
 
 // MARK: - Save Button Section
 struct SaveButtonSection: View {
     @ObservedObject var viewModel: ProfileSetupViewModel
-    let dismiss: DismissAction
+    @Binding var isPresented: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -595,7 +770,10 @@ struct SaveButtonSection: View {
                 Task {
                     await viewModel.saveProfile()
                     if viewModel.navigateToDashboard {
-                        dismiss()
+                        // Update UserDefaults to mark profile as completed
+                        UserDefaults.standard.set(true, forKey: "profile_completed")
+                        // Dismiss the view
+                        isPresented = false
                     }
                 }
             }) {

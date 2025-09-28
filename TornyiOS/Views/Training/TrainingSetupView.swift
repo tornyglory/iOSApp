@@ -32,7 +32,7 @@ struct TrainingSetupView: View {
                 TornyBackgroundView()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 20) {
                         // Header
                         VStack(spacing: 16) {
                             Image(systemName: "target")
@@ -49,7 +49,7 @@ struct TrainingSetupView: View {
                                 .foregroundColor(.tornyTextSecondary)
                                 .multilineTextAlignment(.center)
                         }
-                        .padding(.top, 20)
+                        .padding(.top, 60)
                         .padding(.horizontal, 20)
                         
                         // Green Conditions
@@ -325,6 +325,7 @@ struct TrainingSetupView: View {
                 }
             }
             .navigationBarHidden(true)
+            .ignoresSafeArea(.container, edges: .top)
         }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }

@@ -4,6 +4,7 @@ struct SessionDetailView: View {
     let session: TrainingSession
     @ObservedObject private var apiService = APIService.shared
     @State private var sessionStats: SessionStatistics?
+    @State private var shots: [TrainingShot] = []
     @State private var isLoading = false
     @Environment(\.dismiss) private var dismiss
 
@@ -31,7 +32,7 @@ struct SessionDetailView: View {
                     .padding(.horizontal)
 
                 // Shot History
-                ShotHistorySection(session: session)
+                ShotHistorySection(session: session, shots: shots)
                     .padding(.horizontal)
             }
             .padding(.vertical)
@@ -46,7 +47,19 @@ struct SessionDetailView: View {
 
     private func loadSessionDetails() async {
         isLoading = true
-        // Load session details if needed
+
+        do {
+            // Fetch session details with shots from API
+            let sessionDetailResponse = try await apiService.getSessionDetails(session.id)
+
+            await MainActor.run {
+                self.sessionStats = sessionDetailResponse.statistics
+                self.shots = sessionDetailResponse.shots
+            }
+        } catch {
+            print("❌ Failed to load session details: \(error.localizedDescription)")
+        }
+
         isLoading = false
     }
 
@@ -541,7 +554,7 @@ struct DetailedShotBreakdownSection: View {
                         totalShots: ditchWeightShots,
                         totalPoints: 2,
                         shots: [
-                            ShotDetail(hand: "Forehand", weight: "Medium", result: "Foot", points: 2)
+                            ShotDetail(hand: "Forehand", length: "Medium", result: "Foot", points: 2)
                         ]
                     )
                 }
@@ -553,8 +566,8 @@ struct DetailedShotBreakdownSection: View {
                         totalShots: drawShots,
                         totalPoints: 3,
                         shots: [
-                            ShotDetail(hand: "Forehand", weight: "Medium", result: "Foot", points: 2),
-                            ShotDetail(hand: "Forehand", weight: "Medium", result: "Yard", points: 1)
+                            ShotDetail(hand: "Forehand", length: "Medium", result: "Foot", points: 2),
+                            ShotDetail(hand: "Forehand", length: "Medium", result: "Yard", points: 1)
                         ]
                     )
                 }
@@ -566,7 +579,7 @@ struct DetailedShotBreakdownSection: View {
                         totalShots: driveShots,
                         totalPoints: 2,
                         shots: [
-                            ShotDetail(hand: "Forehand", weight: "Medium", result: "Foot", points: 2)
+                            ShotDetail(hand: "Forehand", length: "Medium", result: "Foot", points: 2)
                         ]
                     )
                 }
@@ -628,7 +641,7 @@ struct DetailedShotTypeSection: View {
 
 struct ShotDetail {
     let hand: String
-    let weight: String
+    let length: String
     let result: String
     let points: Int
 }
@@ -651,7 +664,7 @@ struct ShotDetailCard: View {
                 Text(shot.hand)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                Text(shot.weight)
+                Text(shot.length)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -697,57 +710,51 @@ struct ShotResultBadge: View {
 
 struct ShotHistorySection: View {
     let session: TrainingSession
+    let shots: [TrainingShot]
+
+    private func displayName(for shotType: ShotType) -> String {
+        switch shotType.rawValue {
+        case "draw": return "Draw"
+        case "yard_on": return "Yard On"
+        case "ditch_weight": return "Ditch Weight"
+        case "drive": return "Drive"
+        default: return shotType.rawValue.capitalized
+        }
+    }
+
+    private func resultColor(for distance: DistanceFromJack?) -> Color {
+        guard let distance = distance else { return .gray }
+        switch distance {
+        case .foot: return .green
+        case .yard: return .orange
+        case .miss: return .red
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Shot History (\(session.totalShots ?? 0) shots)")
+            Text("Shot History (\(shots.count) shots)")
                 .font(.headline)
                 .fontWeight(.semibold)
 
             VStack(spacing: 8) {
-                // Sample shot history entries
-                if (session.totalShots ?? 0) > 0 {
+                // Display actual shot history from API data
+                ForEach(shots, id: \.id) { shot in
                     ShotHistoryRow(
-                        shotType: "Draw",
-                        hand: "Forehand",
-                        weight: "Medium",
-                        result: "Foot",
-                        color: .green,
-                        time: session.sessionDate
+                        shotType: displayName(for: shot.shotType),
+                        hand: shot.hand.rawValue.capitalized,
+                        length: shot.length.rawValue.capitalized,
+                        result: shot.distanceFromJack?.rawValue.capitalized ?? "Unknown",
+                        color: resultColor(for: shot.distanceFromJack),
+                        time: shot.createdAt
                     )
+                }
 
-                    if (session.totalShots ?? 0) > 1 {
-                        ShotHistoryRow(
-                            shotType: "Draw",
-                            hand: "Forehand",
-                            weight: "Medium",
-                            result: "Yard",
-                            color: .orange,
-                            time: session.sessionDate.addingTimeInterval(60)
-                        )
-                    }
-
-                    if (session.totalShots ?? 0) > 2 {
-                        ShotHistoryRow(
-                            shotType: "Ditch Weight",
-                            hand: "Forehand",
-                            weight: "Medium",
-                            result: "Foot",
-                            color: .green,
-                            time: session.sessionDate.addingTimeInterval(120)
-                        )
-                    }
-
-                    if (session.totalShots ?? 0) > 3 {
-                        ShotHistoryRow(
-                            shotType: "Drive",
-                            hand: "Forehand",
-                            weight: "Medium",
-                            result: "Foot",
-                            color: .green,
-                            time: session.sessionDate.addingTimeInterval(180)
-                        )
-                    }
+                if shots.isEmpty {
+                    Text("No shots recorded")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 20)
                 }
             }
         }
@@ -761,7 +768,7 @@ struct ShotHistorySection: View {
 struct ShotHistoryRow: View {
     let shotType: String
     let hand: String
-    let weight: String
+    let length: String
     let result: String
     let color: Color
     let time: Date
@@ -776,7 +783,7 @@ struct ShotHistoryRow: View {
                     Text(hand)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(weight)
+                    Text(length)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

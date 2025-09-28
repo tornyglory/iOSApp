@@ -32,9 +32,9 @@ struct TrainingSessionView: View {
                 VStack(spacing: 0) {
                     // Session Info Header
                     sessionInfoHeader
-                    
+
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 16) {
                             // Live Stats
                             liveStatsCard
 
@@ -55,7 +55,7 @@ struct TrainingSessionView: View {
                             Spacer(minLength: 100)
                         }
                         .padding(.horizontal, 20)
-                        .padding(.top, 20)
+                        .padding(.top, 8)
                     }
                 }
             }
