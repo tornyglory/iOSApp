@@ -10,7 +10,7 @@ class AnalyticsViewModel: ObservableObject {
     private let apiService = APIService.shared
 
     func fetchAnalytics() {
-        guard let token = UserDefaults.standard.string(forKey: "auth_token") else {
+        guard let token = apiService.authToken else {
             self.errorMessage = "Authentication required"
             return
         }

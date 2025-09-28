@@ -6,104 +6,54 @@ struct LaunchScreen: View {
 
     var body: some View {
         ZStack {
-            // Background gradient matching app theme
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.0, green: 0.8, blue: 0.8),  // Aqua
-                    Color(red: 0.5, green: 0.0, blue: 0.8)   // Purple
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Clean white background
+            Color.white
+                .ignoresSafeArea()
 
-            VStack(spacing: 30) {
+            VStack(spacing: 40) {
                 Spacer()
 
-                // Main logo section
-                VStack(spacing: 20) {
-                    // Large "T" logo with subtle animation
-                    ZStack {
-                        // Shadow circle
-                        Circle()
-                            .fill(Color.black.opacity(0.1))
-                            .frame(width: 130, height: 130)
-                            .offset(x: 3, y: 3)
+                // Main logo section - trophy and text inline
+                HStack(spacing: 6) {
+                    // Trophy emoji on the left - smaller
+                    Text("🏆")
+                        .font(.system(size: 40))
+                        .scaleEffect(isAnimating ? 1.05 : 1.0)
+                        .animation(
+                            Animation.easeInOut(duration: 2.0)
+                                .repeatForever(autoreverses: true),
+                            value: isAnimating
+                        )
 
-                        // Main logo circle
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 120, height: 120)
-                            .overlay(
-                                Text("T")
-                                    .font(.system(size: 60, weight: .bold, design: .rounded))
-                                    .foregroundColor(Color(red: 0.3, green: 0.0, blue: 0.6))
-                            )
-                    }
-                    .scaleEffect(isAnimating ? 1.05 : 1.0)
-                    .animation(
-                        Animation.easeInOut(duration: 2.0)
-                            .repeatForever(autoreverses: true),
-                        value: isAnimating
-                    )
-
-                    // App name with custom font styling
-                    VStack(spacing: 8) {
-                        Text("TORNY")
-                            .font(.system(size: 42, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
-                            .tracking(2)
-
-                        Text("Lawn Bowls Training")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.9))
-                            .tracking(1)
-                    }
-                    .opacity(opacity)
-                    .animation(
-                        Animation.easeIn(duration: 1.5).delay(0.5),
-                        value: opacity
-                    )
+                    // Torny brand text on the right - custom font with extra space
+                    Text("TORNY ")
+                        .font(TornyFonts.brandTitle)
+                        .foregroundColor(.tornyTextPrimary)
+                        .background(
+                            Rectangle()
+                                .fill(Color.clear)
+                                .frame(width: 180, height: 50)
+                        )
+                        .clipped()
                 }
-
-                Spacer()
-                Spacer()
-
-                // Bottom section with version and branding
-                VStack(spacing: 12) {
-                    // Subtle loading indicator
-                    HStack(spacing: 8) {
-                        ForEach(0..<3) { index in
-                            Circle()
-                                .fill(Color.white.opacity(0.7))
-                                .frame(width: 8, height: 8)
-                                .scaleEffect(isAnimating ? 1.0 : 0.5)
-                                .animation(
-                                    Animation.easeInOut(duration: 0.6)
-                                        .repeatForever()
-                                        .delay(Double(index) * 0.2),
-                                    value: isAnimating
-                                )
-                        }
-                    }
-                    .padding(.bottom, 20)
-
-                    // Version and branding
-                    VStack(spacing: 4) {
-                        Text("Version 1.0")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
-
-                        Text("© 2024 Torny Sports")
-                            .font(.system(size: 10, weight: .regular))
-                            .foregroundColor(.white.opacity(0.5))
-                    }
-                }
+                .frame(maxWidth: .infinity)
                 .opacity(opacity)
                 .animation(
-                    Animation.easeIn(duration: 1.0).delay(1.0),
+                    Animation.easeIn(duration: 1.5).delay(0.5),
                     value: opacity
                 )
+
+                Spacer()
+
+                // Version at bottom
+                Text("Version 1.0")
+                    .font(TornyFonts.caption)
+                    .foregroundColor(.tornyTextSecondary)
+                    .opacity(opacity)
+                    .animation(
+                        Animation.easeIn(duration: 1.0).delay(1.0),
+                        value: opacity
+                    )
             }
             .padding(.vertical, 50)
         }
@@ -118,33 +68,26 @@ struct LaunchScreen: View {
 struct MinimalLaunchScreen: View {
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.0, green: 0.8, blue: 0.8),  // Aqua
-                    Color(red: 0.5, green: 0.0, blue: 0.8)   // Purple
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Clean white background
+            Color.white
+                .ignoresSafeArea()
 
-            // Simple centered logo
-            VStack(spacing: 16) {
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 100, height: 100)
-                    .overlay(
-                        Text("T")
-                            .font(.system(size: 50, weight: .bold, design: .rounded))
-                            .foregroundColor(Color(red: 0.3, green: 0.0, blue: 0.6))
+            // Simple centered logo - inline
+            HStack(spacing: 6) {
+                Text("🏆")
+                    .font(.system(size: 35))
+
+                Text("TORNY ")
+                    .font(TornyFonts.brandMedium)
+                    .foregroundColor(.tornyTextPrimary)
+                    .background(
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(width: 150, height: 40)
                     )
-
-                Text("TORNY")
-                    .font(.system(size: 32, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
-                    .tracking(2)
+                    .clipped()
             }
+            .frame(maxWidth: .infinity)
         }
     }
 }

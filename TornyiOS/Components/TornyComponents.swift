@@ -281,10 +281,16 @@ struct TornyNavBar: View {
             HStack(spacing: 4) {
                 Text("🏆")
                     .font(.system(size: 24))
-                Text("torny")
+                Text("torny ")
                     .font(.custom("PermanentMarker-Regular", size: 28))
                     .foregroundColor(.black)
                     .fontWeight(.bold)
+                    .background(
+                        Rectangle()
+                            .fill(Color.clear)
+                            .frame(width: 100, height: 35)
+                    )
+                    .clipped()
             }
             
             Spacer()
@@ -426,6 +432,15 @@ struct TornySidebar: View {
                     
                     Divider()
                         .padding(.vertical, 16)
+
+                    SidebarLink(icon: "square.and.arrow.up", title: "Share Torny", notification: nil) {
+                        // Share app action
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let window = windowScene.windows.first {
+                            ShareService.shared.shareApp(from: window.rootViewController!, isPersonalInvite: true)
+                        }
+                        isPresented = false
+                    }
 
                     SidebarLink(icon: "arrow.right.square", title: "Logout", notification: nil) {
                         // Logout action
