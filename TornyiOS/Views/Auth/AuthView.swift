@@ -47,12 +47,13 @@ struct AuthView: View {
 
 struct LoginView: View {
     @ObservedObject private var apiService = APIService.shared
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
-    
+
     let successMessage: String?
     let onSwitchToRegister: () -> Void
     
@@ -115,12 +116,26 @@ struct LoginView: View {
             .buttonStyle(TornyPrimaryButton(isLarge: true))
             .frame(maxWidth: .infinity)
             .disabled(isLoading || email.isEmpty || password.isEmpty)
-            
-            Button("Don't have an account? Sign Up") {
+
+            // Forgot Password Link
+            Button("Forgot Password?") {
+                navigationManager.showForgotPassword()
+            }
+            .font(TornyFonts.bodySecondary)
+            .foregroundColor(.tornyBlue)
+            .disabled(isLoading)
+
+            Button(action: {
                 onSwitchToRegister()
+            }) {
+                HStack(spacing: 4) {
+                    Text("Don't have an account?")
+                        .foregroundColor(.black)
+                    Text("Sign Up")
+                        .foregroundColor(.tornyBlue)
+                }
             }
             .font(TornyFonts.body)
-            .foregroundColor(.tornyBlue)
         }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }
@@ -209,11 +224,17 @@ struct RegisterView: View {
             .frame(maxWidth: .infinity)
             .disabled(isLoading || !isFormValid)
             
-            Button("Already have an account? Sign In") {
+            Button(action: {
                 onSwitchToLogin("")
+            }) {
+                HStack(spacing: 4) {
+                    Text("Already have an account?")
+                        .foregroundColor(.black)
+                    Text("Sign In")
+                        .foregroundColor(.tornyBlue)
+                }
             }
             .font(TornyFonts.body)
-            .foregroundColor(.tornyBlue)
         }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }

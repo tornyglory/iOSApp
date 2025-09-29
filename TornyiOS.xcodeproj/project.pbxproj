@@ -45,6 +45,11 @@
 		B2A1C0D9F8E7D6C5B4A3F2E1 /* LiveChartsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */; };
 		C4B3A2F1E0D9C8B7A6F5E4D3 /* ProgressChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */; };
 		D5C4B3A2F1E0D9C8B7A6F5E4 /* ComparativeAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */; };
+		4A3F2E1D0C9B8A7F6E5D4C3B /* ShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2E1D0C9B8A7F6E5D4C3B2A /* ShareService.swift */; };
+		E6D5C4B3A2F1E0D9C8B7A6F5 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E6D5C4B3A2F1E0D9C8B7A6 /* NavigationManager.swift */; };
+		F8E7D6C5B4A3F2E1D0C9B8A7 /* PasswordResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F8E7D6C5B4A3F2E1D0C9B8 /* PasswordResetService.swift */; };
+		A0F9E8D7C6B5A4F3E2D1C0B9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0F9E8D7C6B5A4F3E2D1C0 /* ForgotPasswordView.swift */; };
+		C2B1A0F9E8D7C6B5A4F3E2D1 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +92,11 @@
 		A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/LiveChartsComponent.swift"; sourceTree = "<group>"; };
 		F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/ProgressChartsView.swift"; sourceTree = "<group>"; };
 		A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/ComparativeAnalysisView.swift"; sourceTree = "<group>"; };
+		5F2E1D0C9B8A7F6E5D4C3B2A /* ShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Utilities/ShareService.swift"; sourceTree = "<group>"; };
+		F7E6D5C4B3A2F1E0D9C8B7A6 /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Utilities/NavigationManager.swift"; sourceTree = "<group>"; };
+		A9F8E7D6C5B4A3F2E1D0C9B8 /* PasswordResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Network/PasswordResetService.swift"; sourceTree = "<group>"; };
+		B1A0F9E8D7C6B5A4F3E2D1C0 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/ForgotPasswordView.swift"; sourceTree = "<group>"; };
+		D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/ResetPasswordView.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +163,11 @@
 				D8A1B5C62B8E4FA500123456 /* TornyComponents.swift */,
 				A9B8C7D6E5F4A3B2C1D0F9E8 /* LiveChartsComponent.swift */,
 				D8A1B5C82B8E4FB000123456 /* PermanentMarker-Regular.ttf */,
+				F7E6D5C4B3A2F1E0D9C8B7A6 /* NavigationManager.swift */,
+				A9F8E7D6C5B4A3F2E1D0C9B8 /* PasswordResetService.swift */,
+				B1A0F9E8D7C6B5A4F3E2D1C0 /* ForgotPasswordView.swift */,
+				D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */,
+				5F2E1D0C9B8A7F6E5D4C3B2A /* ShareService.swift */,
 				D8A1B5AC2B8E4F2C00123456 /* Assets.xcassets */,
 				D8A1B5AE2B8E4F2C00123456 /* Preview Content */,
 			);
@@ -273,6 +288,11 @@
 				B2A1C0D9F8E7D6C5B4A3F2E1 /* LiveChartsComponent.swift in Sources */,
 				C4B3A2F1E0D9C8B7A6F5E4D3 /* ProgressChartsView.swift in Sources */,
 				D5C4B3A2F1E0D9C8B7A6F5E4 /* ComparativeAnalysisView.swift in Sources */,
+				4A3F2E1D0C9B8A7F6E5D4C3B /* ShareService.swift in Sources */,
+				E6D5C4B3A2F1E0D9C8B7A6F5 /* NavigationManager.swift in Sources */,
+				F8E7D6C5B4A3F2E1D0C9B8A7 /* PasswordResetService.swift in Sources */,
+				A0F9E8D7C6B5A4F3E2D1C0B9 /* ForgotPasswordView.swift in Sources */,
+				C2B1A0F9E8D7C6B5A4F3E2D1 /* ResetPasswordView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
