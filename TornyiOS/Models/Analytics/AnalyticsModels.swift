@@ -126,3 +126,101 @@ struct AnalyticsDrawDistanceStat: Codable, Identifiable {
         case pointsPerShot = "points_per_shot"
     }
 }
+
+// MARK: - AI Insights Models
+
+struct AIInsightsResponse: Codable {
+    let period: String
+    let analysisDate: String
+    let overallAssessment: String
+    let keyInsights: [String]
+    let strengths: [String]
+    let weaknessesIdentified: [String]
+    let areasForImprovement: [AreaForImprovement]
+    let performancePatterns: PerformancePatterns
+    let recommendedDrills: [RecommendedDrill]
+    let nextSessionFocus: String
+
+    enum CodingKeys: String, CodingKey {
+        case period
+        case analysisDate = "analysis_date"
+        case overallAssessment = "overall_assessment"
+        case keyInsights = "key_insights"
+        case strengths
+        case weaknessesIdentified = "weaknesses_identified"
+        case areasForImprovement = "areas_for_improvement"
+        case performancePatterns = "performance_patterns"
+        case recommendedDrills = "recommended_drills"
+        case nextSessionFocus = "next_session_focus"
+    }
+}
+
+struct AreaForImprovement: Codable, Identifiable {
+    var id: UUID = UUID()
+    let area: String
+    let currentPerformance: String
+    let target: String
+    let priority: String
+
+    enum CodingKeys: String, CodingKey {
+        case area
+        case currentPerformance = "current_performance"
+        case target
+        case priority
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.area = try container.decode(String.self, forKey: .area)
+        self.currentPerformance = try container.decode(String.self, forKey: .currentPerformance)
+        self.target = try container.decode(String.self, forKey: .target)
+        self.priority = try container.decode(String.self, forKey: .priority)
+        self.id = UUID()
+    }
+}
+
+struct PerformancePatterns: Codable {
+    let bestConditions: String?
+    let challengingConditions: String?
+    let greenSpeedAnalysis: String?
+    let greenTypeAnalysis: String?
+    let handAnalysis: String?
+    let lengthAnalysis: String?
+    let locationAnalysis: String?
+    let consistencyRating: String?
+
+    enum CodingKeys: String, CodingKey {
+        case bestConditions = "best_conditions"
+        case challengingConditions = "challenging_conditions"
+        case greenSpeedAnalysis = "green_speed_analysis"
+        case greenTypeAnalysis = "green_type_analysis"
+        case handAnalysis = "hand_analysis"
+        case lengthAnalysis = "length_analysis"
+        case locationAnalysis = "location_analysis"
+        case consistencyRating = "consistency_rating"
+    }
+}
+
+struct RecommendedDrill: Codable, Identifiable {
+    var id: UUID = UUID()
+    let drillName: String
+    let description: String
+    let targetMetrics: String
+    let duration: String
+
+    enum CodingKeys: String, CodingKey {
+        case drillName = "drill_name"
+        case description
+        case targetMetrics = "target_metrics"
+        case duration
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.drillName = try container.decode(String.self, forKey: .drillName)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.targetMetrics = try container.decode(String.self, forKey: .targetMetrics)
+        self.duration = try container.decode(String.self, forKey: .duration)
+        self.id = UUID()
+    }
+}

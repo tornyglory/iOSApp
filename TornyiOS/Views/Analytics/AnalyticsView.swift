@@ -6,6 +6,7 @@ struct AnalyticsView: View {
     @State private var showDetailedAnalytics = false
     @State private var showProgressCharts = false
     @State private var showComparativeAnalysis = false
+    @State private var showAIInsights = false
 
     var body: some View {
         ZStack {
@@ -132,7 +133,7 @@ struct AnalyticsView: View {
                                 subtitle: "Performance recommendations",
                                 color: .orange
                             ) {
-                                // Navigate to insights
+                                showAIInsights = true
                             }
                         }
 
@@ -170,6 +171,9 @@ struct AnalyticsView: View {
         }
         .sheet(isPresented: $showComparativeAnalysis) {
             ComparativeAnalysisView()
+        }
+        .sheet(isPresented: $showAIInsights) {
+            AIInsightsView()
         }
     }
 

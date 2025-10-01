@@ -50,6 +50,8 @@
 		F8E7D6C5B4A3F2E1D0C9B8A7 /* PasswordResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F8E7D6C5B4A3F2E1D0C9B8 /* PasswordResetService.swift */; };
 		A0F9E8D7C6B5A4F3E2D1C0B9 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0F9E8D7C6B5A4F3E2D1C0 /* ForgotPasswordView.swift */; };
 		C2B1A0F9E8D7C6B5A4F3E2D1 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* AIInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF66EE55DD44CC33BB22AA11 /* AIInsightsView.swift */; };
+		BB22CC33DD44EE55FF66AA11 /* AIInsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11FF66EE55DD44CC33BB22 /* AIInsightsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +99,8 @@
 		A9F8E7D6C5B4A3F2E1D0C9B8 /* PasswordResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/Network/PasswordResetService.swift"; sourceTree = "<group>"; };
 		B1A0F9E8D7C6B5A4F3E2D1C0 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/ForgotPasswordView.swift"; sourceTree = "<group>"; };
 		D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/ResetPasswordView.swift"; sourceTree = "<group>"; };
+		FF66EE55DD44CC33BB22AA11 /* AIInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/AIInsightsView.swift"; sourceTree = "<group>"; };
+		AA11FF66EE55DD44CC33BB22 /* AIInsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AIInsightsViewModel.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +147,7 @@
 				E2D1C0B9A8F7E6D5C4B3A2F1 /* DetailedAnalyticsView.swift */,
 				F2E1D0C9B8A7F6E5D4C3B2A1 /* ProgressChartsView.swift */,
 				A3F2E1D0C9B8A7F6E5D4C3B2 /* ComparativeAnalysisView.swift */,
+				FF66EE55DD44CC33BB22AA11 /* AIInsightsView.swift */,
 				D8A1B5C02B8E4F8400123456 /* SessionHistoryView.swift */,
 				D8A1B5C22B8E4F8F00123456 /* AuthView.swift */,
 				D8A1B5C42B8E4F9F00123456 /* ProfileSetupView.swift */,
@@ -151,6 +156,7 @@
 				AE3B9C1C2C9A4B5E00789012 /* AnalyticsDetailView.swift */,
 				AE3B9C1E2C9A4B6000789012 /* AnalyticsModels.swift */,
 				AE3B9C202C9A4B6200789012 /* AnalyticsViewModel.swift */,
+				AA11FF66EE55DD44CC33BB22 /* AIInsightsViewModel.swift */,
 				AE3B9C222C9A4B6400789012 /* SessionDetailCards.swift */,
 				AE3B9C242C9A4B6600789012 /* DashboardView.swift */,
 				AE3B9C262C9A4B6800789012 /* DashboardViewModel.swift */,
@@ -293,6 +299,8 @@
 				F8E7D6C5B4A3F2E1D0C9B8A7 /* PasswordResetService.swift in Sources */,
 				A0F9E8D7C6B5A4F3E2D1C0B9 /* ForgotPasswordView.swift in Sources */,
 				C2B1A0F9E8D7C6B5A4F3E2D1 /* ResetPasswordView.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* AIInsightsView.swift in Sources */,
+				BB22CC33DD44EE55FF66AA11 /* AIInsightsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
