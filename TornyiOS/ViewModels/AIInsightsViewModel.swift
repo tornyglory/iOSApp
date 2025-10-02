@@ -9,7 +9,7 @@ class AIInsightsViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let apiService = APIService.shared
 
-    func fetchInsights() {
+    func fetchInsights(period: String = "all") {
         guard let token = apiService.authToken else {
             self.errorMessage = "Authentication required"
             return
@@ -24,10 +24,19 @@ class AIInsightsViewModel: ObservableObject {
             return
         }
 
+        // Create request body
+        let requestBody: [String: String] = ["period": period]
+        guard let bodyData = try? JSONEncoder().encode(requestBody) else {
+            self.errorMessage = "Failed to encode request"
+            self.isLoading = false
+            return
+        }
+
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = bodyData
 
         URLSession.shared.dataTaskPublisher(for: request)
             .map(\.data)

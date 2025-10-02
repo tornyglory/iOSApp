@@ -1,9 +1,11 @@
 import SwiftUI
 import Foundation
+import MessageUI
 
 
 struct ContentView: View {
     @ObservedObject private var apiService = APIService.shared
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
     @State private var hasCompletedProfile = false
@@ -16,7 +18,11 @@ struct ContentView: View {
                     .transition(.opacity)
             } else {
                 if apiService.isAuthenticated {
-                    if hasCompletedProfile && !showingProfileSetup {
+                    // Check profile completion from currentUser
+                    let profileComplete = apiService.currentUser?.profileCompleted == 1 ||
+                                         UserDefaults.standard.bool(forKey: "profile_completed")
+
+                    if profileComplete {
                         MainDashboardView()
                     } else {
                         ProfileSetupView()
@@ -27,6 +33,20 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.8), value: showingSplashScreen)
+        .sheet(isPresented: $navigationManager.showingForgotPassword) {
+            ForgotPasswordView()
+        }
+        .sheet(isPresented: $navigationManager.showingPasswordReset) {
+            if let token = navigationManager.passwordResetToken {
+                ResetPasswordView(token: token)
+            }
+        }
+        .onChange(of: apiService.currentUser?.profileCompleted) { newValue in
+            if newValue == 1 {
+                hasCompletedProfile = true
+                UserDefaults.standard.set(true, forKey: "profile_completed")
+            }
+        }
         .onChange(of: apiService.isAuthenticated) { isAuthenticated in
             if isAuthenticated {
                 // Check profile completion status when user logs in
@@ -306,6 +326,7 @@ struct ProfileRow: View {
 // MARK: - Dashboard View
 struct MainDashboardView: View {
     @ObservedObject private var apiService = APIService.shared
+    @StateObject private var dashboardViewModel = DashboardViewModel()
     @State private var showSidebar = false
     @State private var selectedView: DashboardNavigationType? = nil
     @State private var showingTrainingSetup = false
@@ -314,7 +335,8 @@ struct MainDashboardView: View {
     @State private var showingProfileSetup = false
     @State private var currentTrainingSession: TrainingSession? = nil
     @State private var selectedBottomTab = 0
-    
+    @State private var showAIInsights = false
+
     var body: some View {
         ZStack {
             if let currentView = selectedView {
@@ -380,6 +402,10 @@ struct MainDashboardView: View {
                 TrainingSessionView(session: trainingSession) {
                     // Session end callback
                     currentTrainingSession = nil
+                    // Refresh dashboard data after session completion
+                    Task {
+                        await dashboardViewModel.loadDashboard()
+                    }
                 }
             } else {
                 // Show main dashboard
@@ -456,7 +482,129 @@ struct MainDashboardView: View {
                                     }
                                 }
                                 .padding(.horizontal, 20)
-                                
+
+                                // Torny AI Feature Button
+                                Button(action: {
+                                    showAIInsights = true
+                                }) {
+                                    HStack(spacing: 16) {
+                                        // Icon with gradient background
+                                        ZStack {
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [.purple, .blue]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                                .frame(width: 60, height: 60)
+
+                                            Image(systemName: "brain.head.profile")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.white)
+                                        }
+
+                                        // Text content
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 6) {
+                                                Text("Torny AI")
+                                                    .font(TornyFonts.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.tornyTextPrimary)
+
+                                                Image(systemName: "sparkles")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.purple)
+                                            }
+
+                                            Text("Get personalized insights & recommendations")
+                                                .font(TornyFonts.bodySecondary)
+                                                .foregroundColor(.tornyTextSecondary)
+                                                .multilineTextAlignment(.leading)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.tornyTextSecondary)
+                                    }
+                                    .padding(20)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.white)
+                                            .shadow(color: Color.purple.opacity(0.2), radius: 8, x: 0, y: 4)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 2
+                                            )
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 20)
+
+                                // Invite friends button
+                                VStack(spacing: 12) {
+                                    Button(action: {
+                                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                           let window = windowScene.windows.first {
+                                            ShareService.shared.shareViaMessages(from: window.rootViewController!)
+                                        }
+                                    }) {
+                                        HStack(spacing: 16) {
+                                            Image(systemName: "message.fill")
+                                                .font(.title2)
+                                                .foregroundColor(.white)
+
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Share Torny with Friends")
+                                                    .font(TornyFonts.buttonLarge)
+                                                    .fontWeight(.semibold)
+                                                    .foregroundColor(.white)
+
+                                                Text("Share via text message")
+                                                    .font(TornyFonts.bodySecondary)
+                                                    .foregroundColor(.white.opacity(0.9))
+                                            }
+
+                                            Spacer()
+
+                                            Image(systemName: "chevron.right")
+                                                .font(.body)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.white.opacity(0.8))
+                                        }
+                                        .padding(.horizontal, 24)
+                                        .padding(.vertical, 20)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [.tornyBlue, .tornyDarkBlue]),
+                                                        startPoint: .leading,
+                                                        endPoint: .trailing
+                                                    )
+                                                )
+                                                .shadow(color: Color.tornyBlue.opacity(0.3), radius: 8, x: 0, y: 4)
+                                        )
+                                    }
+                                    .buttonStyle(InviteButtonStyle())
+
+                                    Text("Help your friends improve their lawn bowls game!")
+                                        .font(TornyFonts.caption)
+                                        .foregroundColor(.tornyTextSecondary)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .padding(.horizontal, 20)
+
                                 // Recent activity section
                                 TornyCard {
                                     VStack(alignment: .leading, spacing: 16) {
@@ -464,32 +612,66 @@ struct MainDashboardView: View {
                                             .font(TornyFonts.title3)
                                             .fontWeight(.semibold)
                                             .foregroundColor(.tornyTextPrimary)
-                                        
-                                        VStack(spacing: 12) {
-                                            DashboardActivityRow(
-                                                icon: "target",
-                                                title: "Training Session",
-                                                subtitle: "Completed 45 minutes ago",
-                                                color: .tornyBlue
-                                            )
-                                            
-                                            Divider()
-                                            
-                                            DashboardActivityRow(
-                                                icon: "chart.line.uptrend.xyaxis",
-                                                title: "Personal Best",
-                                                subtitle: "New accuracy record: 85%",
-                                                color: .tornyGreen
-                                            )
-                                            
-                                            Divider()
-                                            
-                                            DashboardActivityRow(
-                                                icon: "person.2.fill",
-                                                title: "Joined Club",
-                                                subtitle: "\(apiService.currentUser?.club ?? "Local Club")",
-                                                color: .tornyPurple
-                                            )
+
+                                        if dashboardViewModel.isLoading {
+                                            HStack {
+                                                TornyLoadingView(color: .tornyBlue)
+                                                Text("Loading activity...")
+                                                    .font(TornyFonts.body)
+                                                    .foregroundColor(.tornyTextSecondary)
+                                                Spacer()
+                                            }
+                                            .padding(.vertical, 20)
+                                        } else {
+                                            VStack(spacing: 12) {
+                                                // Recent session
+                                                if let lastSession = dashboardViewModel.recentSessions.first {
+                                                    DashboardActivityRow(
+                                                        icon: "target",
+                                                        title: "Training Session",
+                                                        subtitle: recentSessionSubtitle(session: lastSession),
+                                                        color: .tornyBlue
+                                                    )
+
+                                                    Divider()
+                                                }
+
+                                                // Performance stats
+                                                if dashboardViewModel.stats.overallAccuracy > 0 {
+                                                    DashboardActivityRow(
+                                                        icon: "chart.line.uptrend.xyaxis",
+                                                        title: "Overall Performance",
+                                                        subtitle: String(format: "%.1f%% accuracy over %d sessions", dashboardViewModel.stats.overallAccuracy, dashboardViewModel.stats.totalSessions),
+                                                        color: .tornyGreen
+                                                    )
+
+                                                    Divider()
+                                                }
+
+                                                // Club info or weekly activity
+                                                if dashboardViewModel.stats.thisWeekSessions > 0 {
+                                                    DashboardActivityRow(
+                                                        icon: "calendar",
+                                                        title: "This Week",
+                                                        subtitle: "\(dashboardViewModel.stats.thisWeekSessions) training sessions completed",
+                                                        color: .tornyPurple
+                                                    )
+                                                } else if let club = apiService.currentUser?.club {
+                                                    DashboardActivityRow(
+                                                        icon: "person.2.fill",
+                                                        title: "Joined Club",
+                                                        subtitle: club,
+                                                        color: .tornyPurple
+                                                    )
+                                                } else {
+                                                    DashboardActivityRow(
+                                                        icon: "info.circle",
+                                                        title: "Getting Started",
+                                                        subtitle: "Start your first training session to see activity",
+                                                        color: .tornyTextSecondary
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -577,6 +759,10 @@ struct MainDashboardView: View {
                 // Session created callback
                 showingTrainingSetup = false
                 currentTrainingSession = session
+                // Refresh dashboard data when returning from training
+                Task {
+                    await dashboardViewModel.loadDashboard()
+                }
             }
         }
         .sheet(isPresented: $showingHistory) {
@@ -586,8 +772,41 @@ struct MainDashboardView: View {
             AnalyticsView()
         }
         .sheet(isPresented: $showingProfileSetup) {
-            ProfileSetupView()
+            ProfileSetupViewContent(isPresented: $showingProfileSetup, showDoneButton: true)
         }
+        .sheet(isPresented: $showAIInsights) {
+            AIInsightsView()
+        }
+        .onAppear {
+            Task {
+                await dashboardViewModel.loadDashboard()
+            }
+        }
+    }
+
+    // MARK: - Helper Functions
+
+    private func recentSessionSubtitle(session: TrainingSession) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        let timeAgo = formatter.localizedString(for: session.sessionDate, relativeTo: Date())
+
+        if let accuracy = session.overallAccuracy {
+            return String(format: "%.1f%% accuracy • %@", accuracy, timeAgo)
+        } else if let totalShots = session.totalShots {
+            return "\(totalShots) shots • \(timeAgo)"
+        } else {
+            return "Completed \(timeAgo)"
+        }
+    }
+}
+
+// MARK: - Invite Button Style
+struct InviteButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

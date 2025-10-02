@@ -104,7 +104,7 @@ struct AIInsightsView: View {
                             }
 
                             // Strengths and Weaknesses
-                            HStack(alignment: .top, spacing: 16) {
+                            VStack(spacing: 16) {
                                 // Strengths
                                 TornyCard {
                                     VStack(alignment: .leading, spacing: 12) {
@@ -132,7 +132,6 @@ struct AIInsightsView: View {
                                         }
                                     }
                                 }
-                                .frame(maxWidth: .infinity)
 
                                 // Weaknesses
                                 TornyCard {
@@ -161,7 +160,6 @@ struct AIInsightsView: View {
                                         }
                                     }
                                 }
-                                .frame(maxWidth: .infinity)
                             }
 
                             // Areas for Improvement

@@ -5,7 +5,8 @@ struct DashboardView: View {
     @ObservedObject private var apiService = APIService.shared
     @State private var showSidebar = false
     @State private var selectedView: DashboardNavigationType? = nil
-    
+    @State private var showAIInsights = false
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -26,7 +27,7 @@ struct DashboardView: View {
                                     .foregroundColor(.tornyTextPrimary)
                                     .multilineTextAlignment(.center)
                                 
-                                Text("Practice like a pro")
+                                Text("Ready to practice like a pro?")
                                     .font(TornyFonts.body)
                                     .foregroundColor(.tornyTextSecondary)
                                     .multilineTextAlignment(.center)
@@ -39,7 +40,7 @@ struct DashboardView: View {
                                 GridItem(.flexible(), spacing: 16),
                                 GridItem(.flexible(), spacing: 16)
                             ], spacing: 16) {
-                                
+
                                 // Start Training
                                 DashboardCard(
                                     icon: "target",
@@ -49,7 +50,7 @@ struct DashboardView: View {
                                 ) {
                                     // Navigate to training
                                 }
-                                
+
                                 // View Analytics
                                 DashboardCard(
                                     icon: "chart.bar.fill",
@@ -59,7 +60,7 @@ struct DashboardView: View {
                                 ) {
                                     // Navigate to analytics
                                 }
-                                
+
                                 // Session History
                                 DashboardCard(
                                     icon: "clock.fill",
@@ -69,7 +70,7 @@ struct DashboardView: View {
                                 ) {
                                     // Navigate to history
                                 }
-                                
+
                                 // Profile Settings
                                 DashboardCard(
                                     icon: "person.crop.circle.fill",
@@ -78,6 +79,94 @@ struct DashboardView: View {
                                     color: .orange
                                 ) {
                                     // Navigate to profile
+                                }
+                            }
+                            .padding(.horizontal, 20)
+
+                            // Torny AI Feature Button
+                            Button(action: {
+                                showAIInsights = true
+                            }) {
+                                HStack(spacing: 16) {
+                                    // Icon with gradient background
+                                    ZStack {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [.purple, .blue]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 60, height: 60)
+
+                                        Image(systemName: "brain.head.profile")
+                                            .font(.system(size: 28))
+                                            .foregroundColor(.white)
+                                    }
+
+                                    // Text content
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(spacing: 6) {
+                                            Text("Torny AI")
+                                                .font(TornyFonts.title2)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.tornyTextPrimary)
+
+                                            Image(systemName: "sparkles")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.purple)
+                                        }
+
+                                        Text("Get personalized insights & recommendations")
+                                            .font(TornyFonts.bodySecondary)
+                                            .foregroundColor(.tornyTextSecondary)
+                                            .multilineTextAlignment(.leading)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.tornyTextSecondary)
+                                }
+                                .padding(20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.white)
+                                        .shadow(color: Color.purple.opacity(0.2), radius: 8, x: 0, y: 4)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal, 20)
+
+                            // Share App (moved below AI button)
+                            LazyVGrid(columns: [
+                                GridItem(.flexible())
+                            ], spacing: 16) {
+                                DashboardCard(
+                                    icon: "square.and.arrow.up.fill",
+                                    title: "Share Torny",
+                                    subtitle: "Invite friends",
+                                    color: .tornyBlue.opacity(0.8)
+                                ) {
+                                    // Share app via Messages
+                                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                       let window = windowScene.windows.first,
+                                       let rootViewController = window.rootViewController {
+                                        ShareService.shared.shareViaMessages(from: rootViewController)
+                                    }
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -152,6 +241,9 @@ struct DashboardView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: showSidebar)
+        .sheet(isPresented: $showAIInsights) {
+            AIInsightsView()
+        }
     }
 }
 
