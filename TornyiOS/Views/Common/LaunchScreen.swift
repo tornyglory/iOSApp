@@ -13,35 +13,22 @@ struct LaunchScreen: View {
             VStack(spacing: 40) {
                 Spacer()
 
-                // Main logo section - trophy and text inline
-                HStack(spacing: 6) {
-                    // Trophy emoji on the left - smaller
-                    Text("🏆")
-                        .font(.system(size: 40))
-                        .scaleEffect(isAnimating ? 1.05 : 1.0)
-                        .animation(
-                            Animation.easeInOut(duration: 2.0)
-                                .repeatForever(autoreverses: true),
-                            value: isAnimating
-                        )
-
-                    // Torny brand text on the right - custom font with extra space
-                    Text("TORNY ")
-                        .font(TornyFonts.brandTitle)
-                        .foregroundColor(.tornyTextPrimary)
-                        .background(
-                            Rectangle()
-                                .fill(Color.clear)
-                                .frame(width: 180, height: 50)
-                        )
-                        .clipped()
-                }
-                .frame(maxWidth: .infinity)
-                .opacity(opacity)
-                .animation(
-                    Animation.easeIn(duration: 1.5).delay(0.5),
-                    value: opacity
-                )
+                // Main logo section
+                Image("torny_logo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 250)
+                    .scaleEffect(isAnimating ? 1.05 : 1.0)
+                    .opacity(opacity)
+                    .animation(
+                        Animation.easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: isAnimating
+                    )
+                    .animation(
+                        Animation.easeIn(duration: 1.5).delay(0.5),
+                        value: opacity
+                    )
 
                 Spacer()
 
@@ -72,22 +59,11 @@ struct MinimalLaunchScreen: View {
             Color.white
                 .ignoresSafeArea()
 
-            // Simple centered logo - inline
-            HStack(spacing: 6) {
-                Text("🏆")
-                    .font(.system(size: 35))
-
-                Text("TORNY ")
-                    .font(TornyFonts.brandMedium)
-                    .foregroundColor(.tornyTextPrimary)
-                    .background(
-                        Rectangle()
-                            .fill(Color.clear)
-                            .frame(width: 150, height: 40)
-                    )
-                    .clipped()
-            }
-            .frame(maxWidth: .infinity)
+            // Simple centered logo
+            Image("torny_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 200)
         }
     }
 }

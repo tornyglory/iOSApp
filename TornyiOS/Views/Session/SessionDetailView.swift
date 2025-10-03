@@ -9,35 +9,38 @@ struct SessionDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Header Section
-                SessionDetailHeaderCard(session: session)
-                    .padding(.horizontal)
+        ZStack {
+            TornyBackgroundView()
 
-                // Session Statistics
-                SessionStatisticsCard(session: session)
-                    .padding(.horizontal)
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Header Section
+                    SessionDetailHeaderCard(session: session)
+                        .padding(.horizontal)
 
-                // Shot Type Breakdown
-                ShotTypeBreakdownSection(session: session)
-                    .padding(.horizontal)
+                    // Session Statistics
+                    SessionStatisticsCard(session: session)
+                        .padding(.horizontal)
 
-                // Scoring System
-                SessionScoringSystemCard()
-                    .padding(.horizontal)
+                    // Shot Type Breakdown
+                    ShotTypeBreakdownSection(session: session)
+                        .padding(.horizontal)
 
-                // Detailed Shot Breakdown
-                DetailedShotBreakdownSection(session: session)
-                    .padding(.horizontal)
+                    // Scoring System
+                    SessionScoringSystemCard()
+                        .padding(.horizontal)
 
-                // Shot History
-                ShotHistorySection(session: session, shots: shots)
-                    .padding(.horizontal)
+                    // Detailed Shot Breakdown
+                    DetailedShotBreakdownSection(session: session)
+                        .padding(.horizontal)
+
+                    // Shot History
+                    ShotHistorySection(session: session, shots: shots)
+                        .padding(.horizontal)
+                }
+                .padding(.vertical)
             }
-            .padding(.vertical)
         }
-        .background(Color(.systemGroupedBackground))
         .navigationTitle("Session Details")
         .navigationBarTitleDisplayMode(.inline)
         .task {

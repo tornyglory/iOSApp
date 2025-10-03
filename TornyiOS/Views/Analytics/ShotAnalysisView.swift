@@ -6,65 +6,68 @@ struct ShotAnalysisView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if viewModel.isLoading {
-                        VStack(spacing: 12) {
-                            TornyLoadingView(color: .tornyBlue)
-                            Text("Loading shot analysis...")
-                                .font(TornyFonts.body)
-                                .foregroundColor(.tornyTextSecondary)
+            ZStack {
+                TornyBackgroundView()
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        if viewModel.isLoading {
+                            VStack(spacing: 12) {
+                                TornyLoadingView(color: .tornyBlue)
+                                Text("Loading shot analysis...")
+                                    .font(TornyFonts.body)
+                                    .foregroundColor(.tornyTextSecondary)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 300)
+                            .padding()
+                        } else if let analytics = viewModel.analytics {
+                            // Header Section
+                            LifetimeStatsHeader(
+                                selectedPeriod: $viewModel.selectedPeriod,
+                                analytics: analytics,
+                                onPeriodChanged: viewModel.loadAnalytics
+                            )
+
+                            // Session Statistics
+                            LifetimeSessionStats(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                            // Shot Type Breakdown Cards
+                            LifetimeShotTypeBreakdown(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                            // Scoring System Info
+                            ScoringSystemInfo()
+                                .padding(.horizontal, 16)
+
+                            // Detailed Shot Breakdown by Type
+                            DetailedShotBreakdown(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                            // Length & Hand Analysis
+                            LengthHandAnalysis(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                            // Green Type & Conditions Breakdown
+                            ConditionsBreakdown(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                            // Green Types & Speeds Detailed Analysis
+                            GreenTypesSpeedsAnalysis(analytics: analytics)
+                                .padding(.horizontal, 16)
+
+                        } else if let error = viewModel.error {
+                            ErrorView(
+                                title: "Failed to Load Shot Analysis",
+                                message: error.localizedDescription,
+                                onRetry: viewModel.loadAnalytics
+                            )
+                            .padding()
                         }
-                        .frame(maxWidth: .infinity, minHeight: 300)
-                        .padding()
-                    } else if let analytics = viewModel.analytics {
-                        // Header Section
-                        LifetimeStatsHeader(
-                            selectedPeriod: $viewModel.selectedPeriod,
-                            analytics: analytics,
-                            onPeriodChanged: viewModel.loadAnalytics
-                        )
-
-                        // Session Statistics
-                        LifetimeSessionStats(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                        // Shot Type Breakdown Cards
-                        LifetimeShotTypeBreakdown(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                        // Scoring System Info
-                        ScoringSystemInfo()
-                            .padding(.horizontal, 16)
-
-                        // Detailed Shot Breakdown by Type
-                        DetailedShotBreakdown(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                        // Length & Hand Analysis
-                        LengthHandAnalysis(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                        // Green Type & Conditions Breakdown
-                        ConditionsBreakdown(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                        // Green Types & Speeds Detailed Analysis
-                        GreenTypesSpeedsAnalysis(analytics: analytics)
-                            .padding(.horizontal, 16)
-
-                    } else if let error = viewModel.error {
-                        ErrorView(
-                            title: "Failed to Load Shot Analysis",
-                            message: error.localizedDescription,
-                            onRetry: viewModel.loadAnalytics
-                        )
-                        .padding()
                     }
+                    .padding(.vertical, 16)
                 }
-                .padding(.vertical, 16)
             }
-            .background(Color(.systemGray6))
             .navigationTitle("Shot Analysis")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

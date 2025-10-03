@@ -10,14 +10,14 @@ struct AuthView: View {
             TornyBackgroundView()
             
             ScrollView {
-                VStack(spacing: 40) {
-                    Spacer(minLength: 60)
-                    
-                    // Logo and Branding
+                VStack(spacing: 20) {
+                    Spacer(minLength: 40)
+
+                    // Logo and Branding - Larger and closer to form
                     VStack(spacing: 20) {
-                        TornyLogoView(size: CGSize(width: 100, height: 100))
+                        TornyLogoView(size: CGSize(width: 200, height: 100))
                     }
-                    
+
                     // Auth Forms
                     TornyCard {
                         if isShowingLogin {

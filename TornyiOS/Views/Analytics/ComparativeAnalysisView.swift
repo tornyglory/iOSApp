@@ -19,8 +19,7 @@ struct ComparativeAnalysisView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(.systemGroupedBackground)
-                    .ignoresSafeArea()
+                TornyBackgroundView()
 
                 if viewModel.isLoading {
                     VStack(spacing: 12) {

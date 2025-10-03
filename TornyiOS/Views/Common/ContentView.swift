@@ -817,35 +817,60 @@ struct DashboardActionCard: View {
     let subtitle: String
     let color: Color
     let action: () -> Void
-    
+    @State private var isPressed = false
+
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.largeTitle)
-                    .foregroundColor(color)
-                
+            VStack(spacing: 16) {
+                // Icon with gradient background circle
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 28))
+                        .foregroundColor(color)
+                }
+
                 VStack(spacing: 4) {
                     Text(title)
                         .font(TornyFonts.body)
                         .fontWeight(.semibold)
                         .foregroundColor(.tornyTextPrimary)
-                    
+
                     Text(subtitle)
                         .font(TornyFonts.bodySecondary)
                         .foregroundColor(.tornyTextSecondary)
                         .multilineTextAlignment(.center)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 120)
+            .frame(maxWidth: .infinity, minHeight: 140)
             .padding(.vertical, 20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(color.opacity(0.15), lineWidth: 1.5)
+                    )
+                    .shadow(color: color.opacity(0.15), radius: 8, x: 0, y: 4)
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .scaleEffect(isPressed ? 0.96 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
     }
 }
 
@@ -855,27 +880,41 @@ struct DashboardActivityRow: View {
     let title: String
     let subtitle: String
     let color: Color
-    
+
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 14) {
+            // Icon with gradient circle background
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(color)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(TornyFonts.body)
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                     .foregroundColor(.tornyTextPrimary)
-                
+
                 Text(subtitle)
                     .font(TornyFonts.bodySecondary)
                     .foregroundColor(.tornyTextSecondary)
+                    .lineLimit(2)
             }
-            
+
             Spacer()
         }
+        .padding(.vertical, 4)
     }
 }
 

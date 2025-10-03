@@ -194,23 +194,16 @@ struct TornyTextFieldStyle: TextFieldStyle {
 // MARK: - Torny Logo View
 struct TornyLogoView: View {
     let size: CGSize
-    
+
     init(size: CGSize = CGSize(width: 80, height: 80)) {
         self.size = size
     }
-    
+
     var body: some View {
-        HStack(spacing: 8) {
-            // Torny Wordmark - custom Permanent Marker font
-            Text("TORNY")
-                .font(customFont(size: size.width * 0.4))
-                .foregroundColor(.tornyTextPrimary)
-                .padding(.bottom, 2)
-            
-            // Trophy Cup Emoji
-            Text("🏆")
-                .font(.system(size: size.width * 0.35))
-        }
+        Image("torny_logo")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size.width, height: size.height)
     }
     
     private func customFont(size: CGFloat) -> Font {
@@ -272,29 +265,19 @@ struct TornyLoadingView: View {
 // MARK: - Facebook-Style Navigation Bar
 struct TornyNavBar: View {
     @Binding var showSidebar: Bool
-    
+
     var body: some View {
         HStack {
             Spacer()
-            
-            // Center - Torny branding with trophy
-            HStack(spacing: 4) {
-                Text("🏆")
-                    .font(.system(size: 24))
-                Text("torny ")
-                    .font(.custom("PermanentMarker-Regular", size: 28))
-                    .foregroundColor(.black)
-                    .fontWeight(.bold)
-                    .background(
-                        Rectangle()
-                            .fill(Color.clear)
-                            .frame(width: 100, height: 35)
-                    )
-                    .clipped()
-            }
-            
+
+            // Center - Torny logo
+            Image("torny_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 35)
+
             Spacer()
-            
+
             // Right side - Hamburger menu
             Button(action: {
                 showSidebar.toggle()
