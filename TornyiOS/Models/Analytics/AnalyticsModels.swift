@@ -220,3 +220,26 @@ struct RecommendedDrill: Codable, Identifiable {
         self.id = UUID()
     }
 }
+// MARK: - Session AI Analysis Models
+
+struct SessionAIAnalysis: Codable {
+    let sessionId: Int
+    let analysisDate: String
+    let overallAssessment: String
+    let keyInsights: [String]
+    let strengths: [String]
+    let areasForImprovement: [AreaForImprovement]
+    let recommendedDrills: [RecommendedDrill]
+    let nextSessionFocus: String
+
+    enum CodingKeys: String, CodingKey {
+        case sessionId = "session_id"
+        case analysisDate = "analysis_date"
+        case overallAssessment = "overall_assessment"
+        case keyInsights = "key_insights"
+        case strengths
+        case areasForImprovement = "areas_for_improvement"
+        case recommendedDrills = "recommended_drills"
+        case nextSessionFocus = "next_session_focus"
+    }
+}

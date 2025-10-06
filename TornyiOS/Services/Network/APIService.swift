@@ -368,7 +368,9 @@ class APIService: ObservableObject {
             useAuthBase: true
         )
 
-        self.currentUser = response.data
+        await MainActor.run {
+            self.currentUser = response.data
+        }
         return response.data
     }
     
@@ -427,7 +429,9 @@ class APIService: ObservableObject {
 
         // Update currentUser if it's the same user
         if currentUser?.id == userId {
-            currentUser = response.data
+            await MainActor.run {
+                currentUser = response.data
+            }
         }
 
         return response.data
@@ -501,6 +505,14 @@ class APIService: ObservableObject {
             // If no active session, return nil instead of throwing
             return nil
         }
+    }
+
+    func getSessionAIAnalysis(sessionId: Int) async throws -> SessionAIAnalysis {
+        return try await makeRequest(
+            endpoint: "/sessions/\(sessionId)/analyze",
+            method: .POST,
+            responseType: SessionAIAnalysis.self
+        )
     }
 
     func getLiveChartData(sessionId: Int) async throws -> ChartDataResponse {

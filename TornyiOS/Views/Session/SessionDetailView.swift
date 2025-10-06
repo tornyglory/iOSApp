@@ -22,6 +22,29 @@ struct SessionDetailView: View {
                     SessionStatisticsCard(session: session)
                         .padding(.horizontal)
 
+                    // Torny AI Analysis Button
+                    NavigationLink(destination: SessionAIAnalysisView(sessionId: session.id)) {
+                        HStack {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 20))
+                            Text("Analyze with Torny AI")
+                                .font(TornyFonts.body)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.tornyBlue, Color.tornyPurple]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+
                     // Shot Type Breakdown
                     ShotTypeBreakdownSection(session: session)
                         .padding(.horizontal)
