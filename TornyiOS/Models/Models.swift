@@ -184,7 +184,8 @@ struct ProfileUpdateRequest: Codable {
     let sportId: Int = 1
     let club: String
     let clubId: String
-    
+    let profileCompleted: Int = 1
+
     enum CodingKeys: String, CodingKey {
         case name, email, phone, gender, description
         case shortDescription = "short_description"
@@ -196,6 +197,7 @@ struct ProfileUpdateRequest: Codable {
         case sportId = "sport_id"
         case club
         case clubId = "club_id"
+        case profileCompleted = "profile_completed"
     }
 }
 
@@ -308,6 +310,28 @@ enum DistanceFromJack: String, CaseIterable, Codable {
 
 // MARK: - Request Models
 
+struct EquipmentData: Codable {
+    let bowlsBrand: String?
+    let bowlsModel: String?
+    let size: Int?
+    let biasType: String?
+    let bag: String?
+    let shoes: String?
+    let accessories: [String]?
+    let stickUsed: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case bowlsBrand = "bowls_brand"
+        case bowlsModel = "bowls_model"
+        case size
+        case biasType = "bias_type"
+        case bag
+        case shoes
+        case accessories
+        case stickUsed = "stick_used"
+    }
+}
+
 struct CreateSessionRequest: Codable {
     let location: Location
     let greenType: GreenType
@@ -316,7 +340,8 @@ struct CreateSessionRequest: Codable {
     let weather: Weather?
     let windConditions: WindConditions?
     let notes: String?
-    
+    let equipment: EquipmentData?
+
     enum CodingKeys: String, CodingKey {
         case location
         case greenType = "green_type"
@@ -325,6 +350,7 @@ struct CreateSessionRequest: Codable {
         case weather
         case windConditions = "wind_conditions"
         case notes
+        case equipment
     }
 }
 

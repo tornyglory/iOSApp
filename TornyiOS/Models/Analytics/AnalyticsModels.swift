@@ -135,9 +135,7 @@ struct AIInsightsResponse: Codable {
     let overallAssessment: String
     let keyInsights: [String]
     let strengths: [String]
-    let weaknessesIdentified: [String]
     let areasForImprovement: [AreaForImprovement]
-    let performancePatterns: PerformancePatterns
     let recommendedDrills: [RecommendedDrill]
     let nextSessionFocus: String
 
@@ -147,9 +145,7 @@ struct AIInsightsResponse: Codable {
         case overallAssessment = "overall_assessment"
         case keyInsights = "key_insights"
         case strengths
-        case weaknessesIdentified = "weaknesses_identified"
         case areasForImprovement = "areas_for_improvement"
-        case performancePatterns = "performance_patterns"
         case recommendedDrills = "recommended_drills"
         case nextSessionFocus = "next_session_focus"
     }

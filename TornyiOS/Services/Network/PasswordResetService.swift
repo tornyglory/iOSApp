@@ -7,7 +7,7 @@ class PasswordResetService: ObservableObject {
 
     /// Request a password reset for the given email
     func requestPasswordReset(email: String) async throws -> Bool {
-        guard let url = URL(string: "\(baseURL)/api/request-password-reset") else {
+        guard let url = URL(string: "\(baseURL)/request-password-reset") else {
             throw PasswordResetError.invalidURL
         }
 
@@ -21,18 +21,35 @@ class PasswordResetService: ObservableObject {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = jsonData
 
+            print("🔐 Password Reset Request:")
+            print("URL: \(url)")
+            print("Body: \(String(data: jsonData, encoding: .utf8) ?? "")")
+            print("Headers: \(request.allHTTPHeaderFields ?? [:])")
+
             let (data, response) = try await URLSession.shared.data(for: request)
+
+            print("🔐 Password Reset Response:")
+            print("Status: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+            print("Body: \(String(data: data, encoding: .utf8) ?? "")")
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw PasswordResetError.invalidResponse
             }
 
-            let responseData = try JSONDecoder().decode(PasswordResetResponse.self, from: data)
-
-            if httpResponse.statusCode == 200 && responseData.status == "success" {
-                return true
+            // Try to decode the response
+            if let responseData = try? JSONDecoder().decode(PasswordResetResponse.self, from: data) {
+                if httpResponse.statusCode == 200 && responseData.status == "success" {
+                    return true
+                } else {
+                    throw PasswordResetError.serverError(responseData.message)
+                }
+            } else if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+                      let message = errorResponse["message"] {
+                throw PasswordResetError.serverError(message)
+            } else if let responseString = String(data: data, encoding: .utf8) {
+                throw PasswordResetError.serverError("Server error: \(responseString)")
             } else {
-                throw PasswordResetError.serverError(responseData.message)
+                throw PasswordResetError.serverError("Server returned status code: \(httpResponse.statusCode)")
             }
         } catch let error as PasswordResetError {
             throw error
@@ -43,7 +60,7 @@ class PasswordResetService: ObservableObject {
 
     /// Validate a reset token
     func validateResetToken(_ token: String) async throws -> TokenValidationResponse {
-        guard let url = URL(string: "\(baseURL)/api/validate-reset-token?token=\(token)") else {
+        guard let url = URL(string: "\(baseURL)/validate-reset-token?token=\(token)") else {
             throw PasswordResetError.invalidURL
         }
 
@@ -70,7 +87,7 @@ class PasswordResetService: ObservableObject {
 
     /// Reset password with token and new password
     func resetPassword(token: String, newPassword: String) async throws -> Bool {
-        guard let url = URL(string: "\(baseURL)/api/reset-password") else {
+        guard let url = URL(string: "\(baseURL)/reset-password") else {
             throw PasswordResetError.invalidURL
         }
 

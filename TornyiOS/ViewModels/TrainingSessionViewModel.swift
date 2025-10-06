@@ -57,7 +57,8 @@ class TrainingSessionViewModel: ObservableObject {
             rinkNumber: rinkNumber,
             weather: weather != nil ? Weather(rawValue: weather!) : nil,
             windConditions: windConditions != nil ? WindConditions(rawValue: windConditions!) : nil,
-            notes: nil
+            notes: nil,
+            equipment: nil
         )
 
         do {

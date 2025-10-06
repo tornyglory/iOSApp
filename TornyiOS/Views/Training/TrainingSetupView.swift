@@ -14,23 +14,55 @@ struct TrainingSetupView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var validationErrors: [String] = []
-    
+    @Environment(\.dismiss) private var dismiss
+
+    // Equipment fields
+    @State private var bowlsBrand = "Taylor"
+    @State private var bowlsModel = "GTR"
+    @State private var bowlsSize = 3
+    @State private var biasType = "mid"
+
     let locations = ["outdoor", "indoor"]
-    let greenTypes = ["couch", "tift", "bent", "synthetic", "carpet"]
     let weatherOptions = ["cold", "warm", "hot"]
     let windOptions = ["no_wind", "light", "moderate", "strong"]
-    
+    let bowlsBrands = ["Taylor", "Henselite", "Drakes Pride", "Aero"]
+    let bowlsSizes = [0, 1, 2, 3, 4, 5, 6]
+    let biasTypes = ["narrow", "mid", "wide"]
+
+    var greenTypes: [String] {
+        if location == "indoor" {
+            return ["synthetic", "carpet"]
+        } else {
+            return ["couch", "tift", "bent", "synthetic", "carpet"]
+        }
+    }
+
+    var bowlsModels: [String] {
+        switch bowlsBrand {
+        case "Henselite":
+            return ["Dreamline XG", "Cruse", "Dreamline", "Alpha", "Tiger II", "ABT 2000", "Classic II"]
+        case "Aero":
+            return ["Dynamic", "Optima", "Turbo Pro", "Evolve", "Defiance"]
+        case "Drakes Pride":
+            return ["Conquest", "Adrenaline", "LS-125", "International"]
+        case "Taylor":
+            return ["GTR", "SRV", "SR", "Ace", "Blaze", "Vector VS"]
+        default:
+            return []
+        }
+    }
+
     var onSessionCreated: ((TrainingSession) -> Void)?
-    
+
     init(onSessionCreated: ((TrainingSession) -> Void)? = nil) {
         self.onSessionCreated = onSessionCreated
     }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 TornyBackgroundView()
-                
+
                 ScrollView {
                     VStack(spacing: 20) {
                         // Header
@@ -38,18 +70,18 @@ struct TrainingSetupView: View {
                             Image(systemName: "target")
                                 .font(.system(size: 60))
                                 .foregroundColor(.tornyBlue)
-                            
+
                             Text("Start Training Session")
                                 .font(TornyFonts.title1)
                                 .fontWeight(.bold)
                                 .foregroundColor(.tornyTextPrimary)
-                            
+
                             Text("Set up your green conditions and environmental factors")
                                 .font(TornyFonts.body)
                                 .foregroundColor(.tornyTextSecondary)
                                 .multilineTextAlignment(.center)
                         }
-                        .padding(.top, 60)
+                        .padding(.top, 20)
                         .padding(.horizontal, 20)
                         
                         // Green Conditions
@@ -75,6 +107,10 @@ struct TrainingSetupView: View {
                                         ForEach(locations, id: \.self) { loc in
                                             Button(action: {
                                                 location = loc
+                                                // Reset green type if switching to indoor and current type isn't valid
+                                                if loc == "indoor" && !["synthetic", "carpet"].contains(greenType) {
+                                                    greenType = "synthetic"
+                                                }
                                             }) {
                                                 HStack {
                                                     Image(systemName: location == loc ? "checkmark.circle.fill" : "circle")
@@ -275,6 +311,151 @@ struct TrainingSetupView: View {
                             .padding(.horizontal, 20)
                         }
                         
+                        // Equipment
+                        TornyCard {
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Equipment")
+                                    .font(TornyFonts.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.tornyTextPrimary)
+
+                                // Bowls Brand
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Bowls Brand")
+                                        .font(TornyFonts.body)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    Menu {
+                                        ForEach(bowlsBrands, id: \.self) { brand in
+                                            Button(brand) {
+                                                bowlsBrand = brand
+                                                // Reset model to first in list when brand changes
+                                                bowlsModel = bowlsModels.first ?? ""
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(bowlsBrand)
+                                                .foregroundColor(.tornyTextPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
+                                }
+
+                                // Bowls Model
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Bowls Model")
+                                        .font(TornyFonts.body)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    Menu {
+                                        ForEach(bowlsModels, id: \.self) { model in
+                                            Button(model) {
+                                                bowlsModel = model
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(bowlsModel)
+                                                .foregroundColor(.tornyTextPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
+                                }
+
+                                // Size
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Size")
+                                        .font(TornyFonts.body)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    Menu {
+                                        ForEach(bowlsSizes, id: \.self) { size in
+                                            Button(size == 0 ? "00" : "\(size)") {
+                                                bowlsSize = size
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(bowlsSize == 0 ? "00" : "\(bowlsSize)")
+                                                .foregroundColor(.tornyTextPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
+                                }
+
+                                // Bias Type
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Bias Type")
+                                        .font(TornyFonts.body)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    Menu {
+                                        ForEach(biasTypes, id: \.self) { bias in
+                                            Button(bias.capitalized) {
+                                                biasType = bias
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(biasType.capitalized)
+                                                .foregroundColor(.tornyTextPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+
                         // Notes
                         TornyCard {
                             VStack(alignment: .leading, spacing: 12) {
@@ -282,7 +463,7 @@ struct TrainingSetupView: View {
                                     .font(TornyFonts.title3)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.tornyTextPrimary)
-                                
+
                                 ZStack(alignment: .topLeading) {
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(Color.white)
@@ -291,7 +472,7 @@ struct TrainingSetupView: View {
                                                 .stroke(Color.tornyLightBlue, lineWidth: 1)
                                         )
                                         .frame(height: 100)
-                                    
+
                                     TextEditor(text: $notes)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 12)
@@ -324,8 +505,24 @@ struct TrainingSetupView: View {
                     .padding(.bottom, 20)
                 }
             }
-            .navigationBarHidden(true)
-            .ignoresSafeArea(.container, edges: .top)
+            .navigationTitle("Start Training")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.tornyBlue)
+                            Text("Back")
+                                .font(.body)
+                                .foregroundColor(.tornyBlue)
+                        }
+                    }
+                }
+            }
         }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }
@@ -393,6 +590,17 @@ struct TrainingSetupView: View {
         
         isLoading = true
         
+        let equipment = EquipmentData(
+            bowlsBrand: bowlsBrand,
+            bowlsModel: bowlsModel,
+            size: bowlsSize,
+            biasType: biasType,
+            bag: nil,
+            shoes: nil,
+            accessories: nil,
+            stickUsed: false
+        )
+
         let sessionRequest = CreateSessionRequest(
             location: Location(rawValue: location) ?? .outdoor,
             greenType: GreenType(rawValue: greenType) ?? .bent,
@@ -400,9 +608,17 @@ struct TrainingSetupView: View {
             rinkNumber: rinkNumber.isEmpty ? nil : Int(rinkNumber),
             weather: location == "outdoor" ? Weather(rawValue: weather) : nil,
             windConditions: location == "outdoor" ? WindConditions(rawValue: windConditions) : nil,
-            notes: notes.isEmpty ? nil : notes
+            notes: notes.isEmpty ? nil : notes,
+            equipment: equipment
         )
-        
+
+        // Log the payload
+        if let jsonData = try? JSONEncoder().encode(sessionRequest),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("📤 Create Session Payload:")
+            print(jsonString)
+        }
+
         Task {
             do {
                 let response = try await apiService.createSession(sessionRequest)

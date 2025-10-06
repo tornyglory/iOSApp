@@ -133,33 +133,6 @@ struct AIInsightsView: View {
                                     }
                                 }
 
-                                // Weaknesses
-                                TornyCard {
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        HStack {
-                                            Image(systemName: "exclamationmark.triangle.fill")
-                                                .foregroundColor(.orange)
-                                            Text("Weaknesses")
-                                                .font(TornyFonts.title3)
-                                                .fontWeight(.semibold)
-                                                .foregroundColor(.tornyTextPrimary)
-                                        }
-
-                                        ForEach(Array(insights.weaknessesIdentified.enumerated()), id: \.offset) { _, weakness in
-                                            HStack(alignment: .top, spacing: 8) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .font(.system(size: 12))
-                                                    .foregroundColor(.orange)
-                                                    .padding(.top, 4)
-
-                                                Text(weakness)
-                                                    .font(TornyFonts.bodySecondary)
-                                                    .foregroundColor(.tornyTextSecondary)
-                                                    .fixedSize(horizontal: false, vertical: true)
-                                            }
-                                        }
-                                    }
-                                }
                             }
 
                             // Areas for Improvement
@@ -182,41 +155,6 @@ struct AIInsightsView: View {
                                 }
                             }
 
-                            // Performance Patterns
-                            TornyCard {
-                                VStack(alignment: .leading, spacing: 16) {
-                                    HStack {
-                                        Image(systemName: "chart.xyaxis.line")
-                                            .foregroundColor(.tornyPurple)
-                                        Text("Performance Patterns")
-                                            .font(TornyFonts.title3)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.tornyTextPrimary)
-                                    }
-
-                                    VStack(spacing: 12) {
-                                        if let bestConditions = insights.performancePatterns.bestConditions {
-                                            PatternRow(icon: "sun.max.fill", title: "Best Conditions", value: bestConditions, color: .tornyGreen)
-                                        }
-
-                                        if let challengingConditions = insights.performancePatterns.challengingConditions {
-                                            PatternRow(icon: "cloud.bolt.fill", title: "Challenging Conditions", value: challengingConditions, color: .orange)
-                                        }
-
-                                        if let handAnalysis = insights.performancePatterns.handAnalysis {
-                                            PatternRow(icon: "hand.raised.fill", title: "Hand Analysis", value: handAnalysis, color: .tornyBlue)
-                                        }
-
-                                        if let greenSpeedAnalysis = insights.performancePatterns.greenSpeedAnalysis {
-                                            PatternRow(icon: "gauge.medium", title: "Green Speed", value: greenSpeedAnalysis, color: .tornyPurple)
-                                        }
-
-                                        if let consistencyRating = insights.performancePatterns.consistencyRating {
-                                            PatternRow(icon: "chart.line.uptrend.xyaxis", title: "Consistency", value: consistencyRating, color: .tornyGreen)
-                                        }
-                                    }
-                                }
-                            }
 
                             // Recommended Drills
                             if !insights.recommendedDrills.isEmpty {
