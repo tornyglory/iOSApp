@@ -715,78 +715,192 @@ struct SessionEndView: View {
     let stats: SessionStatistics
     let onReturn: (() -> Void)?
     @Environment(\.presentationMode) var presentationMode
-    
+    @ObservedObject private var apiService = APIService.shared
+    @State private var sessionNotes: String = ""
+    @State private var isEnding = false
+    @State private var showingError = false
+    @State private var errorMessage = ""
+
     var body: some View {
         NavigationView {
             ZStack {
                 TornyBackgroundView()
-                
-                VStack(spacing: 32) {
-                    VStack(spacing: 16) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 80))
-                            .foregroundColor(.tornyGreen)
-                        
-                        Text("Session Complete!")
-                            .font(TornyFonts.title1)
-                            .fontWeight(.bold)
-                            .foregroundColor(.tornyTextPrimary)
-                        
-                        Text("Great work on your training session")
-                            .font(TornyFonts.body)
-                            .foregroundColor(.tornyTextSecondary)
-                    }
-                    
-                    TornyCard {
-                        VStack(spacing: 20) {
-                            Text("Session Summary")
-                                .font(TornyFonts.title3)
-                                .fontWeight(.semibold)
+
+                ScrollView {
+                    VStack(spacing: 32) {
+                        VStack(spacing: 16) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 80))
+                                .foregroundColor(.tornyGreen)
+
+                            Text("Session Complete!")
+                                .font(TornyFonts.title1)
+                                .fontWeight(.bold)
                                 .foregroundColor(.tornyTextPrimary)
-                            
-                            HStack {
-                                StatItem(
-                                    title: "Total Shots",
-                                    value: "\(stats.totalShots)",
-                                    color: .tornyBlue
-                                )
-                                
-                                Divider()
-                                    .frame(height: 60)
-                                
-                                StatItem(
-                                    title: "Successful",
-                                    value: "\(self.calculateSuccessfulShots(from: stats))",
-                                    color: .tornyGreen
-                                )
-                                
-                                Divider()
-                                    .frame(height: 60)
-                                
-                                StatItem(
-                                    title: "Accuracy",
-                                    value: "\(Int(Double(stats.accuracyPercentage) ?? 0))%",
-                                    color: .tornyPurple
-                                )
+
+                            Text("Great work on your training session")
+                                .font(TornyFonts.body)
+                                .foregroundColor(.tornyTextSecondary)
+                        }
+                        .padding(.top, 40)
+
+                        TornyCard {
+                            VStack(spacing: 20) {
+                                Text("Session Summary")
+                                    .font(TornyFonts.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.tornyTextPrimary)
+
+                                HStack {
+                                    StatItem(
+                                        title: "Total Shots",
+                                        value: "\(stats.totalShots)",
+                                        color: .tornyBlue
+                                    )
+
+                                    Divider()
+                                        .frame(height: 60)
+
+                                    StatItem(
+                                        title: "Successful",
+                                        value: "\(self.calculateSuccessfulShots(from: stats))",
+                                        color: .tornyGreen
+                                    )
+
+                                    Divider()
+                                        .frame(height: 60)
+
+                                    StatItem(
+                                        title: "Accuracy",
+                                        value: "\(Int(Double(stats.accuracyPercentage) ?? 0))%",
+                                        color: .tornyPurple
+                                    )
+                                }
                             }
                         }
+                        .padding(.horizontal, 20)
+
+                        // Session Notes
+                        TornyCard {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Session Notes (Optional)")
+                                        .font(TornyFonts.title3)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    Spacer()
+
+                                    // Voice input indicator
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.tornyBlue)
+                                }
+
+                                HStack {
+                                    Text("Tap the microphone on your keyboard to use voice-to-text")
+                                        .font(TornyFonts.caption)
+                                        .foregroundColor(.tornyTextSecondary)
+
+                                    Spacer()
+
+                                    Text("\(sessionNotes.count)/3000")
+                                        .font(TornyFonts.caption)
+                                        .foregroundColor(sessionNotes.count > 2800 ? .orange : .tornyTextSecondary)
+                                }
+
+                                ZStack(alignment: .topLeading) {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Color.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                        )
+                                        .frame(height: 120)
+
+                                    if sessionNotes.isEmpty {
+                                        Text("e.g., 'Rink 3, green running at 14 seconds, slight headwind...'")
+                                            .font(TornyFonts.body)
+                                            .foregroundColor(.tornyTextSecondary.opacity(0.5))
+                                            .padding(.horizontal, 20)
+                                            .padding(.vertical, 16)
+                                            .allowsHitTesting(false)
+                                    }
+
+                                    TextEditor(text: $sessionNotes)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        .font(TornyFonts.body)
+                                        .foregroundColor(.tornyTextPrimary)
+                                        .scrollContentBackground(.hidden)
+                                        .onChange(of: sessionNotes) { newValue in
+                                            if newValue.count > 3000 {
+                                                sessionNotes = String(newValue.prefix(3000))
+                                            }
+                                        }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+
+                        Button(action: endSession) {
+                            HStack {
+                                if isEnding {
+                                    TornyLoadingView(color: .white)
+                                    Text("Ending Session...")
+                                } else {
+                                    Text("End Session & Return to Dashboard")
+                                }
+                            }
+                        }
+                        .buttonStyle(TornyPrimaryButton(isLarge: true))
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 20)
+                        .disabled(isEnding)
+
+                        Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, 20)
-                    
-                    Button("Return to Dashboard") {
-                        presentationMode.wrappedValue.dismiss()
-                        onReturn?()
-                    }
-                    .buttonStyle(TornyPrimaryButton(isLarge: true))
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 20)
-                    
-                    Spacer()
                 }
-                .padding(.top, 40)
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(true)
+        }
+        .alert("Error", isPresented: $showingError) {
+            Button("OK") { }
+        } message: {
+            Text(errorMessage)
+        }
+    }
+
+    private func endSession() {
+        isEnding = true
+
+        Task {
+            do {
+                let now = Date()
+                let sessionStart = session.sessionDate
+                let duration = Int(now.timeIntervalSince(sessionStart))
+
+                let request = EndSessionRequest(
+                    endedAt: ISO8601DateFormatter().string(from: now),
+                    durationSeconds: duration,
+                    notes: sessionNotes.isEmpty ? nil : sessionNotes
+                )
+
+                _ = try await apiService.endSession(session.id, request: request)
+
+                await MainActor.run {
+                    isEnding = false
+                    presentationMode.wrappedValue.dismiss()
+                    onReturn?()
+                }
+            } catch {
+                await MainActor.run {
+                    isEnding = false
+                    errorMessage = "Failed to end session: \(error.localizedDescription)"
+                    showingError = true
+                }
+            }
         }
     }
 

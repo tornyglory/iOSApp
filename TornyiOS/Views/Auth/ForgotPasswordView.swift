@@ -16,23 +16,25 @@ struct ForgotPasswordView: View {
 
                 ScrollView {
                     VStack(spacing: 32) {
-                        // Header
-                        VStack(spacing: 16) {
-                            Image(systemName: "envelope.circle.fill")
-                                .font(.system(size: 60))
-                                .foregroundColor(.tornyBlue)
+                        // Header - only show when not sent
+                        if !resetRequestSent {
+                            VStack(spacing: 16) {
+                                Image(systemName: "envelope.circle.fill")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.tornyBlue)
 
-                            Text("Reset Password")
-                                .font(TornyFonts.title1)
-                                .fontWeight(.bold)
-                                .foregroundColor(.tornyTextPrimary)
+                                Text("Reset Password")
+                                    .font(TornyFonts.title1)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.tornyTextPrimary)
 
-                            Text("Enter your email address and we'll send you a link to reset your password.")
-                                .font(TornyFonts.body)
-                                .foregroundColor(.tornyTextSecondary)
-                                .multilineTextAlignment(.center)
+                                Text("Enter your email address and we'll send you a link to reset your password.")
+                                    .font(TornyFonts.body)
+                                    .foregroundColor(.tornyTextSecondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.top, 40)
                         }
-                        .padding(.top, 40)
 
                         if resetRequestSent {
                             // Success state
@@ -65,6 +67,7 @@ struct ForgotPasswordView: View {
                                 .buttonStyle(TornyPrimaryButton(isLarge: true))
                                 .padding(.top, 16)
                             }
+                            .padding(.top, 60)
                         } else {
                             // Form state
                             TornyCard {

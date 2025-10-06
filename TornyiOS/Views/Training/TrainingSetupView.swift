@@ -9,7 +9,6 @@ struct TrainingSetupView: View {
     @State private var rinkNumber = ""
     @State private var weather = "warm"
     @State private var windConditions = "light"
-    @State private var notes = ""
     @State private var isLoading = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
@@ -21,6 +20,13 @@ struct TrainingSetupView: View {
     @State private var bowlsModel = "GTR"
     @State private var bowlsSize = 3
     @State private var biasType = "mid"
+
+    // Club fields
+    @State private var selectedClub: Club?
+    @State private var showingClubSearch = false
+    @State private var clubSearchText = ""
+    @State private var clubSearchResults: [Club] = []
+    @State private var isSearchingClubs = false
 
     let locations = ["outdoor", "indoor"]
     let weatherOptions = ["cold", "warm", "hot"]
@@ -456,28 +462,84 @@ struct TrainingSetupView: View {
                         }
                         .padding(.horizontal, 20)
 
-                        // Notes
+                        // Club Selection
                         TornyCard {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Session Notes (Optional)")
+                                Text("Club (Optional)")
                                     .font(TornyFonts.title3)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.tornyTextPrimary)
 
-                                ZStack(alignment: .topLeading) {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.white)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color.tornyLightBlue, lineWidth: 1)
-                                        )
-                                        .frame(height: 100)
+                                if let club = selectedClub {
+                                    // Selected Club Display
+                                    HStack(spacing: 12) {
+                                        AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                        } placeholder: {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill(Color.gray.opacity(0.2))
+                                                .overlay(
+                                                    Image(systemName: "building.2")
+                                                        .foregroundColor(.gray)
+                                                )
+                                        }
+                                        .frame(width: 50, height: 50)
+                                        .cornerRadius(8)
 
-                                    TextEditor(text: $notes)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 12)
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(club.name)
+                                                .font(TornyFonts.body)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.tornyTextPrimary)
+
+                                            Text([club.state, club.country].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
+                                                .font(TornyFonts.bodySecondary)
+                                                .foregroundColor(.tornyTextSecondary)
+                                        }
+
+                                        Spacer()
+
+                                        Button(action: {
+                                            selectedClub = nil
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .foregroundColor(.gray)
+                                                .font(.title3)
+                                        }
+                                    }
+                                    .padding()
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.tornyBlue.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(Color.tornyBlue, lineWidth: 1)
+                                            )
+                                    )
+                                } else {
+                                    // Search Button
+                                    Button(action: {
+                                        showingClubSearch = true
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "magnifyingglass")
+                                            Text("Search for Club")
+                                        }
                                         .font(TornyFonts.body)
-                                        .foregroundColor(.tornyTextPrimary)
+                                        .foregroundColor(.tornyBlue)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -524,6 +586,15 @@ struct TrainingSetupView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingClubSearch) {
+            ClubSearchSheet(
+                selectedClub: $selectedClub,
+                clubSearchText: $clubSearchText,
+                clubSearchResults: $clubSearchResults,
+                isSearching: $isSearchingClubs,
+                onSearch: searchClubs
+            )
+        }
         .alert("Error", isPresented: $showingAlert) {
             Button("OK") { }
         } message: {
@@ -569,8 +640,8 @@ struct TrainingSetupView: View {
             }
         }
         
-        // Validate notes length
-        if notes.count > 500 {
+        // Notes validation removed - notes added at session end
+        if false {
             validationErrors.append("Notes must be 500 characters or less")
         }
         
@@ -608,8 +679,9 @@ struct TrainingSetupView: View {
             rinkNumber: rinkNumber.isEmpty ? nil : Int(rinkNumber),
             weather: location == "outdoor" ? Weather(rawValue: weather) : nil,
             windConditions: location == "outdoor" ? WindConditions(rawValue: windConditions) : nil,
-            notes: notes.isEmpty ? nil : notes,
-            equipment: equipment
+            notes: nil,
+            equipment: equipment,
+            clubId: selectedClub?.id
         )
 
         // Log the payload
@@ -635,6 +707,178 @@ struct TrainingSetupView: View {
                 }
             }
         }
+    }
+
+    private func searchClubs() {
+        guard clubSearchText.count >= 3 else {
+            clubSearchResults = []
+            return
+        }
+
+        isSearchingClubs = true
+
+        Task {
+            do {
+                let results = try await apiService.searchClubs(name: clubSearchText)
+                await MainActor.run {
+                    clubSearchResults = results
+                    isSearchingClubs = false
+                }
+            } catch {
+                await MainActor.run {
+                    clubSearchResults = []
+                    isSearchingClubs = false
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Club Search Sheet
+struct ClubSearchSheet: View {
+    @Binding var selectedClub: Club?
+    @Binding var clubSearchText: String
+    @Binding var clubSearchResults: [Club]
+    @Binding var isSearching: Bool
+    let onSearch: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Search Bar
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("Search clubs (min 3 characters)", text: $clubSearchText)
+                        .onChange(of: clubSearchText) { _ in
+                            onSearch()
+                        }
+                    if !clubSearchText.isEmpty {
+                        Button("Clear") {
+                            clubSearchText = ""
+                            clubSearchResults = []
+                        }
+                        .foregroundColor(.tornyBlue)
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                .padding()
+
+                // Search Results
+                if isSearching {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                } else if clubSearchResults.isEmpty && clubSearchText.count >= 3 {
+                    VStack(spacing: 16) {
+                        Image(systemName: "building.2")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                        Text("No clubs found")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Try adjusting your search terms")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    Spacer()
+                } else if clubSearchText.count < 3 {
+                    VStack(spacing: 16) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                        Text("Search for clubs")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Enter at least 3 characters to search")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(clubSearchResults) { club in
+                                ClubSearchRow(club: club) {
+                                    selectedClub = club
+                                    dismiss()
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                }
+            }
+            .navigationTitle("Search Clubs")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(.tornyBlue)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Club Search Row
+struct ClubSearchRow: View {
+    let club: Club
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 12) {
+                AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(.systemGray5))
+                        .overlay(
+                            Image(systemName: "building.2")
+                                .foregroundColor(.gray)
+                        )
+                }
+                .frame(width: 50, height: 50)
+                .cornerRadius(8)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(club.name)
+                        .font(TornyFonts.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.tornyTextPrimary)
+
+                    Text([club.state, club.country].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
+                        .font(TornyFonts.bodySecondary)
+                        .foregroundColor(.tornyTextSecondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.gray)
+                    .font(.caption)
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.tornyLightBlue, lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

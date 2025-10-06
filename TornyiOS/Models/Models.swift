@@ -341,6 +341,7 @@ struct CreateSessionRequest: Codable {
     let windConditions: WindConditions?
     let notes: String?
     let equipment: EquipmentData?
+    let clubId: Int?
 
     enum CodingKeys: String, CodingKey {
         case location
@@ -351,6 +352,7 @@ struct CreateSessionRequest: Codable {
         case windConditions = "wind_conditions"
         case notes
         case equipment
+        case clubId = "club_id"
     }
 }
 
@@ -375,10 +377,12 @@ struct RecordShotRequest: Codable {
 struct EndSessionRequest: Codable {
     let endedAt: String         // Required - ISO string
     let durationSeconds: Int    // Required - seconds
-    
+    let notes: String?          // Optional - session notes
+
     enum CodingKeys: String, CodingKey {
         case endedAt = "ended_at"
         case durationSeconds = "duration_seconds"
+        case notes
     }
 }
 

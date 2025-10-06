@@ -58,7 +58,8 @@ class TrainingSessionViewModel: ObservableObject {
             weather: weather != nil ? Weather(rawValue: weather!) : nil,
             windConditions: windConditions != nil ? WindConditions(rawValue: windConditions!) : nil,
             notes: nil,
-            equipment: nil
+            equipment: nil,
+            clubId: nil
         )
 
         do {
@@ -109,7 +110,7 @@ class TrainingSessionViewModel: ObservableObject {
         }
     }
 
-    func endSession() async -> Bool {
+    func endSession(notes: String? = nil) async -> Bool {
         guard let session = currentSession else {
             alertMessage = "No active session"
             showingAlert = true
@@ -126,7 +127,8 @@ class TrainingSessionViewModel: ObservableObject {
 
             let request = EndSessionRequest(
                 endedAt: ISO8601DateFormatter().string(from: now),
-                durationSeconds: duration
+                durationSeconds: duration,
+                notes: notes
             )
             let response = try await apiService.endSession(session.id, request: request)
 
