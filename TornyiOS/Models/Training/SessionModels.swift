@@ -1,6 +1,24 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Training Session Models
+
+// Equipment details for a session
+struct SessionEquipment: Codable {
+    let size: Int?
+    let biasType: String?
+    let stickUsed: Bool?
+    let bowlsBrand: String?
+    let bowlsModel: String?
+
+    enum CodingKeys: String, CodingKey {
+        case size
+        case biasType = "bias_type"
+        case stickUsed = "stick_used"
+        case bowlsBrand = "bowls_brand"
+        case bowlsModel = "bowls_model"
+    }
+}
 
 struct TrainingSession: Codable, Identifiable {
     let id: Int
@@ -34,6 +52,14 @@ struct TrainingSession: Codable, Identifiable {
     let driveShots: Int?
     let driveAccuracy: Double?
 
+    // Club details
+    let clubId: Int?
+    let clubName: String?
+    let clubDescription: String?
+
+    // Equipment details
+    let equipment: SessionEquipment?
+
     enum CodingKeys: String, CodingKey {
         case id
         case playerId = "player_id"
@@ -63,6 +89,10 @@ struct TrainingSession: Codable, Identifiable {
         case ditchWeightAccuracy = "ditch_weight_accuracy"
         case driveShots = "drive_shots"
         case driveAccuracy = "drive_accuracy"
+        case clubId = "club_id"
+        case clubName = "club_name"
+        case clubDescription = "club_description"
+        case equipment
     }
 
     init(from decoder: Decoder) throws {
@@ -176,6 +206,14 @@ struct TrainingSession: Codable, Identifiable {
         updatedAt = try decodeDate(.updatedAt)
         startedAt = decodeDateOptional(.startedAt)
         endedAt = decodeDateOptional(.endedAt)
+
+        // Club details
+        clubId = try container.decodeIfPresent(Int.self, forKey: .clubId)
+        clubName = try container.decodeIfPresent(String.self, forKey: .clubName)
+        clubDescription = try container.decodeIfPresent(String.self, forKey: .clubDescription)
+
+        // Equipment details
+        equipment = try container.decodeIfPresent(SessionEquipment.self, forKey: .equipment)
     }
 
     // Computed properties
@@ -233,3 +271,4 @@ struct TrainingSession: Codable, Identifiable {
         return String(format: "%.1f", accuracy)
     }
 }
+

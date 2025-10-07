@@ -73,29 +73,47 @@ class ProfileSetupViewModel: ObservableObject {
         }
 
         // Load avatar image
-        if let avatarUrl = user.avatarUrl {
+        if let avatarUrl = user.avatarUrl, !avatarUrl.isEmpty {
+            print("Loading avatar from URL: \(avatarUrl)")
             await loadImageFromUrl(avatarUrl) { image in
                 self.avatar = image
             }
+        } else {
+            print("No avatar URL available")
         }
 
         // Load banner image
-        if let bannerUrl = user.bannerUrl {
+        if let bannerUrl = user.bannerUrl, !bannerUrl.isEmpty {
+            print("Loading banner from URL: \(bannerUrl)")
             await loadImageFromUrl(bannerUrl) { image in
                 self.banner = image
             }
+        } else {
+            print("No banner URL available")
         }
     }
 
     private func loadImageFromUrl(_ urlString: String, completion: @escaping (UIImage) -> Void) async {
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            return
+        }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            print("Fetching image from URL: \(url)")
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Image fetch response code: \(httpResponse.statusCode)")
+            }
+
             if let image = UIImage(data: data) {
+                print("Successfully loaded image, size: \(image.size)")
                 await MainActor.run {
                     completion(image)
                 }
+            } else {
+                print("Failed to create UIImage from data")
             }
         } catch {
             print("Failed to load image from \(urlString): \(error)")

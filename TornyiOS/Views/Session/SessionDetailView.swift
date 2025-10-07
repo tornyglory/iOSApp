@@ -10,7 +10,12 @@ struct SessionDetailView: View {
 
     var body: some View {
         ZStack {
-            TornyBackgroundView()
+            // Blue gradient background with clouds
+            TornyGradients.skyGradient
+                .ignoresSafeArea()
+
+            // Animated clouds
+            TornyCloudView()
 
             ScrollView {
                 VStack(spacing: 16) {
@@ -122,6 +127,47 @@ struct SessionDetailHeaderCard: View {
                 Text("Session #\(session.id)")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+
+            Divider()
+
+            // Club information (if available)
+            if let clubName = session.clubName {
+                HStack(spacing: 8) {
+                    Image(systemName: "building.2")
+                        .font(.subheadline)
+                        .foregroundColor(.tornyBlue)
+                    Text(clubName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.tornyBlue)
+                }
+            }
+
+            // Equipment information (if available)
+            if let equipment = session.equipment,
+               let brand = equipment.bowlsBrand,
+               let model = equipment.bowlsModel {
+                HStack(spacing: 8) {
+                    Image(systemName: "circle.circle")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text("\(brand) \(model)")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    if let size = equipment.size {
+                        Text("• Size \(size)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
+                    if let biasType = equipment.biasType {
+                        Text("• \(biasType.capitalized) bias")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
 
             Divider()

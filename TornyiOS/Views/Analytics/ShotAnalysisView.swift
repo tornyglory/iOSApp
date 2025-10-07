@@ -5,11 +5,15 @@ struct ShotAnalysisView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                TornyBackgroundView()
+        ZStack {
+            // Blue gradient background with clouds
+            TornyGradients.skyGradient
+                .ignoresSafeArea()
 
-                ScrollView {
+            // Animated clouds
+            TornyCloudView()
+
+            ScrollView {
                     VStack(spacing: 16) {
                         if viewModel.isLoading {
                             VStack(spacing: 12) {
@@ -64,20 +68,21 @@ struct ShotAnalysisView: View {
                             )
                             .padding()
                         }
-                    }
-                    .padding(.vertical, 16)
                 }
+                .padding(.vertical, 16)
             }
-            .navigationTitle("Shot Analysis")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+        }
+        .navigationTitle("Shot Analysis")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Done") {
+                    dismiss()
                 }
             }
         }
+        .toolbarBackground(.clear, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             viewModel.loadAnalytics()
         }

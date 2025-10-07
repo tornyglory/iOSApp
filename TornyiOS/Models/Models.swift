@@ -332,6 +332,23 @@ struct EquipmentData: Codable {
     }
 }
 
+// Equipment details for a session (response model)
+struct SessionEquipment: Codable {
+    let size: Int?
+    let biasType: String?
+    let stickUsed: Bool?
+    let bowlsBrand: String?
+    let bowlsModel: String?
+
+    enum CodingKeys: String, CodingKey {
+        case size
+        case biasType = "bias_type"
+        case stickUsed = "stick_used"
+        case bowlsBrand = "bowls_brand"
+        case bowlsModel = "bowls_model"
+    }
+}
+
 struct CreateSessionRequest: Codable {
     let location: Location
     let greenType: GreenType
@@ -423,8 +440,16 @@ struct TrainingSession: Codable, Identifiable {
     let ditchWeightAccuracy: Double?
     let _driveShots: String?
     let driveAccuracy: Double?
-    
-    
+
+    // Club details
+    let clubId: Int?
+    let clubName: String?
+    let clubDescription: String?
+
+    // Equipment details
+    let equipment: SessionEquipment?
+
+
     // Computed property to convert MySQL TINYINT (0/1) to Bool
     var isActive: Bool? {
         guard let value = _isActive else { return nil }
@@ -505,10 +530,14 @@ struct TrainingSession: Codable, Identifiable {
         case ditchWeightAccuracy = "ditch_weight_accuracy"
         case _driveShots = "drive_shots"
         case driveAccuracy = "drive_accuracy"
+        case clubId = "club_id"
+        case clubName = "club_name"
+        case clubDescription = "club_description"
+        case equipment
     }
 
     // Memberwise initializer for preview/test purposes
-    init(id: Int, playerId: Int, sport: String, sessionDate: Date, location: Location, greenType: GreenType, greenSpeed: Int, rinkNumber: Int?, weather: Weather?, windConditions: WindConditions?, notes: String?, createdAt: Date, updatedAt: Date, totalShots: Int?, _drawShots: String?, _weightedShots: String?, drawAccuracy: Double?, weightedAccuracy: Double?, overallAccuracy: Double?, startedAt: Date?, endedAt: Date?, durationSeconds: Int?, _isActive: Int?, _totalPoints: String?, _averageScore: String?, _accuracyPercentage: String?, _yardOnShots: String?, yardOnAccuracy: Double?, _ditchWeightShots: String?, ditchWeightAccuracy: Double?, _driveShots: String?, driveAccuracy: Double?) {
+    init(id: Int, playerId: Int, sport: String, sessionDate: Date, location: Location, greenType: GreenType, greenSpeed: Int, rinkNumber: Int?, weather: Weather?, windConditions: WindConditions?, notes: String?, createdAt: Date, updatedAt: Date, totalShots: Int?, _drawShots: String?, _weightedShots: String?, drawAccuracy: Double?, weightedAccuracy: Double?, overallAccuracy: Double?, startedAt: Date?, endedAt: Date?, durationSeconds: Int?, _isActive: Int?, _totalPoints: String?, _averageScore: String?, _accuracyPercentage: String?, _yardOnShots: String?, yardOnAccuracy: Double?, _ditchWeightShots: String?, ditchWeightAccuracy: Double?, _driveShots: String?, driveAccuracy: Double?, clubId: Int? = nil, clubName: String? = nil, clubDescription: String? = nil, equipment: SessionEquipment? = nil) {
         self.id = id
         self.playerId = playerId
         self.sport = sport
@@ -541,6 +570,10 @@ struct TrainingSession: Codable, Identifiable {
         self.ditchWeightAccuracy = ditchWeightAccuracy
         self._driveShots = _driveShots
         self.driveAccuracy = driveAccuracy
+        self.clubId = clubId
+        self.clubName = clubName
+        self.clubDescription = clubDescription
+        self.equipment = equipment
     }
 
     init(from decoder: Decoder) throws {
@@ -654,6 +687,14 @@ struct TrainingSession: Codable, Identifiable {
         updatedAt = try decodeDate(.updatedAt)
         startedAt = decodeDateOptional(.startedAt)
         endedAt = decodeDateOptional(.endedAt)
+
+        // Club details
+        clubId = try container.decodeIfPresent(Int.self, forKey: .clubId)
+        clubName = try container.decodeIfPresent(String.self, forKey: .clubName)
+        clubDescription = try container.decodeIfPresent(String.self, forKey: .clubDescription)
+
+        // Equipment details
+        equipment = try container.decodeIfPresent(SessionEquipment.self, forKey: .equipment)
     }
     
     // Computed property for formatted duration display

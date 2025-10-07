@@ -6,9 +6,12 @@ struct LaunchScreen: View {
 
     var body: some View {
         ZStack {
-            // Clean white background
-            Color.white
+            // Blue gradient background with clouds
+            TornyGradients.skyGradient
                 .ignoresSafeArea()
+
+            // Animated clouds
+            TornyCloudView()
 
             VStack(spacing: 40) {
                 Spacer()
@@ -17,7 +20,7 @@ struct LaunchScreen: View {
                 Image("torny_logo")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 250)
+                    .frame(width: 180)
                     .scaleEffect(isAnimating ? 1.05 : 1.0)
                     .opacity(opacity)
                     .animation(
@@ -35,7 +38,7 @@ struct LaunchScreen: View {
                 // Version at bottom
                 Text("Version 1.0")
                     .font(TornyFonts.caption)
-                    .foregroundColor(.tornyTextSecondary)
+                    .foregroundColor(.black)
                     .opacity(opacity)
                     .animation(
                         Animation.easeIn(duration: 1.0).delay(1.0),

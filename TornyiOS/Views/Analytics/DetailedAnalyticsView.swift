@@ -15,6 +15,14 @@ struct ShotAnalysisContentView: View {
 
     var body: some View {
         NavigationView {
+            ZStack {
+                // Blue gradient background with clouds
+                TornyGradients.skyGradient
+                    .ignoresSafeArea()
+
+                // Animated clouds
+                TornyCloudView()
+
             ScrollView {
                 LazyVStack(spacing: 0) {
                     if viewModel.isLoading {
@@ -33,48 +41,40 @@ struct ShotAnalysisContentView: View {
                             analytics: analytics,
                             onPeriodChanged: viewModel.loadAnalytics
                         )
-                        .background(Color(.systemGray6))
                         .padding(.bottom, 16)
 
                         // Session Statistics
                         LifetimeSessionStats(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Shot Type Breakdown Cards
                         LifetimeShotTypeBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Scoring System Info
                         ScoringSystemInfo()
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Detailed Shot Breakdown by Type
                         DetailedShotBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Length & Hand Analysis
                         LengthHandAnalysis(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Green Type & Conditions Breakdown
                         ConditionsBreakdown(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 16)
 
                         // Green Types & Speeds Detailed Analysis
                         GreenTypesSpeedsAnalysis(analytics: analytics)
-                            .background(Color(.systemGray6))
                             .padding(.horizontal, 16)
                             .padding(.bottom, 20)
 
@@ -88,7 +88,7 @@ struct ShotAnalysisContentView: View {
                     }
                 }
             }
-            .background(Color(.systemGray6))
+            }
             .navigationTitle("Shot Analysis")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -98,6 +98,8 @@ struct ShotAnalysisContentView: View {
                     }
                 }
             }
+            .toolbarBackground(.clear, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
         }
         .onAppear {
             viewModel.loadAnalytics()

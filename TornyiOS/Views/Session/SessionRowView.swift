@@ -123,6 +123,18 @@ struct SessionRowView: View {
                 .foregroundColor(.secondary)
             }
 
+            // Club name (if available)
+            if let clubName = session.clubName {
+                HStack(spacing: 4) {
+                    Image(systemName: "building.2")
+                        .font(.caption)
+                    Text(clubName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .foregroundColor(.tornyBlue)
+            }
+
             // Location and conditions row
             HStack(spacing: 12) {
                 // Location badge
@@ -165,13 +177,32 @@ struct SessionRowView: View {
             }
             .foregroundColor(.secondary)
 
+            // Equipment details (if available)
+            if let equipment = session.equipment,
+               let brand = equipment.bowlsBrand,
+               let model = equipment.bowlsModel {
+                HStack(spacing: 4) {
+                    Image(systemName: "circle.circle")
+                        .font(.caption)
+                    Text("\(brand) \(model)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+
+                    if let size = equipment.size {
+                        Text("• Size \(size)")
+                            .font(.caption)
+                    }
+                }
+                .foregroundColor(.secondary)
+            }
+
             // Total shots
             Text("\(session.totalShots ?? 0) total shots")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
             // Shot type badges
-            HStack(spacing: 6) {
+            HStack(alignment: .top, spacing: 6) {
                 ForEach(shotTypeBadges, id: \.type) { badge in
                     ShotTypeBadge(
                         type: badge.type,
@@ -179,13 +210,9 @@ struct SessionRowView: View {
                         accuracy: badge.accuracy,
                         color: badge.color
                     )
-                    .frame(maxWidth: .infinity)
                 }
 
-                // Add spacer if less than 4 badges to push badges to the left
-                if shotTypeBadges.count < 4 {
-                    Spacer()
-                }
+                Spacer()
             }
         }
         .padding(.vertical, 12)

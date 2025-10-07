@@ -76,7 +76,9 @@ struct ProfileSetupViewContent: View {
             ClubSearchView(viewModel: viewModel)
         }
         .task {
+            print("ProfileSetupViewContent - task started, loading user profile")
             await viewModel.loadUserProfile()
+            print("ProfileSetupViewContent - profile loaded, banner is: \(viewModel.banner != nil ? "set" : "nil")")
         }
         .alert("Profile Update", isPresented: $viewModel.showingAlert) {
             Button("OK") { }

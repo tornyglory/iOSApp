@@ -11,7 +11,12 @@ struct SessionAIAnalysisView: View {
 
     var body: some View {
         ZStack {
-            TornyBackgroundView()
+            // Blue gradient background with clouds
+            TornyGradients.skyGradient
+                .ignoresSafeArea()
+
+            // Animated clouds
+            TornyCloudView()
 
             if isLoading {
                 VStack(spacing: 20) {
