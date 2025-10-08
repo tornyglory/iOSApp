@@ -91,17 +91,21 @@ class AuthViewModel: ObservableObject {
 
             let response = try await apiService.register(request)
 
-            let user = response.user
-            let token = response.token
+            // Check if registration returned token and user (some APIs do, some don't)
+            if let user = response.user, let token = response.token {
+                apiService.setAuthToken(token)
+                apiService.currentUser = user
 
-            apiService.setAuthToken(token)
-            apiService.currentUser = user
+                let userId = user.id
+                UserDefaults.standard.set(String(userId), forKey: "current_user_id")
 
-            let userId = user.id
-            UserDefaults.standard.set(String(userId), forKey: "current_user_id")
-
-            isAuthenticated = true
-            needsProfileSetup = true
+                isAuthenticated = true
+                needsProfileSetup = true
+            } else {
+                // Registration successful but no token returned - user needs to login
+                print("✅ Registration successful: \(response.message)")
+                // The AuthView will handle showing the success message and switching to login
+            }
 
             isLoading = false
         } catch {

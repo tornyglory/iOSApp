@@ -157,8 +157,8 @@ struct AuthResponse: Codable {
 struct RegisterResponse: Codable {
     let status: String
     let message: String
-    let token: String
-    let user: User
+    let token: String?
+    let user: User?
 }
 
 struct PasswordResetRequest: Codable {

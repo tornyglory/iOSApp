@@ -30,7 +30,16 @@ class AnalyticsViewModel: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         URLSession.shared.dataTaskPublisher(for: request)
-            .map(\.data)
+            .tryMap { data, response -> Data in
+                // Log the raw response
+                if let httpResponse = response as? HTTPURLResponse {
+                    print("📥 Analytics Response Status: \(httpResponse.statusCode)")
+                }
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("📥 Analytics Response Body: \(jsonString)")
+                }
+                return data
+            }
             .decode(type: AnalyticsResponse.self, decoder: JSONDecoder())
             .receive(on: DispatchQueue.main)
             .sink(
@@ -41,11 +50,15 @@ class AnalyticsViewModel: ObservableObject {
                         break
                     case .failure(let error):
                         self?.errorMessage = error.localizedDescription
-                        print("Analytics fetch error: \(error)")
+                        print("❌ Analytics fetch error: \(error)")
+                        if let decodingError = error as? DecodingError {
+                            print("❌ Decoding error details: \(decodingError)")
+                        }
                     }
                 },
                 receiveValue: { [weak self] response in
                     self?.analytics = response
+                    print("✅ Analytics loaded successfully")
                 }
             )
             .store(in: &cancellables)

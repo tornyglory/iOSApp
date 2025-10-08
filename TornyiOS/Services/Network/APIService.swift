@@ -253,21 +253,39 @@ class APIService: ObservableObject {
     // MARK: - Authentication Methods
     
     func register(_ request: RegisterRequest) async throws -> RegisterResponse {
+        print("📝 Starting registration process...")
+        print("📧 Email: \(request.email)")
+        print("👤 Name: \(request.name)")
+
         let encoder = JSONEncoder()
         let data = try encoder.encode(request)
-        
-        let response: RegisterResponse = try await makeRequest(
-            endpoint: "/register",
-            method: .POST,
-            body: data,
-            responseType: RegisterResponse.self,
-            useAuthBase: true
-        )
-        
-        // Registration doesn't return a token, user needs to login separately
-        print("✅ Registration successful: \(response.message)")
-        
-        return response
+
+        // Log the request body
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("📤 Registration request body: \(jsonString)")
+        }
+
+        do {
+            let response: RegisterResponse = try await makeRequest(
+                endpoint: "/register",
+                method: .POST,
+                body: data,
+                responseType: RegisterResponse.self,
+                useAuthBase: true
+            )
+
+            // Registration doesn't return a token, user needs to login separately
+            print("✅ Registration successful: \(response.message)")
+
+            return response
+        } catch {
+            print("❌ Registration error: \(error)")
+            if let urlError = error as? URLError {
+                print("🌐 URL Error code: \(urlError.code.rawValue)")
+                print("🌐 URL Error description: \(urlError.localizedDescription)")
+            }
+            throw error
+        }
     }
     
     func login(_ request: LoginRequest) async throws -> AuthResponse {

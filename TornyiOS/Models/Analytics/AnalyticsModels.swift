@@ -36,6 +36,54 @@ struct AnalyticsResponse: Codable {
         case drawBreakdown = "draw_breakdown"
         case detailedStats = "detailed_stats"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        sport = try container.decode(String.self, forKey: .sport)
+        period = try container.decode(String.self, forKey: .period)
+        totalSessions = try container.decode(Int.self, forKey: .totalSessions)
+        totalShots = try container.decode(Int.self, forKey: .totalShots)
+
+        // Helper function to decode String or number fields
+        func decodeStringOrNumber(_ key: CodingKeys) -> String {
+            if let stringValue = try? container.decode(String.self, forKey: key) {
+                return stringValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return String(intValue)
+            } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return String(doubleValue)
+            }
+            return "0"
+        }
+
+        // Helper function to decode String or number or null fields
+        func decodeStringOrNumberOrNull(_ key: CodingKeys) -> String {
+            if container.contains(key) {
+                if let stringValue = try? container.decode(String.self, forKey: key) {
+                    return stringValue
+                } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                    return String(intValue)
+                } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                    return String(doubleValue)
+                }
+            }
+            return "N/A"
+        }
+
+        totalPoints = decodeStringOrNumber(.totalPoints)
+        maxPossiblePoints = try container.decode(Int.self, forKey: .maxPossiblePoints)
+        averageScore = decodeStringOrNumber(.averageScore)
+        drawAccuracy = decodeStringOrNumber(.drawAccuracy)
+        weightedAccuracy = decodeStringOrNumber(.weightedAccuracy)
+        overallAccuracy = decodeStringOrNumber(.overallAccuracy)
+        bestHand = decodeStringOrNumberOrNull(.bestHand)
+        bestLength = decodeStringOrNumberOrNull(.bestLength)
+        improvementTrend = try container.decode(AnalyticsImprovementTrend.self, forKey: .improvementTrend)
+        shotBreakdown = try container.decode(AnalyticsShotBreakdown.self, forKey: .shotBreakdown)
+        drawBreakdown = try container.decode(AnalyticsDrawBreakdown.self, forKey: .drawBreakdown)
+        detailedStats = try container.decode(AnalyticsDetailedStats.self, forKey: .detailedStats)
+    }
 }
 
 struct AnalyticsImprovementTrend: Codable {
@@ -46,6 +94,32 @@ struct AnalyticsImprovementTrend: Codable {
 struct AnalyticsShotBreakdown: Codable {
     let draw: String
     let weighted: String
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Handle draw as either String or Int
+        if let drawString = try? container.decode(String.self, forKey: .draw) {
+            draw = drawString
+        } else if let drawInt = try? container.decode(Int.self, forKey: .draw) {
+            draw = String(drawInt)
+        } else {
+            draw = "0"
+        }
+
+        // Handle weighted as either String or Int
+        if let weightedString = try? container.decode(String.self, forKey: .weighted) {
+            weighted = weightedString
+        } else if let weightedInt = try? container.decode(Int.self, forKey: .weighted) {
+            weighted = String(weightedInt)
+        } else {
+            weighted = "0"
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case draw, weighted
+    }
 }
 
 struct AnalyticsDrawBreakdown: Codable {
