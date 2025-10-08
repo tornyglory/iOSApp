@@ -206,6 +206,8 @@ struct AnalyticsDrawDistanceStat: Codable, Identifiable {
 struct AIInsightsResponse: Codable {
     let period: String
     let analysisDate: String
+    let statistics: AIStatistics?
+    let practicePatterns: PracticePatterns?
     let overallAssessment: String
     let keyInsights: [String]
     let strengths: [String]
@@ -218,6 +220,8 @@ struct AIInsightsResponse: Codable {
     enum CodingKeys: String, CodingKey {
         case period
         case analysisDate = "analysis_date"
+        case statistics
+        case practicePatterns = "practice_patterns"
         case overallAssessment = "overall_assessment"
         case keyInsights = "key_insights"
         case strengths
@@ -226,6 +230,67 @@ struct AIInsightsResponse: Codable {
         case nextSessionFocus = "next_session_focus"
         case equipmentPerformance = "equipment_performance"
         case clubPerformance = "club_performance"
+    }
+}
+
+struct AIStatistics: Codable {
+    let totalSessions: Int
+    let totalShots: Int
+    let totalPoints: String
+    let maxPossiblePoints: Int
+    let overallAccuracy: String
+    let successfulShots: String?
+    let successRate: String?
+    let excellentShots: String?
+    let excellenceRate: String?
+    let drawAccuracy: String
+    let weightedAccuracy: String
+    let improvementTrend: AnalyticsImprovementTrend
+
+    enum CodingKeys: String, CodingKey {
+        case totalSessions = "total_sessions"
+        case totalShots = "total_shots"
+        case totalPoints = "total_points"
+        case maxPossiblePoints = "max_possible_points"
+        case overallAccuracy = "overall_accuracy"
+        case successfulShots = "successful_shots"
+        case successRate = "success_rate"
+        case excellentShots = "excellent_shots"
+        case excellenceRate = "excellence_rate"
+        case drawAccuracy = "draw_accuracy"
+        case weightedAccuracy = "weighted_accuracy"
+        case improvementTrend = "improvement_trend"
+    }
+}
+
+struct PracticePatterns: Codable {
+    let sessionsPerWeek: Int
+    let avgDurationMinutes: Int
+    let totalPracticeHours: Double
+    let minDurationMinutes: Int
+    let maxDurationMinutes: Int
+    let weeklyFrequency: [WeeklyFrequency]
+
+    enum CodingKeys: String, CodingKey {
+        case sessionsPerWeek = "sessions_per_week"
+        case avgDurationMinutes = "avg_duration_minutes"
+        case totalPracticeHours = "total_practice_hours"
+        case minDurationMinutes = "min_duration_minutes"
+        case maxDurationMinutes = "max_duration_minutes"
+        case weeklyFrequency = "weekly_frequency"
+    }
+}
+
+struct WeeklyFrequency: Codable, Identifiable {
+    var id: Int { week }
+    let week: Int
+    let sessions: Int
+    let avgDurationMinutes: Int
+
+    enum CodingKeys: String, CodingKey {
+        case week
+        case sessions
+        case avgDurationMinutes = "avg_duration_minutes"
     }
 }
 
@@ -326,6 +391,14 @@ struct AreaForImprovement: Codable, Identifiable {
         self.priority = try container.decode(String.self, forKey: .priority)
         self.id = UUID()
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(area, forKey: .area)
+        try container.encode(currentPerformance, forKey: .currentPerformance)
+        try container.encode(target, forKey: .target)
+        try container.encode(priority, forKey: .priority)
+    }
 }
 
 struct PerformancePatterns: Codable {
@@ -372,12 +445,22 @@ struct RecommendedDrill: Codable, Identifiable {
         self.duration = try container.decode(String.self, forKey: .duration)
         self.id = UUID()
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(drillName, forKey: .drillName)
+        try container.encode(description, forKey: .description)
+        try container.encode(targetMetrics, forKey: .targetMetrics)
+        try container.encode(duration, forKey: .duration)
+    }
 }
 // MARK: - Session AI Analysis Models
 
 struct SessionAIAnalysis: Codable {
     let sessionId: Int
     let analysisDate: String
+    let session: SessionDetails?
+    let statistics: SessionAIStatistics?
     let overallAssessment: String
     let keyInsights: [String]
     let strengths: [String]
@@ -388,11 +471,97 @@ struct SessionAIAnalysis: Codable {
     enum CodingKeys: String, CodingKey {
         case sessionId = "session_id"
         case analysisDate = "analysis_date"
+        case session
+        case statistics
         case overallAssessment = "overall_assessment"
         case keyInsights = "key_insights"
         case strengths
         case areasForImprovement = "areas_for_improvement"
         case recommendedDrills = "recommended_drills"
         case nextSessionFocus = "next_session_focus"
+    }
+
+    // Encoding is synthesized automatically for all fields
+}
+
+struct SessionDetails: Codable {
+    let id: Int
+    let sessionDate: String
+    let location: String
+    let clubId: Int?
+    let clubName: String?
+    let clubDescription: String?
+    let greenType: String
+    let greenSpeed: Int
+    let weather: String?
+    let windConditions: String?
+    let equipment: SessionEquipment?
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case sessionDate = "session_date"
+        case location
+        case clubId = "club_id"
+        case clubName = "club_name"
+        case clubDescription = "club_description"
+        case greenType = "green_type"
+        case greenSpeed = "green_speed"
+        case weather
+        case windConditions = "wind_conditions"
+        case equipment
+        case notes
+    }
+}
+
+struct SessionAIStatistics: Codable {
+    let totalShots: Int
+    let totalPoints: Int
+    let maxPossiblePoints: Int
+    let averageScore: Double
+    let accuracyPercentage: Double
+    let successfulShots: Int
+    let successRate: Double
+    let excellentShots: Int
+    let excellenceRate: Double
+    let byHandBreakdown: String?
+    let byLengthBreakdown: String?
+    let drawShots: Int?
+    let drawPoints: Int?
+    let drawAccuracyPercentage: Double?
+    let yardOnShots: Int?
+    let yardOnPoints: Int?
+    let yardOnAccuracyPercentage: Double?
+    let ditchWeightShots: Int?
+    let ditchWeightPoints: Int?
+    let ditchWeightAccuracyPercentage: Double?
+    let driveShots: Int?
+    let drivePoints: Int?
+    let driveAccuracyPercentage: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case totalShots = "total_shots"
+        case totalPoints = "total_points"
+        case maxPossiblePoints = "max_possible_points"
+        case averageScore = "average_score"
+        case accuracyPercentage = "accuracy_percentage"
+        case successfulShots = "successful_shots"
+        case successRate = "success_rate"
+        case excellentShots = "excellent_shots"
+        case excellenceRate = "excellence_rate"
+        case byHandBreakdown = "by_hand_breakdown"
+        case byLengthBreakdown = "by_length_breakdown"
+        case drawShots = "draw_shots"
+        case drawPoints = "draw_points"
+        case drawAccuracyPercentage = "draw_accuracy_percentage"
+        case yardOnShots = "yard_on_shots"
+        case yardOnPoints = "yard_on_points"
+        case yardOnAccuracyPercentage = "yard_on_accuracy_percentage"
+        case ditchWeightShots = "ditch_weight_shots"
+        case ditchWeightPoints = "ditch_weight_points"
+        case ditchWeightAccuracyPercentage = "ditch_weight_accuracy_percentage"
+        case driveShots = "drive_shots"
+        case drivePoints = "drive_points"
+        case driveAccuracyPercentage = "drive_accuracy_percentage"
     }
 }
