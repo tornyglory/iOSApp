@@ -22,7 +22,7 @@ struct SessionAIAnalysisView: View {
                 VStack(spacing: 20) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Analyzing your session...")
+                    Text("Analysing your session...")
                         .font(TornyFonts.body)
                         .foregroundColor(.tornyTextSecondary)
                 }

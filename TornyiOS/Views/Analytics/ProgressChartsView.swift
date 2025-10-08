@@ -26,7 +26,10 @@ struct ProgressChartsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(.systemGroupedBackground)
+                TornyGradients.skyGradient
+                    .ignoresSafeArea()
+
+                TornyCloudView()
                     .ignoresSafeArea()
 
                 if viewModel.isLoading {
@@ -44,13 +47,6 @@ struct ProgressChartsView: View {
                 } else {
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Header
-                            Text("Progress Charts")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundColor(.tornyTextPrimary)
-                                .padding(.top)
-
                             // Period Filter
                             PeriodFilterView(
                                 selectedPeriod: $selectedPeriod,
@@ -101,10 +97,18 @@ struct ProgressChartsView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.tornyBlue)
+                            Text("Back")
+                                .font(.body)
+                                .foregroundColor(.tornyBlue)
+                        }
                     }
-                    .foregroundColor(.tornyBlue)
                 }
             }
             .onAppear {

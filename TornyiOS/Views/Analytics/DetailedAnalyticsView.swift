@@ -92,9 +92,16 @@ struct ShotAnalysisContentView: View {
             .navigationTitle("Shot Analysis")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
                         dismiss()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .fontWeight(.semibold)
+                            Text("Back")
+                        }
+                        .foregroundColor(.tornyBlue)
                     }
                 }
             }
@@ -287,7 +294,9 @@ struct LifetimeShotTypeBreakdown: View {
         var stats: [String: (shots: Int, points: Int, totalAccuracy: Double)] = [:]
 
         // Aggregate from length matrix
-        aggregateFromLengthCategory(analytics.lengthMatrix.short, into: &stats)
+        if let short = analytics.lengthMatrix.short {
+            aggregateFromLengthCategory(short, into: &stats)
+        }
         aggregateFromLengthCategory(analytics.lengthMatrix.medium, into: &stats)
         if let long = analytics.lengthMatrix.long {
             aggregateFromLengthCategory(long, into: &stats)
@@ -486,7 +495,9 @@ struct DetailedShotBreakdown: View {
         var stats: [String: (shots: Int, points: Int)] = [:]
 
         // Aggregate from length matrix
-        aggregateFromLengthCategory(analytics.lengthMatrix.short, into: &stats)
+        if let short = analytics.lengthMatrix.short {
+            aggregateFromLengthCategory(short, into: &stats)
+        }
         aggregateFromLengthCategory(analytics.lengthMatrix.medium, into: &stats)
         if let long = analytics.lengthMatrix.long {
             aggregateFromLengthCategory(long, into: &stats)
@@ -534,7 +545,9 @@ struct LengthHandAnalysis: View {
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    LengthPerformanceCard(title: "Short", data: analytics.lengthMatrix.short, color: .green)
+                    if let short = analytics.lengthMatrix.short {
+                        LengthPerformanceCard(title: "Short", data: short, color: .green)
+                    }
                     LengthPerformanceCard(title: "Medium", data: analytics.lengthMatrix.medium, color: .orange)
                     if let long = analytics.lengthMatrix.long {
                         LengthPerformanceCard(title: "Long", data: long, color: .red)

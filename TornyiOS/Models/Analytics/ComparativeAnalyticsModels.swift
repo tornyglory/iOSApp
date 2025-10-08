@@ -21,6 +21,13 @@ enum StringOrDouble: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 
+        // Check for null values first
+        if container.decodeNil() {
+            // Default to 0 for null values
+            self = .double(0)
+            return
+        }
+
         if let intValue = try? container.decode(Int.self) {
             self = .int(intValue)
         } else if let doubleValue = try? container.decode(Double.self) {
@@ -160,7 +167,7 @@ struct HeatmapDataPoint: Codable, Identifiable {
 }
 
 struct LengthMatrix: Codable {
-    let short: [String: LengthMatrixData]
+    let short: [String: LengthMatrixData]?
     let medium: [String: LengthMatrixData]
     let long: [String: LengthMatrixData]?
 

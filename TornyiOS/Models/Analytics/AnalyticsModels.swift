@@ -138,6 +138,8 @@ struct AIInsightsResponse: Codable {
     let areasForImprovement: [AreaForImprovement]
     let recommendedDrills: [RecommendedDrill]
     let nextSessionFocus: String
+    let equipmentPerformance: [EquipmentPerformance]?
+    let clubPerformance: [ClubPerformance]?
 
     enum CodingKeys: String, CodingKey {
         case period
@@ -148,6 +150,83 @@ struct AIInsightsResponse: Codable {
         case areasForImprovement = "areas_for_improvement"
         case recommendedDrills = "recommended_drills"
         case nextSessionFocus = "next_session_focus"
+        case equipmentPerformance = "equipment_performance"
+        case clubPerformance = "club_performance"
+    }
+}
+
+struct EquipmentPerformance: Codable, Identifiable {
+    var id: String {
+        "\(equipment.bowlsBrand ?? "unknown")_\(equipment.bowlsModel ?? "unknown")_\(equipment.size ?? 0)"
+    }
+    let equipment: SessionEquipment
+    let sessions: Int
+    let shots: Int
+    let _accuracy: String
+
+    var accuracy: Double {
+        Double(_accuracy) ?? 0.0
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case equipment
+        case sessions
+        case shots
+        case _accuracy = "accuracy"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        equipment = try container.decode(SessionEquipment.self, forKey: .equipment)
+        sessions = try container.decode(Int.self, forKey: .sessions)
+        shots = try container.decode(Int.self, forKey: .shots)
+
+        // Handle accuracy as either String or Double
+        if let accuracyDouble = try? container.decode(Double.self, forKey: ._accuracy) {
+            _accuracy = String(accuracyDouble)
+        } else {
+            _accuracy = try container.decode(String.self, forKey: ._accuracy)
+        }
+    }
+}
+
+struct ClubPerformance: Codable, Identifiable {
+    let clubId: Int
+    let clubName: String
+    let clubDescription: String?
+    let sessions: Int
+    let shots: Int
+    let _accuracy: String
+
+    var accuracy: Double {
+        Double(_accuracy) ?? 0.0
+    }
+
+    var id: Int { clubId }
+
+    enum CodingKeys: String, CodingKey {
+        case clubId = "club_id"
+        case clubName = "club_name"
+        case clubDescription = "club_description"
+        case sessions
+        case shots
+        case _accuracy = "accuracy"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        clubId = try container.decode(Int.self, forKey: .clubId)
+        clubName = try container.decode(String.self, forKey: .clubName)
+        clubDescription = try container.decodeIfPresent(String.self, forKey: .clubDescription)
+        sessions = try container.decode(Int.self, forKey: .sessions)
+        shots = try container.decode(Int.self, forKey: .shots)
+
+        // Handle accuracy as either String or Double
+        if let accuracyDouble = try? container.decode(Double.self, forKey: ._accuracy) {
+            _accuracy = String(accuracyDouble)
+        } else {
+            _accuracy = try container.decode(String.self, forKey: ._accuracy)
+        }
     }
 }
 

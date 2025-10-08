@@ -3,13 +3,19 @@ import Foundation
 
 @main
 struct TornyiOSApp: App {
+    @StateObject private var navigationManager = NavigationManager.shared
+
     init() {
         loadCustomFonts()
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(navigationManager)
+                .onOpenURL { url in
+                    navigationManager.handleDeepLink(url)
+                }
         }
     }
     

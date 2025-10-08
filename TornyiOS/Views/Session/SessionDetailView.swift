@@ -32,7 +32,7 @@ struct SessionDetailView: View {
                         HStack {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 20))
-                            Text("Analyze with Torny AI")
+                            Text("Analyse with Torny AI")
                                 .font(TornyFonts.body)
                                 .fontWeight(.semibold)
                         }

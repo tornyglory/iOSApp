@@ -518,7 +518,7 @@ struct MainDashboardView: View {
                                                     .foregroundColor(.purple)
                                             }
 
-                                            Text("Get personalized insights & recommendations")
+                                            Text("Get personalised insights & recommendations")
                                                 .font(TornyFonts.bodySecondary)
                                                 .foregroundColor(.tornyTextSecondary)
                                                 .multilineTextAlignment(.leading)

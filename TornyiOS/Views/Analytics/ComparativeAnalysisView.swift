@@ -36,13 +36,6 @@ struct ComparativeAnalysisView: View {
                 } else {
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Header
-                            Text("Comparative Analysis")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundColor(.tornyTextPrimary)
-                                .padding(.top)
-
                             // Period Filter
                             ComparativePeriodFilterView(
                                 selectedPeriod: $selectedPeriod,
@@ -93,10 +86,18 @@ struct ComparativeAnalysisView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(.tornyBlue)
+                            Text("Back")
+                                .font(.body)
+                                .foregroundColor(.tornyBlue)
+                        }
                     }
-                    .foregroundColor(.tornyBlue)
                 }
             }
             .onChange(of: selectedPeriod) { _ in
@@ -348,25 +349,25 @@ struct PerformanceMatrixView: View {
 
             VStack(spacing: 12) {
                 // Short shots
-                if !data.short.isEmpty {
+                if let shortData = data.short, !shortData.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Short Shots")
                             .font(.body)
                             .fontWeight(.medium)
 
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                            if let drawData = data.short["draw"] {
+                            if let drawData = shortData["draw"] {
                                 MetricView(
                                     title: "Draw",
-                                    accuracy: Double(drawData.accuracy) ?? 0,
+                                    accuracy: drawData.accuracy,
                                     shots: drawData.shots,
                                     color: .blue
                                 )
                             }
-                            if let yardOnData = data.short["yard_on"] {
+                            if let yardOnData = shortData["yard_on"] {
                                 MetricView(
                                     title: "Yard On",
-                                    accuracy: Double(yardOnData.accuracy) ?? 0,
+                                    accuracy: yardOnData.accuracy,
                                     shots: yardOnData.shots,
                                     color: .green
                                 )
@@ -386,7 +387,7 @@ struct PerformanceMatrixView: View {
                             if let drawData = data.medium["draw"] {
                                 MetricView(
                                     title: "Draw",
-                                    accuracy: Double(drawData.accuracy) ?? 0,
+                                    accuracy: drawData.accuracy,
                                     shots: drawData.shots,
                                     color: .blue
                                 )
@@ -394,7 +395,7 @@ struct PerformanceMatrixView: View {
                             if let yardOnData = data.medium["yard_on"] {
                                 MetricView(
                                     title: "Yard On",
-                                    accuracy: Double(yardOnData.accuracy) ?? 0,
+                                    accuracy: yardOnData.accuracy,
                                     shots: yardOnData.shots,
                                     color: .green
                                 )
@@ -414,7 +415,7 @@ struct PerformanceMatrixView: View {
                             if let drawData = longData["draw"] {
                                 MetricView(
                                     title: "Draw",
-                                    accuracy: Double(drawData.accuracy) ?? 0,
+                                    accuracy: drawData.accuracy,
                                     shots: drawData.shots,
                                     color: .blue
                                 )
@@ -422,7 +423,7 @@ struct PerformanceMatrixView: View {
                             if let driveData = longData["drive"] {
                                 MetricView(
                                     title: "Drive",
-                                    accuracy: Double(driveData.accuracy) ?? 0,
+                                    accuracy: driveData.accuracy,
                                     shots: driveData.shots,
                                     color: .purple
                                 )

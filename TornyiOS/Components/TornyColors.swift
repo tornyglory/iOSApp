@@ -132,8 +132,13 @@ struct TornyFonts {
     static let button = Font.system(size: 16, weight: .semibold, design: .default)
     static let buttonLarge = Font.system(size: 18, weight: .semibold, design: .default)
     
-    // Brand Typography - using bold rounded system font
-    static let brandTitle = Font.system(size: 32, weight: .black, design: .rounded)
-    static let brandLarge = Font.system(size: 28, weight: .black, design: .rounded)
-    static let brandMedium = Font.system(size: 24, weight: .black, design: .rounded)
+    // Brand Typography - using custom Permanent Marker font
+    static let brandTitle = Font.custom("PermanentMarker-Regular", size: 32)
+    static let brandLarge = Font.custom("PermanentMarker-Regular", size: 28)
+    static let brandMedium = Font.custom("PermanentMarker-Regular", size: 24)
+
+    // Fallback brand fonts (if custom font fails)
+    static let brandTitleFallback = Font.system(size: 32, weight: .black, design: .rounded)
+    static let brandLargeFallback = Font.system(size: 28, weight: .black, design: .rounded)
+    static let brandMediumFallback = Font.system(size: 24, weight: .black, design: .rounded)
 }

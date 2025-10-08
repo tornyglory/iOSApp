@@ -7,10 +7,12 @@ struct AnalyticsView: View {
     @State private var showProgressCharts = false
     @State private var showComparativeAnalysis = false
     @State private var showAIInsights = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ZStack {
-            TornyBackgroundView()
+        NavigationView {
+            ZStack {
+                TornyBackgroundView()
 
             if viewModel.isLoading {
                 VStack(spacing: 12) {
@@ -96,6 +98,14 @@ struct AnalyticsView: View {
                             GridItem(.flexible(), spacing: 16)
                         ], spacing: 16) {
 
+                            // Torny AI - Overall Analysis
+                            TornyAIActionCard(
+                                title: "Overall Analysis",
+                                subtitle: "AI-powered insights"
+                            ) {
+                                showAIInsights = true
+                            }
+
                             // Progress Charts Button
                             DashboardActionCard(
                                 icon: "chart.line.uptrend.xyaxis",
@@ -125,16 +135,6 @@ struct AnalyticsView: View {
                             ) {
                                 showDetailedAnalytics = true
                             }
-
-                            // Quick insights
-                            DashboardActionCard(
-                                icon: "lightbulb.fill",
-                                title: "Insights",
-                                subtitle: "Performance recommendations",
-                                color: .orange
-                            ) {
-                                showAIInsights = true
-                            }
                         }
 
                         // Recent summary cards
@@ -158,6 +158,22 @@ struct AnalyticsView: View {
         }
         .navigationTitle("Analytics")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.tornyBlue)
+                        Text("Back")
+                            .font(.body)
+                            .foregroundColor(.tornyBlue)
+                    }
+                }
+            }
+        }
         .onAppear {
             if viewModel.analytics == nil && !viewModel.isLoading {
                 viewModel.fetchAnalytics()
@@ -174,6 +190,7 @@ struct AnalyticsView: View {
         }
         .sheet(isPresented: $showAIInsights) {
             AIInsightsView()
+        }
         }
     }
 
@@ -217,6 +234,60 @@ struct QuickStatItem: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Torny AI Action Card
+
+struct TornyAIActionCard: View {
+    let title: String
+    let subtitle: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.purple.opacity(0.8),
+                                    Color.blue.opacity(0.6)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                }
+
+                VStack(spacing: 4) {
+                    Text(title)
+                        .font(TornyFonts.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.tornyTextPrimary)
+                        .multilineTextAlignment(.center)
+
+                    Text(subtitle)
+                        .font(TornyFonts.bodySecondary)
+                        .foregroundColor(.tornyTextSecondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 140)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: Color.purple.opacity(0.15), radius: 8, x: 0, y: 4)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

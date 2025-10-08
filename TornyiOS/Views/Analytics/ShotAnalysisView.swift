@@ -75,9 +75,16 @@ struct ShotAnalysisView: View {
         .navigationTitle("Shot Analysis")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Done") {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
                     dismiss()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                            .fontWeight(.semibold)
+                        Text("Back")
+                    }
+                    .foregroundColor(.tornyBlue)
                 }
             }
         }

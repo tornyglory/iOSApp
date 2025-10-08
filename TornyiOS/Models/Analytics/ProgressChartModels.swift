@@ -32,6 +32,13 @@ enum StringOrNumber: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 
+        // Check for null values first
+        if container.decodeNil() {
+            // Default to 0 for null values
+            self = .double(0)
+            return
+        }
+
         if let intValue = try? container.decode(Int.self) {
             self = .int(intValue)
         } else if let doubleValue = try? container.decode(Double.self) {
@@ -328,15 +335,44 @@ struct ChartBestPeriod: Codable {
     let totalPoints: String
     let maxPossiblePoints: Int
     let overallAccuracy: String
-    let drawShots: String
-    let drawPoints: String
-    let drawAccuracy: String
-    let weightedShots: String
-    let weightedPoints: String
-    let weightedAccuracy: String
-    let avgGreenSpeed: String
-    let outdoorSessions: String
-    let indoorSessions: String
+    let drawShots: String?
+    let drawPoints: String?
+    let drawAccuracy: String?
+    let yardOnShots: String?
+    let yardOnPoints: String?
+    let yardOnAccuracy: String?
+    let ditchWeightShots: String?
+    let ditchWeightPoints: String?
+    let ditchWeightAccuracy: String?
+    let driveShots: String?
+    let drivePoints: String?
+    let driveAccuracy: String?
+    let shortShots: String?
+    let shortPoints: String?
+    let shortAccuracy: String?
+    let mediumShots: String?
+    let mediumPoints: String?
+    let mediumAccuracy: String?
+    let longShots: String?
+    let longPoints: String?
+    let longAccuracy: String?
+    let forehandShots: String?
+    let forehandPoints: String?
+    let forehandAccuracy: String?
+    let backhandShots: String?
+    let backhandPoints: String?
+    let backhandAccuracy: String?
+    let footShots: String?
+    let yardShots: String?
+    let missShots: String?
+    let footPercentage: String?
+    let yardPercentage: String?
+    let missPercentage: String?
+    let avgGreenSpeed: String?
+    let minGreenSpeed: Int?
+    let maxGreenSpeed: Int?
+    let outdoorSessions: String?
+    let indoorSessions: String?
 
     enum CodingKeys: String, CodingKey {
         case period
@@ -350,10 +386,39 @@ struct ChartBestPeriod: Codable {
         case drawShots = "draw_shots"
         case drawPoints = "draw_points"
         case drawAccuracy = "draw_accuracy"
-        case weightedShots = "weighted_shots"
-        case weightedPoints = "weighted_points"
-        case weightedAccuracy = "weighted_accuracy"
+        case yardOnShots = "yard_on_shots"
+        case yardOnPoints = "yard_on_points"
+        case yardOnAccuracy = "yard_on_accuracy"
+        case ditchWeightShots = "ditch_weight_shots"
+        case ditchWeightPoints = "ditch_weight_points"
+        case ditchWeightAccuracy = "ditch_weight_accuracy"
+        case driveShots = "drive_shots"
+        case drivePoints = "drive_points"
+        case driveAccuracy = "drive_accuracy"
+        case shortShots = "short_shots"
+        case shortPoints = "short_points"
+        case shortAccuracy = "short_accuracy"
+        case mediumShots = "medium_shots"
+        case mediumPoints = "medium_points"
+        case mediumAccuracy = "medium_accuracy"
+        case longShots = "long_shots"
+        case longPoints = "long_points"
+        case longAccuracy = "long_accuracy"
+        case forehandShots = "forehand_shots"
+        case forehandPoints = "forehand_points"
+        case forehandAccuracy = "forehand_accuracy"
+        case backhandShots = "backhand_shots"
+        case backhandPoints = "backhand_points"
+        case backhandAccuracy = "backhand_accuracy"
+        case footShots = "foot_shots"
+        case yardShots = "yard_shots"
+        case missShots = "miss_shots"
+        case footPercentage = "foot_percentage"
+        case yardPercentage = "yard_percentage"
+        case missPercentage = "miss_percentage"
         case avgGreenSpeed = "avg_green_speed"
+        case minGreenSpeed = "min_green_speed"
+        case maxGreenSpeed = "max_green_speed"
         case outdoorSessions = "outdoor_sessions"
         case indoorSessions = "indoor_sessions"
     }
@@ -372,15 +437,46 @@ struct ChartBestPeriod: Codable {
         totalPoints = try container.decode(String.self, forKey: .totalPoints)
         maxPossiblePoints = try container.decode(Int.self, forKey: .maxPossiblePoints)
         overallAccuracy = try container.decode(String.self, forKey: .overallAccuracy)
-        drawShots = try container.decode(String.self, forKey: .drawShots)
-        drawPoints = try container.decode(String.self, forKey: .drawPoints)
-        drawAccuracy = try container.decode(String.self, forKey: .drawAccuracy)
-        weightedShots = try container.decode(String.self, forKey: .weightedShots)
-        weightedPoints = try container.decode(String.self, forKey: .weightedPoints)
-        weightedAccuracy = try container.decode(String.self, forKey: .weightedAccuracy)
-        avgGreenSpeed = try container.decode(String.self, forKey: .avgGreenSpeed)
-        outdoorSessions = try container.decode(String.self, forKey: .outdoorSessions)
-        indoorSessions = try container.decode(String.self, forKey: .indoorSessions)
+
+        // All shot type fields are optional
+        drawShots = try? container.decode(String.self, forKey: .drawShots)
+        drawPoints = try? container.decode(String.self, forKey: .drawPoints)
+        drawAccuracy = try? container.decode(String.self, forKey: .drawAccuracy)
+        yardOnShots = try? container.decode(String.self, forKey: .yardOnShots)
+        yardOnPoints = try? container.decode(String.self, forKey: .yardOnPoints)
+        yardOnAccuracy = try? container.decode(String.self, forKey: .yardOnAccuracy)
+        ditchWeightShots = try? container.decode(String.self, forKey: .ditchWeightShots)
+        ditchWeightPoints = try? container.decode(String.self, forKey: .ditchWeightPoints)
+        ditchWeightAccuracy = try? container.decode(String.self, forKey: .ditchWeightAccuracy)
+        driveShots = try? container.decode(String.self, forKey: .driveShots)
+        drivePoints = try? container.decode(String.self, forKey: .drivePoints)
+        driveAccuracy = try? container.decode(String.self, forKey: .driveAccuracy)
+        shortShots = try? container.decode(String.self, forKey: .shortShots)
+        shortPoints = try? container.decode(String.self, forKey: .shortPoints)
+        shortAccuracy = try? container.decode(String.self, forKey: .shortAccuracy)
+        mediumShots = try? container.decode(String.self, forKey: .mediumShots)
+        mediumPoints = try? container.decode(String.self, forKey: .mediumPoints)
+        mediumAccuracy = try? container.decode(String.self, forKey: .mediumAccuracy)
+        longShots = try? container.decode(String.self, forKey: .longShots)
+        longPoints = try? container.decode(String.self, forKey: .longPoints)
+        longAccuracy = try? container.decode(String.self, forKey: .longAccuracy)
+        forehandShots = try? container.decode(String.self, forKey: .forehandShots)
+        forehandPoints = try? container.decode(String.self, forKey: .forehandPoints)
+        forehandAccuracy = try? container.decode(String.self, forKey: .forehandAccuracy)
+        backhandShots = try? container.decode(String.self, forKey: .backhandShots)
+        backhandPoints = try? container.decode(String.self, forKey: .backhandPoints)
+        backhandAccuracy = try? container.decode(String.self, forKey: .backhandAccuracy)
+        footShots = try? container.decode(String.self, forKey: .footShots)
+        yardShots = try? container.decode(String.self, forKey: .yardShots)
+        missShots = try? container.decode(String.self, forKey: .missShots)
+        footPercentage = try? container.decode(String.self, forKey: .footPercentage)
+        yardPercentage = try? container.decode(String.self, forKey: .yardPercentage)
+        missPercentage = try? container.decode(String.self, forKey: .missPercentage)
+        avgGreenSpeed = try? container.decode(String.self, forKey: .avgGreenSpeed)
+        minGreenSpeed = try? container.decode(Int.self, forKey: .minGreenSpeed)
+        maxGreenSpeed = try? container.decode(Int.self, forKey: .maxGreenSpeed)
+        outdoorSessions = try? container.decode(String.self, forKey: .outdoorSessions)
+        indoorSessions = try? container.decode(String.self, forKey: .indoorSessions)
     }
 }
 

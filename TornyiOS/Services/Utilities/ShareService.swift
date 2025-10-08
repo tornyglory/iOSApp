@@ -15,7 +15,7 @@ class ShareService: NSObject, ObservableObject {
 
     var shareMessage: String {
         """
-        🎳 I've been using Torny to improve my lawn bowls game!
+        I've been using Torny to improve my lawn bowls game!
 
         ✅ Track every shot with accuracy analysis
         ✅ See progress with detailed charts
@@ -35,12 +35,10 @@ class ShareService: NSObject, ObservableObject {
         ✅ Shot accuracy tracking and analysis
         ✅ Detailed progress charts and statistics
         ✅ Session comparisons to spot patterns
-        ✅ Works offline at any bowling green
         ✅ Perfect for bowlers of all skill levels
 
         Give it a try: \(appStoreURL)
 
-        Would love to hear what you think! 🎳
         """
     }
 
@@ -124,7 +122,7 @@ class ShareService: NSObject, ObservableObject {
     /// - Parameter userStats: Optional user statistics to include
     /// - Returns: Personalized share message
     func generatePersonalizedShareMessage(userStats: UserStats? = nil) -> String {
-        var message = "🎳 I've been using Torny to improve my lawn bowls game!\n\n"
+        var message = "I've been using Torny to improve my lawn bowls game!\n\n"
 
         if let stats = userStats {
             message += "My progress so far:\n"
@@ -143,7 +141,7 @@ class ShareService: NSObject, ObservableObject {
         message += """
         Perfect for bowlers wanting to:
         ✅ Track shot accuracy & performance
-        ✅ Analyze progress with detailed charts
+        ✅ Analyse progress with detailed charts
         ✅ Compare sessions to identify patterns
         ✅ Train offline at any bowling green
 

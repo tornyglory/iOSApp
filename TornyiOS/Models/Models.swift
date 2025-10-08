@@ -210,12 +210,37 @@ struct Club: Codable, Identifiable {
     let country: String
     let state: String
     let region: String
-    
+
     enum CodingKeys: String, CodingKey {
-        case id = "club_id"
+        case id
         case name, description, avatar
         case bannerImage = "banner_image"
         case country, state, region
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Try to decode id from either "id" or "club_id"
+        if let idValue = try? container.decode(Int.self, forKey: .id) {
+            id = idValue
+        } else if let clubIdValue = try? decoder.container(keyedBy: AlternativeCodingKeys.self).decode(Int.self, forKey: .clubId) {
+            id = clubIdValue
+        } else {
+            throw DecodingError.keyNotFound(CodingKeys.id, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Neither 'id' nor 'club_id' found"))
+        }
+
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decode(String.self, forKey: .description)
+        avatar = try container.decode(String.self, forKey: .avatar)
+        bannerImage = try container.decode(String.self, forKey: .bannerImage)
+        country = try container.decode(String.self, forKey: .country)
+        state = try container.decode(String.self, forKey: .state)
+        region = try container.decode(String.self, forKey: .region)
+    }
+
+    enum AlternativeCodingKeys: String, CodingKey {
+        case clubId = "club_id"
     }
     
     // Computed property for string ID compatibility
