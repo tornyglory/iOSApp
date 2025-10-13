@@ -83,6 +83,74 @@ struct DashboardView: View {
                             }
                             .padding(.horizontal, 20)
 
+                            // Training Programs Button
+                            Button(action: {
+                                selectedView = .trainingPrograms
+                            }) {
+                                HStack(spacing: 16) {
+                                    // Icon with gradient background
+                                    ZStack {
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [.orange, .red]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 60, height: 60)
+
+                                        Image(systemName: "list.bullet.clipboard")
+                                            .font(.system(size: 28))
+                                            .foregroundColor(.white)
+                                    }
+
+                                    // Text content
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(spacing: 6) {
+                                            Text("Training Programs")
+                                                .font(TornyFonts.title2)
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.tornyTextPrimary)
+
+                                            Image(systemName: "star.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.orange)
+                                        }
+
+                                        Text("Follow structured practice sessions")
+                                            .font(TornyFonts.bodySecondary)
+                                            .foregroundColor(.tornyTextSecondary)
+                                            .multilineTextAlignment(.leading)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.tornyTextSecondary)
+                                }
+                                .padding(20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.white)
+                                        .shadow(color: Color.orange.opacity(0.2), radius: 8, x: 0, y: 4)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [.orange.opacity(0.3), .red.opacity(0.3)]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .padding(.horizontal, 20)
+
                             // Torny AI Feature Button
                             Button(action: {
                                 showAIInsights = true

@@ -732,6 +732,87 @@ class APIService: ObservableObject {
             responseType: ProgressChartResponse.self
         )
     }
+
+    // MARK: - Training Programs Methods
+
+    func getTrainingPrograms(
+        category: String? = nil,
+        difficulty: String? = nil,
+        search: String? = nil,
+        featured: Bool? = nil,
+        limit: Int = 20,
+        offset: Int = 0
+    ) async throws -> ProgramsListResponse {
+        var components = URLComponents()
+        var queryItems: [URLQueryItem] = []
+
+        if let category = category {
+            queryItems.append(URLQueryItem(name: "category", value: category))
+        }
+        if let difficulty = difficulty {
+            queryItems.append(URLQueryItem(name: "difficulty", value: difficulty))
+        }
+        if let search = search {
+            queryItems.append(URLQueryItem(name: "search", value: search))
+        }
+        if let featured = featured {
+            queryItems.append(URLQueryItem(name: "featured", value: featured ? "true" : "false"))
+        }
+        queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
+        queryItems.append(URLQueryItem(name: "offset", value: String(offset)))
+
+        components.queryItems = queryItems
+        let queryString = components.percentEncodedQuery ?? ""
+
+        return try await makeRequest(
+            endpoint: "/programs?\(queryString)",
+            responseType: ProgramsListResponse.self
+        )
+    }
+
+    func getProgramDetails(programId: Int) async throws -> TrainingProgram {
+        return try await makeRequest(
+            endpoint: "/programs/\(programId)",
+            method: .GET,
+            responseType: TrainingProgram.self
+        )
+    }
+
+    func startTrainingProgram(programId: Int, config: StartProgramRequest) async throws -> TrainingSessionResponse {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        let data = try encoder.encode(config)
+
+        return try await makeRequest(
+            endpoint: "/programs/\(programId)/start",
+            method: .POST,
+            body: data,
+            responseType: TrainingSessionResponse.self
+        )
+    }
+
+    func recordProgramShot(sessionId: Int, request: RecordProgramShotRequest) async throws -> RecordProgramShotResponse {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        let data = try encoder.encode(request)
+
+        return try await makeRequest(
+            endpoint: "/programs/sessions/\(sessionId)/shots",
+            method: .POST,
+            body: data,
+            responseType: RecordProgramShotResponse.self
+        )
+    }
+
+    func toggleProgramFavorite(programId: Int, isFavorited: Bool) async throws -> FavoriteToggleResponse {
+        let method: HTTPMethod = isFavorited ? .DELETE : .POST
+
+        return try await makeRequest(
+            endpoint: "/programs/\(programId)/favorite",
+            method: method,
+            responseType: FavoriteToggleResponse.self
+        )
+    }
 }
 
 enum HTTPMethod: String {

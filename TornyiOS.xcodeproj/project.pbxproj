@@ -53,6 +53,11 @@
 		C2B1A0F9E8D7C6B5A4F3E2D1 /* ResetPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */; };
 		AA11BB22CC33DD44EE55FF66 /* AIInsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF66EE55DD44CC33BB22AA11 /* AIInsightsView.swift */; };
 		BB22CC33DD44EE55FF66AA11 /* AIInsightsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11FF66EE55DD44CC33BB22 /* AIInsightsViewModel.swift */; };
+		0758FF3731924FC2823ECC08 /* TrainingProgramModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5996A7DF2A7B4870AF511E99 /* TrainingProgramModels.swift */; };
+		BFA8678ED1EC47E283F535D4 /* TrainingProgramsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C52C58F70240998B7F1074 /* TrainingProgramsListView.swift */; };
+		BC3E9E24E8304BBF93A558F4 /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 500DD6FF32C14C21A5584CA1 /* ProgramDetailView.swift */; };
+		A1B2C3D4E5F6G7H8I9J0K1L2 /* ActiveProgramSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = Z9Y8X7W6V5U4T3S2R1Q0P9O8 /* ActiveProgramSessionView.swift */; };
+		M3N4O5P6Q7R8S9T0U1V2W3X4 /* ProgramCompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = Y5Z6A7B8C9D0E1F2G3H4I5J6 /* ProgramCompletionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -103,6 +108,11 @@
 		D3C2B1A0F9E8D7C6B5A4F3E2 /* ResetPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Auth/ResetPasswordView.swift"; sourceTree = "<group>"; };
 		FF66EE55DD44CC33BB22AA11 /* AIInsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/Analytics/AIInsightsView.swift"; sourceTree = "<group>"; };
 		AA11FF66EE55DD44CC33BB22 /* AIInsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AIInsightsViewModel.swift"; sourceTree = "<group>"; };
+		5996A7DF2A7B4870AF511E99 /* TrainingProgramModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Models/TrainingPrograms/TrainingProgramModels.swift"; sourceTree = SOURCE_ROOT; };
+		92C52C58F70240998B7F1074 /* TrainingProgramsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/TrainingPrograms/TrainingProgramsListView.swift"; sourceTree = SOURCE_ROOT; };
+		500DD6FF32C14C21A5584CA1 /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/TrainingPrograms/ProgramDetailView.swift"; sourceTree = SOURCE_ROOT; };
+		Z9Y8X7W6V5U4T3S2R1Q0P9O8 /* ActiveProgramSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/TrainingPrograms/ActiveProgramSessionView.swift"; sourceTree = SOURCE_ROOT; };
+		Y5Z6A7B8C9D0E1F2G3H4I5J6 /* ProgramCompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TornyiOS/Views/TrainingPrograms/ProgramCompletionView.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -206,6 +216,9 @@
 			dependencies = (
 			);
 			name = TornyiOS;
+			packageProductDependencies = (
+				CONFETTIPROD123456789ABC /* ConfettiSwiftUI */,
+			);
 			productName = TornyiOS;
 			productReference = D8A1B5A52B8E4F2A00123456 /* TornyiOS.app */;
 			productType = "com.apple.product-type.application";
@@ -234,6 +247,9 @@
 				Base,
 			);
 			mainGroup = D8A1B59C2B8E4F2A00123456;
+			packageReferences = (
+				CONFETTI1234567890ABCDEF /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
 			productRefGroup = D8A1B5A62B8E4F2A00123456 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -260,7 +276,12 @@
 		D8A1B5A12B8E4F2A00123456 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = (
+			files = (				0758FF3731924FC2823ECC08 /* TrainingProgramModels.swift in Sources */,
+				BFA8678ED1EC47E283F535D4 /* TrainingProgramsListView.swift in Sources */,
+				BC3E9E24E8304BBF93A558F4 /* ProgramDetailView.swift in Sources */,
+				A1B2C3D4E5F6G7H8I9J0K1L2 /* ActiveProgramSessionView.swift in Sources */,
+				M3N4O5P6Q7R8S9T0U1V2W3X4 /* ProgramCompletionView.swift in Sources */,
+
 				D8A1B5AB2B8E4F2A00123456 /* ContentView.swift in Sources */,
 				FC5AE5650A00473BB84DF31B /* LaunchScreen.swift in Sources */,
 				B57852151DA14D3C9EF49437 /* KeychainService.swift in Sources */,
@@ -519,6 +540,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CONFETTI1234567890ABCDEF /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CONFETTIPROD123456789ABC /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CONFETTI1234567890ABCDEF /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D8A1B59D2B8E4F2A00123456 /* Project object */;
 }
