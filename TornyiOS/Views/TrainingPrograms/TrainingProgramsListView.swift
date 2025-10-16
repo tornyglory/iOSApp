@@ -6,6 +6,7 @@ struct TrainingProgramsListView: View {
     @State private var selectedDifficulty: TrainingProgram.Difficulty? = nil
     @State private var searchText = ""
     @State private var showFeaturedOnly = false
+    var onDismiss: (() -> Void)? = nil
 
     var body: some View {
         ZStack {
@@ -19,7 +20,13 @@ struct TrainingProgramsListView: View {
             VStack(spacing: 0) {
                 // Custom Navigation Bar
                 HStack {
-                    Button(action: { dismiss() }) {
+                    Button(action: {
+                        if let onDismiss = onDismiss {
+                            onDismiss()
+                        } else {
+                            dismiss()
+                        }
+                    }) {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 18, weight: .medium))
@@ -33,8 +40,8 @@ struct TrainingProgramsListView: View {
                     Spacer()
 
                     Text("Training Programs")
-                        .font(.headline)
-                        .foregroundColor(.tornyTextPrimary)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.black)
 
                     Spacer()
 
@@ -276,12 +283,18 @@ struct ProgramCard: View {
 
                 Spacer()
 
-                Button(action: onFavoriteTap) {
+                Button(action: {}) {
                     Image(systemName: program.isFavorited ? "heart.fill" : "heart")
                         .font(.title3)
                         .foregroundColor(program.isFavorited ? .red : .secondary)
+                        .padding(8)
                 }
                 .buttonStyle(PlainButtonStyle())
+                .highPriorityGesture(
+                    TapGesture().onEnded { _ in
+                        onFavoriteTap()
+                    }
+                )
             }
 
             Divider()

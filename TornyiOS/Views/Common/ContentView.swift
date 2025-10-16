@@ -5,7 +5,6 @@ import MessageUI
 
 struct ContentView: View {
     @ObservedObject private var apiService = APIService.shared
-    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
     @State private var hasCompletedProfile = false
@@ -33,14 +32,6 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.8), value: showingSplashScreen)
-        .sheet(isPresented: $navigationManager.showingForgotPassword) {
-            ForgotPasswordView()
-        }
-        .sheet(isPresented: $navigationManager.showingPasswordReset) {
-            if let token = navigationManager.passwordResetToken {
-                ResetPasswordView(token: token)
-            }
-        }
         .onChange(of: apiService.currentUser?.profileCompleted) { newValue in
             if newValue == 1 {
                 hasCompletedProfile = true
@@ -333,10 +324,10 @@ struct MainDashboardView: View {
     @State private var showingHistory = false
     @State private var showingAnalytics = false
     @State private var showingProfileSetup = false
+    @State private var showAIInsights = false
     @State private var currentTrainingSession: TrainingSession? = nil
     @State private var selectedBottomTab = 0
-    @State private var showAIInsights = false
-
+    
     var body: some View {
         ZStack {
             if let currentView = selectedView {
@@ -351,6 +342,12 @@ struct MainDashboardView: View {
                     case .history:
                         // History is now handled by sheet presentation
                         EmptyView()
+                    case .trainingPrograms:
+                        NavigationView {
+                            TrainingProgramsListView(onDismiss: {
+                                selectedView = nil
+                            })
+                        }
                     case .settings:
                         VStack(spacing: 0) {
                             // Navigation bar
@@ -384,7 +381,7 @@ struct MainDashboardView: View {
                 }
                 // Back button overlay for views that need it
                 .safeAreaInset(edge: .top) {
-                    if currentView != .settings && currentView != .history && currentView != .analytics {
+                    if currentView != .settings && currentView != .history && currentView != .analytics && currentView != .trainingPrograms {
                         HStack {
                             TornyBackButton(title: "Back") {
                                 print("🔙 Back button tapped, setting selectedView to nil")
@@ -427,7 +424,7 @@ struct MainDashboardView: View {
                                         .foregroundColor(.tornyTextPrimary)
                                         .multilineTextAlignment(.center)
                                     
-                                    Text("Practice like a pro!")
+                                    Text("Ready to practice like a pro!")
                                         .font(TornyFonts.body)
                                         .foregroundColor(.tornyTextSecondary)
                                         .multilineTextAlignment(.center)
@@ -481,6 +478,74 @@ struct MainDashboardView: View {
                                         showingProfileSetup = true
                                     }
                                 }
+                                .padding(.horizontal, 20)
+
+                                // Training Programs Button
+                                Button(action: {
+                                    selectedView = .trainingPrograms
+                                }) {
+                                    HStack(spacing: 16) {
+                                        // Icon with gradient background
+                                        ZStack {
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [.orange, .red]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                                .frame(width: 60, height: 60)
+
+                                            Image(systemName: "list.bullet.clipboard")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.white)
+                                        }
+
+                                        // Text content
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 6) {
+                                                Text("Training Programs")
+                                                    .font(TornyFonts.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.tornyTextPrimary)
+
+                                                Image(systemName: "star.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.orange)
+                                            }
+
+                                            Text("Follow structured practice sessions")
+                                                .font(TornyFonts.bodySecondary)
+                                                .foregroundColor(.tornyTextSecondary)
+                                                .multilineTextAlignment(.leading)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.tornyTextSecondary)
+                                    }
+                                    .padding(20)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.white)
+                                            .shadow(color: Color.orange.opacity(0.2), radius: 8, x: 0, y: 4)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [.orange.opacity(0.3), .red.opacity(0.3)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 2
+                                            )
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 20)
 
                                 // Torny AI Feature Button
@@ -817,60 +882,35 @@ struct DashboardActionCard: View {
     let subtitle: String
     let color: Color
     let action: () -> Void
-    @State private var isPressed = false
-
+    
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 16) {
-                // Icon with gradient background circle
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 60, height: 60)
-
-                    Image(systemName: icon)
-                        .font(.system(size: 28))
-                        .foregroundColor(color)
-                }
-
+            VStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.largeTitle)
+                    .foregroundColor(color)
+                
                 VStack(spacing: 4) {
                     Text(title)
                         .font(TornyFonts.body)
                         .fontWeight(.semibold)
                         .foregroundColor(.tornyTextPrimary)
-
+                    
                     Text(subtitle)
                         .font(TornyFonts.bodySecondary)
                         .foregroundColor(.tornyTextSecondary)
                         .multilineTextAlignment(.center)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 140)
+            .frame(maxWidth: .infinity, minHeight: 120)
             .padding(.vertical, 20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(color.opacity(0.15), lineWidth: 1.5)
-                    )
-                    .shadow(color: color.opacity(0.15), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(isPressed ? 0.96 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
     }
 }
 
@@ -880,41 +920,27 @@ struct DashboardActivityRow: View {
     let title: String
     let subtitle: String
     let color: Color
-
+    
     var body: some View {
-        HStack(spacing: 14) {
-            // Icon with gradient circle background
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(color)
-            }
-
-            VStack(alignment: .leading, spacing: 3) {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(color)
+                .frame(width: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(TornyFonts.body)
-                    .fontWeight(.semibold)
+                    .fontWeight(.medium)
                     .foregroundColor(.tornyTextPrimary)
-
+                
                 Text(subtitle)
                     .font(TornyFonts.bodySecondary)
                     .foregroundColor(.tornyTextSecondary)
-                    .lineLimit(2)
             }
-
+            
             Spacer()
         }
-        .padding(.vertical, 4)
     }
 }
 

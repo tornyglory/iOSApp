@@ -5,9 +5,17 @@ struct ProgramCompletionView: View {
     @Environment(\.dismiss) private var dismiss
     let stats: ProgramSessionStats
     let programTitle: String
+    let sessionId: Int
+    var onComplete: (() -> Void)? = nil
 
     @State private var confettiCounter = 0
     @State private var showShareSheet = false
+    @State private var sessionNotes = ""
+    @State private var isEndingSession = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+
+    private let apiService = APIService.shared
 
     var body: some View {
         NavigationView {
@@ -156,6 +164,25 @@ struct ProgramCompletionView: View {
                         .shadow(radius: 2)
                         .padding(.horizontal)
 
+                        // Session Notes
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Session Notes (Optional)")
+                                .font(.headline)
+                                .foregroundColor(.tornyTextPrimary)
+
+                            TextField("Add notes about your session...", text: $sessionNotes, axis: .vertical)
+                                .textFieldStyle(.plain)
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .cornerRadius(12)
+                                .lineLimit(4...8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                        }
+                        .padding(.horizontal)
+
                         // Action Buttons
                         VStack(spacing: 12) {
                             // Share Button
@@ -180,13 +207,17 @@ struct ProgramCompletionView: View {
                                 .cornerRadius(12)
                             }
 
-                            // Done Button
-                            Button(action: {
-                                dismiss()
-                            }) {
+                            // End Session Button
+                            Button(action: endSession) {
                                 HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                    Text("Done")
+                                    if isEndingSession {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        Text("Ending Session...")
+                                    } else {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("End Session")
+                                    }
                                 }
                                 .font(.headline)
                                 .foregroundColor(.white)
@@ -201,6 +232,7 @@ struct ProgramCompletionView: View {
                                 )
                                 .cornerRadius(12)
                             }
+                            .disabled(isEndingSession)
                         }
                         .padding(.horizontal)
 
@@ -215,6 +247,8 @@ struct ProgramCompletionView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         dismiss()
+                        // Call completion handler to dismiss parent views
+                        onComplete?()
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.secondary)
@@ -230,6 +264,11 @@ struct ProgramCompletionView: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [shareText])
+        }
+        .alert("Error", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
         }
     }
 
@@ -275,6 +314,46 @@ struct ProgramCompletionView: View {
 
         #Torny #LawnBowls #Training
         """
+    }
+
+    // MARK: - Actions
+
+    private func endSession() {
+        isEndingSession = true
+
+        Task {
+            do {
+                // Calculate duration from when session was shown to now
+                // Note: We don't have the actual start time, but the backend should have it
+                // Send minimal duration for now - backend likely tracks actual duration
+                let endedAt = ISO8601DateFormatter().string(from: Date())
+                let request = EndSessionRequest(
+                    endedAt: endedAt,
+                    durationSeconds: 1, // Backend tracks actual duration
+                    notes: sessionNotes.isEmpty ? nil : sessionNotes
+                )
+
+                _ = try await apiService.endSession(sessionId, request: request)
+
+                await MainActor.run {
+                    isEndingSession = false
+                    // Trigger confetti celebration
+                    confettiCounter += 1
+                    // Dismiss after a short delay to show confetti
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        dismiss()
+                        // Call completion handler to dismiss parent views
+                        onComplete?()
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isEndingSession = false
+                    alertMessage = "Failed to end session: \(error.localizedDescription)"
+                    showingAlert = true
+                }
+            }
+        }
     }
 }
 

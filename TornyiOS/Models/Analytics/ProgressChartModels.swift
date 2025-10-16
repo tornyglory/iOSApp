@@ -277,9 +277,9 @@ struct ConditionsAnalysisPoint: Codable, Identifiable {
 }
 
 struct ProgressAnalyticsTrends: Codable {
-    let accuracy: String
-    let volume: String
-    let consistency: String
+    let accuracy: String?
+    let volume: String?
+    let consistency: String?
 }
 
 struct RecentMilestone: Codable, Identifiable {
@@ -529,31 +529,40 @@ struct ProgressChartViewData {
     }
 
     var accuracyTrendDescription: String {
-        if trends.accuracy.hasPrefix("+") {
-            return "📈 Improving by \(trends.accuracy)"
-        } else if trends.accuracy.hasPrefix("-") {
-            return "📉 Declining by \(trends.accuracy)"
+        guard let accuracy = trends.accuracy else {
+            return "📊 No trend data available"
+        }
+        if accuracy.hasPrefix("+") {
+            return "📈 Improving by \(accuracy)"
+        } else if accuracy.hasPrefix("-") {
+            return "📉 Declining by \(accuracy)"
         } else {
-            return "📊 \(trends.accuracy)"
+            return "📊 \(accuracy)"
         }
     }
 
     var volumeTrendDescription: String {
-        if let value = Double(trends.volume.replacingOccurrences(of: "+", with: "")), value > 0 {
-            return "📈 Up \(trends.volume) shots/week"
+        guard let volume = trends.volume else {
+            return "📊 No trend data available"
+        }
+        if let value = Double(volume.replacingOccurrences(of: "+", with: "")), value > 0 {
+            return "📈 Up \(volume) shots/week"
         } else {
-            return "📊 \(trends.volume) shots/week"
+            return "📊 \(volume) shots/week"
         }
     }
 
     var consistencyDescription: String {
-        switch trends.consistency.lowercased() {
+        guard let consistency = trends.consistency else {
+            return "📊 No trend data available"
+        }
+        switch consistency.lowercased() {
         case "improving":
             return "🎯 Getting more consistent"
         case "declining":
             return "⚠️ Consistency declining"
         default:
-            return "📊 \(trends.consistency.capitalized)"
+            return "📊 \(consistency.capitalized)"
         }
     }
 }

@@ -13,6 +13,7 @@ struct TrainingSetupView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var validationErrors: [String] = []
+    @State private var validationWarnings: [String] = []
     @Environment(\.dismiss) private var dismiss
 
     // Equipment fields
@@ -595,8 +596,15 @@ struct TrainingSetupView: View {
                 onSearch: searchClubs
             )
         }
-        .alert("Error", isPresented: $showingAlert) {
-            Button("OK") { }
+        .alert(validationWarnings.isEmpty ? "Error" : "Notice", isPresented: $showingAlert) {
+            if validationWarnings.isEmpty {
+                Button("OK") { }
+            } else {
+                Button("Cancel", role: .cancel) { }
+                Button("Continue") {
+                    startSession()
+                }
+            }
         } message: {
             Text(alertMessage)
         }
@@ -621,14 +629,15 @@ struct TrainingSetupView: View {
         }
     }
     
-    private func validateForm() -> Bool {
+    private func validateForm() -> (isValid: Bool, hasWarnings: Bool) {
         validationErrors.removeAll()
-        
+        validationWarnings.removeAll()
+
         // Validate green speed
         if greenSpeed < 8 || greenSpeed > 22 {
             validationErrors.append("Green speed must be between 8-22 seconds")
         }
-        
+
         // Validate rink number if provided
         if !rinkNumber.isEmpty {
             if let rink = Int(rinkNumber) {
@@ -639,26 +648,40 @@ struct TrainingSetupView: View {
                 validationErrors.append("Rink number must be a valid number")
             }
         }
-        
-        // Notes validation removed - notes added at session end
-        if false {
-            validationErrors.append("Notes must be 500 characters or less")
+
+        // Club validation - show warning message if not selected
+        if selectedClub == nil {
+            validationWarnings.append("ℹ️ No club selected. Please add club details in the session notes at the end of your session.")
         }
-        
+
         // For outdoor sessions, weather and wind are required (already set by defaults)
         // Indoor sessions should not have weather/wind (handled automatically)
-        
-        return validationErrors.isEmpty
+
+        return (isValid: validationErrors.isEmpty, hasWarnings: !validationWarnings.isEmpty)
     }
     
     private func createSession() {
         // Validate form first
-        guard validateForm() else {
+        let validation = validateForm()
+
+        // Show errors if any
+        if !validation.isValid {
             alertMessage = validationErrors.joined(separator: "\n")
             showingAlert = true
             return
         }
-        
+
+        // Show warnings if any (but allow continuation)
+        if validation.hasWarnings {
+            alertMessage = validationWarnings.joined(separator: "\n\n") + "\n\nDo you want to continue?"
+            showingAlert = true
+            return
+        }
+
+        startSession()
+    }
+
+    private func startSession() {
         isLoading = true
         
         let equipment = EquipmentData(

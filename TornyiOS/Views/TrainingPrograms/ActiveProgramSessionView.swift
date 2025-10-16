@@ -3,6 +3,8 @@ import SwiftUI
 struct ActiveProgramSessionView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: ActiveProgramViewModel
+    @State private var showToast = false
+    @State private var toastMessage = ""
 
     init(sessionInfo: SessionInfo, currentShot: ProgramShot, programTitle: String, sessionMetadata: ProgramSessionMetadata) {
         _viewModel = StateObject(wrappedValue: ActiveProgramViewModel(
@@ -132,6 +134,7 @@ struct ActiveProgramSessionView: View {
                                 // FOOT button (2 points)
                                 Button(action: {
                                     viewModel.recordShot(distance: "foot")
+                                    showToastMessage("Next Shot!")
                                 }) {
                                     VStack(spacing: 12) {
                                         ZStack {
@@ -183,6 +186,7 @@ struct ActiveProgramSessionView: View {
                                 // YARD button (1 point)
                                 Button(action: {
                                     viewModel.recordShot(distance: "yard")
+                                    showToastMessage("Next Shot!")
                                 }) {
                                     VStack(spacing: 12) {
                                         ZStack {
@@ -234,6 +238,7 @@ struct ActiveProgramSessionView: View {
                                 // MISS button (0 points)
                                 Button(action: {
                                     viewModel.recordShot(distance: "miss")
+                                    showToastMessage("Next Shot!")
                                 }) {
                                     VStack(spacing: 12) {
                                         ZStack {
@@ -299,6 +304,34 @@ struct ActiveProgramSessionView: View {
                     }
                 }
             }
+
+            // Toast Overlay
+            if showToast {
+                VStack {
+                    Spacer()
+
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.white)
+                            .font(.system(size: 20))
+
+                        Text(toastMessage)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 14)
+                    .background(
+                        Capsule()
+                            .fill(Color.green)
+                            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                    )
+                    .padding(.bottom, 100)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showToast)
+                .zIndex(999)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -340,7 +373,12 @@ struct ActiveProgramSessionView: View {
         .fullScreenCover(item: $viewModel.completionResponse) { response in
             ProgramCompletionView(
                 stats: response.sessionStats,
-                programTitle: viewModel.programTitle
+                programTitle: viewModel.programTitle,
+                sessionId: viewModel.sessionInfo.id,
+                onComplete: {
+                    // Dismiss the active session view to return to dashboard
+                    dismiss()
+                }
             )
         }
     }
@@ -351,6 +389,20 @@ struct ActiveProgramSessionView: View {
         case .yardOn: return .green
         case .ditchWeight: return .orange
         case .drive: return .red
+        }
+    }
+
+    private func showToastMessage(_ message: String) {
+        toastMessage = message
+        withAnimation {
+            showToast = true
+        }
+
+        // Auto-hide after 1.5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation {
+                showToast = false
+            }
         }
     }
 }
@@ -518,7 +570,7 @@ struct LiveStatsCard: View {
                         .foregroundColor(.tornyTextSecondary)
 
                     if stats.drawShots > 0 {
-                        ShotTypeStatRow(
+                        LiveShotTypeStatRow(
                             shotType: "Draw",
                             shots: stats.drawShots,
                             points: stats.drawPoints,
@@ -528,7 +580,7 @@ struct LiveStatsCard: View {
                     }
 
                     if stats.yardOnShots > 0 {
-                        ShotTypeStatRow(
+                        LiveShotTypeStatRow(
                             shotType: "Yard On",
                             shots: stats.yardOnShots,
                             points: stats.yardOnPoints,
@@ -538,7 +590,7 @@ struct LiveStatsCard: View {
                     }
 
                     if stats.ditchWeightShots > 0 {
-                        ShotTypeStatRow(
+                        LiveShotTypeStatRow(
                             shotType: "Ditch Weight",
                             shots: stats.ditchWeightShots,
                             points: stats.ditchWeightPoints,
@@ -548,7 +600,7 @@ struct LiveStatsCard: View {
                     }
 
                     if stats.driveShots > 0 {
-                        ShotTypeStatRow(
+                        LiveShotTypeStatRow(
                             shotType: "Drive",
                             shots: stats.driveShots,
                             points: stats.drivePoints,
@@ -589,7 +641,7 @@ struct LiveStatItem: View {
     }
 }
 
-struct ShotTypeStatRow: View {
+struct LiveShotTypeStatRow: View {
     let shotType: String
     let shots: Int
     let points: Int

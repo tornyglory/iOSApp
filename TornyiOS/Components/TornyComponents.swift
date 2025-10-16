@@ -7,6 +7,7 @@ enum DashboardNavigationType {
     case profile
     case history
     case settings
+    case trainingPrograms
 }
 
 // MARK: - Torny Background View

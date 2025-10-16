@@ -24,7 +24,7 @@ struct SessionDetailView: View {
                         .padding(.horizontal)
 
                     // Session Statistics
-                    SessionStatisticsCard(session: session)
+                    SessionStatisticsCard(session: session, sessionStats: sessionStats)
                         .padding(.horizontal)
 
                     // Torny AI Analysis Button
@@ -51,7 +51,7 @@ struct SessionDetailView: View {
                     .padding(.horizontal)
 
                     // Shot Type Breakdown
-                    ShotTypeBreakdownSection(session: session)
+                    ShotTypeBreakdownSection(session: session, sessionStats: sessionStats)
                         .padding(.horizontal)
 
                     // Scoring System
@@ -255,8 +255,17 @@ struct SessionDetailHeaderCard: View {
 
 struct SessionStatisticsCard: View {
     let session: TrainingSession
+    let sessionStats: SessionStatistics?
 
     private var totalPointsEarned: Int {
+        // Use actual total points from API if available
+        if let stats = sessionStats,
+           let totalPointsString = stats.totalPoints,
+           let totalPoints = Int(totalPointsString) {
+            return totalPoints
+        }
+
+        // Otherwise estimate
         // Estimate total points based on accuracy and shot counts
         // Since we don't have individual shot data, we'll estimate based on accuracy percentages
         var totalPoints = 0
@@ -347,31 +356,73 @@ struct SessionStatisticsCard: View {
         return totalSuccessful
     }
 
+    private var maxPossiblePoints: Int {
+        if let stats = sessionStats,
+           let maxPoints = stats.maxPossiblePoints {
+            return maxPoints
+        }
+        // Fallback: totalShots × 2
+        return (session.totalShots ?? 0) * 2
+    }
+
     private var accuracy: String {
+        if let stats = sessionStats,
+           let accuracyDouble = Double(stats.accuracyPercentage) {
+            return String(format: "%.1f%%", accuracyDouble)
+        }
+
         guard let totalShots = session.totalShots, totalShots > 0 else {
             return "0.0%"
         }
 
         // Calculate accuracy as: (Points Earned / Maximum Possible Points) × 100
-        // Maximum possible = totalShots × 2 (if every shot was within a foot)
-        let maxPossiblePoints = totalShots * 2
-        let pointsEarned = totalPointsEarned
-
-        let pointsBasedAccuracy = (Double(pointsEarned) / Double(maxPossiblePoints)) * 100.0
+        let pointsBasedAccuracy = (Double(totalPointsEarned) / Double(maxPossiblePoints)) * 100.0
         return String(format: "%.1f%%", pointsBasedAccuracy)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Session Statistics")
+            Text("Session Performance")
                 .font(.headline)
                 .fontWeight(.semibold)
 
+            // Points Display - Most Prominent
+            VStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(totalPointsEarned)")
+                        .font(.system(size: 48, weight: .bold))
+                        .foregroundColor(.tornyBlue)
+                    Text("/ \(maxPossiblePoints)")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.secondary)
+                }
+                Text("Points Earned")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+
+            Divider()
+
+            // Secondary Stats
             HStack(spacing: 0) {
+                // Accuracy
+                VStack(spacing: 8) {
+                    Text(accuracy)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.tornyGreen)
+                    Text("Accuracy")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+
                 // Total Shots
                 VStack(spacing: 8) {
                     Text("\(session.totalShots ?? 0)")
-                        .font(.largeTitle)
+                        .font(.title2)
                         .fontWeight(.bold)
                     Text("Total Shots")
                         .font(.caption)
@@ -379,25 +430,13 @@ struct SessionStatisticsCard: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                // Successful Shots
+                // Successful Shots (1-2 points)
                 VStack(spacing: 8) {
                     Text("\(successfulShots)")
-                        .font(.largeTitle)
+                        .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.green)
+                        .foregroundColor(.tornyPurple)
                     Text("Successful")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-
-                // Accuracy
-                VStack(spacing: 8) {
-                    Text(accuracy)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
-                    Text("Accuracy")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -413,6 +452,43 @@ struct SessionStatisticsCard: View {
 
 struct ShotTypeBreakdownSection: View {
     let session: TrainingSession
+    let sessionStats: SessionStatistics?
+
+    private func getPointsAndMax(shotType: String, sessionShots: Int, sessionAccuracy: Double) -> (points: Int, maxPoints: Int) {
+        let apiShots: String?
+        let apiPoints: String?
+
+        switch shotType {
+        case "draw":
+            apiShots = sessionStats?.drawShots
+            apiPoints = sessionStats?.drawPoints
+        case "yard_on":
+            apiShots = sessionStats?.yardOnShots
+            apiPoints = sessionStats?.yardOnPoints
+        case "ditch_weight":
+            apiShots = sessionStats?.ditchWeightShots
+            apiPoints = sessionStats?.ditchWeightPoints
+        case "drive":
+            apiShots = sessionStats?.driveShots
+            apiPoints = sessionStats?.drivePoints
+        default:
+            apiShots = nil
+            apiPoints = nil
+        }
+
+        // Try to use API data
+        if let shotsString = apiShots,
+           let shotsInt = Int(shotsString),
+           shotsInt > 0,
+           let pointsString = apiPoints,
+           let pointsInt = Int(pointsString) {
+            return (points: pointsInt, maxPoints: shotsInt * 2)
+        }
+
+        // Fall back to estimation
+        let estimatedPoints = calculatePointsForShotType(shots: sessionShots, accuracy: sessionAccuracy)
+        return (points: estimatedPoints, maxPoints: sessionShots * 2)
+    }
 
     private func calculatePointsForShotType(shots: Int, accuracy: Double) -> Int {
         guard shots > 0 else { return 0 }
@@ -463,11 +539,13 @@ struct ShotTypeBreakdownSection: View {
                 // Draw
                 if let drawShots = session.drawShots, drawShots > 0 {
                     let drawAccuracy = session.drawAccuracy ?? 0.0
+                    let result = getPointsAndMax(shotType: "draw", sessionShots: drawShots, sessionAccuracy: drawAccuracy)
+
                     SessionShotTypeCard(
                         title: "Draw",
                         shots: drawShots,
-                        points: calculatePointsForShotType(shots: drawShots, accuracy: drawAccuracy),
-                        accuracy: drawAccuracy,
+                        points: result.points,
+                        maxPoints: result.maxPoints,
                         color: .blue
                     )
                 }
@@ -475,11 +553,13 @@ struct ShotTypeBreakdownSection: View {
                 // Yard On
                 if let yardOnShots = session.yardOnShots, yardOnShots > 0 {
                     let yardOnAccuracy = session.yardOnAccuracy ?? 0.0
+                    let result = getPointsAndMax(shotType: "yard_on", sessionShots: yardOnShots, sessionAccuracy: yardOnAccuracy)
+
                     SessionShotTypeCard(
                         title: "Yard On",
                         shots: yardOnShots,
-                        points: calculatePointsForShotType(shots: yardOnShots, accuracy: yardOnAccuracy),
-                        accuracy: yardOnAccuracy,
+                        points: result.points,
+                        maxPoints: result.maxPoints,
                         color: .green
                     )
                 }
@@ -487,11 +567,13 @@ struct ShotTypeBreakdownSection: View {
                 // Ditch Weight
                 if let ditchWeightShots = session.ditchWeightShots, ditchWeightShots > 0 {
                     let ditchWeightAccuracy = session.ditchWeightAccuracy ?? 0.0
+                    let result = getPointsAndMax(shotType: "ditch_weight", sessionShots: ditchWeightShots, sessionAccuracy: ditchWeightAccuracy)
+
                     SessionShotTypeCard(
                         title: "Ditch Weight",
                         shots: ditchWeightShots,
-                        points: calculatePointsForShotType(shots: ditchWeightShots, accuracy: ditchWeightAccuracy),
-                        accuracy: ditchWeightAccuracy,
+                        points: result.points,
+                        maxPoints: result.maxPoints,
                         color: .orange
                     )
                 }
@@ -499,11 +581,13 @@ struct ShotTypeBreakdownSection: View {
                 // Drive
                 if let driveShots = session.driveShots, driveShots > 0 {
                     let driveAccuracy = session.driveAccuracy ?? 0.0
+                    let result = getPointsAndMax(shotType: "drive", sessionShots: driveShots, sessionAccuracy: driveAccuracy)
+
                     SessionShotTypeCard(
                         title: "Drive",
                         shots: driveShots,
-                        points: calculatePointsForShotType(shots: driveShots, accuracy: driveAccuracy),
-                        accuracy: driveAccuracy,
+                        points: result.points,
+                        maxPoints: result.maxPoints,
                         color: .purple
                     )
                 }
@@ -516,13 +600,12 @@ struct SessionShotTypeCard: View {
     let title: String
     let shots: Int
     let points: Int
-    let accuracy: Double
+    let maxPoints: Int
     let color: Color
 
     private var pointsBasedPercentage: Double {
-        guard shots > 0 else { return 0.0 }
-        let maxPossiblePoints = shots * 2 // Each shot can earn max 2 points
-        return (Double(points) / Double(maxPossiblePoints)) * 100.0
+        guard maxPoints > 0 else { return 0.0 }
+        return (Double(points) / Double(maxPoints)) * 100.0
     }
 
     var body: some View {
@@ -532,30 +615,44 @@ struct SessionShotTypeCard: View {
                 .fontWeight(.semibold)
                 .foregroundColor(color)
 
-            HStack(spacing: 20) {
+            // Points Display - Most Prominent
+            VStack(spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(points)")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(color)
+                    Text("/ \(maxPoints)")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.secondary)
+                }
+                Text("Points")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Divider()
+                .padding(.horizontal, 8)
+
+            // Secondary Info
+            HStack(spacing: 16) {
                 VStack(spacing: 4) {
                     Text("\(shots)")
-                        .font(.title)
+                        .font(.subheadline)
                         .fontWeight(.bold)
-                    Text("shots")
-                        .font(.caption)
+                    Text("Shots")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
 
                 VStack(spacing: 4) {
-                    Text("\(points)")
-                        .font(.title)
+                    Text(String(format: "%.1f%%", pointsBasedPercentage))
+                        .font(.subheadline)
                         .fontWeight(.bold)
-                        .foregroundColor(color)
-                    Text("points")
-                        .font(.caption)
+                    Text("Accuracy")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
-
-            Text(String(format: "%.1f%%", pointsBasedPercentage))
-                .font(.subheadline)
-                .fontWeight(.medium)
         }
         .frame(maxWidth: .infinity)
         .padding()

@@ -201,7 +201,7 @@ struct LivePerformanceMetricsCard: View {
 
                 ProgressMetricItem(
                     title: "Consistency",
-                    value: progressData.trends.consistency.capitalized,
+                    value: progressData.trends.consistency?.capitalized ?? "N/A",
                     icon: trendIcon,
                     color: trendColor
                 )
@@ -229,11 +229,14 @@ struct LivePerformanceMetricsCard: View {
     }
 
     private var volumeTrend: String {
-        return progressData.trends.volume
+        return progressData.trends.volume ?? "N/A"
     }
 
     private var trendIcon: String {
-        switch progressData.trends.consistency.lowercased() {
+        guard let consistency = progressData.trends.consistency else {
+            return "minus.circle.fill"
+        }
+        switch consistency.lowercased() {
         case "improving": return "arrow.up.circle.fill"
         case "declining": return "arrow.down.circle.fill"
         default: return "minus.circle.fill"
@@ -241,7 +244,10 @@ struct LivePerformanceMetricsCard: View {
     }
 
     private var trendColor: Color {
-        switch progressData.trends.consistency.lowercased() {
+        guard let consistency = progressData.trends.consistency else {
+            return .gray
+        }
+        switch consistency.lowercased() {
         case "improving": return .green
         case "declining": return .red
         default: return .gray
