@@ -107,7 +107,7 @@ struct LoginView: View {
                 HStack {
                     if isLoading {
                         TornyLoadingView()
-                        Text("Signing In...")
+
                     } else {
                         Text("Sign In")
                     }
@@ -214,7 +214,7 @@ struct RegisterView: View {
                 HStack {
                     if isLoading {
                         TornyLoadingView()
-                        Text("Creating Account...")
+
                     } else {
                         Text("Create Account")
                     }

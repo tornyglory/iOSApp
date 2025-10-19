@@ -96,7 +96,7 @@ struct ForgotPasswordView: View {
                                         HStack {
                                             if isLoading {
                                                 TornyLoadingView()
-                                                Text("Sending...")
+
                                             } else {
                                                 Image(systemName: "envelope.fill")
                                                 Text("Send Reset Link")

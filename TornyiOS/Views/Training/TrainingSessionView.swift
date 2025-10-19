@@ -462,7 +462,7 @@ struct TrainingSessionView: View {
             HStack {
                 if isRecording {
                     TornyLoadingView()
-                    Text("Recording...")
+
                 } else {
                     Image(systemName: "plus.circle.fill")
                     Text("Record Shot")
@@ -847,7 +847,7 @@ struct SessionEndView: View {
                             HStack {
                                 if isEnding {
                                     TornyLoadingView()
-                                    Text("Ending Session...")
+
                                 } else {
                                     Text("End Session & Return to Dashboard")
                                 }

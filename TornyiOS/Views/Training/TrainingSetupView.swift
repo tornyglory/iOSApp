@@ -551,7 +551,7 @@ struct TrainingSetupView: View {
                             HStack {
                                 if isLoading {
                                     TornyLoadingView()
-                                    Text("Creating Session...")
+
                                 } else {
                                     Image(systemName: "play.fill")
                                     Text("Start Training Session")
