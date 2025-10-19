@@ -9,18 +9,73 @@ struct SessionHistoryView: View {
     @State private var alertMessage = ""
     @State private var hasMoreSessions = true
     @State private var currentOffset = 0
+    @State private var filterType: SessionFilterType = .all
     @Environment(\.dismiss) private var dismiss
 
     private let pageSize = 20
+
+    enum SessionFilterType: Hashable {
+        case all
+        case programs
+        case freestyle
+
+        var displayName: String {
+            switch self {
+            case .all: return "All"
+            case .programs: return "Programs"
+            case .freestyle: return "Freestyle"
+            }
+        }
+    }
+
+    private var filteredSessions: [TrainingSession] {
+        sessions.filter { session in
+            switch filterType {
+            case .all:
+                return true
+            case .programs:
+                return session.programId != nil
+            case .freestyle:
+                return session.programId == nil
+            }
+        }
+    }
 
     var body: some View {
         NavigationView {
             ZStack {
                 TornyBackgroundView()
 
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(sessions) { session in
+                VStack(spacing: 0) {
+                    // Filter Tabs
+                    HStack(spacing: 0) {
+                        ForEach([SessionFilterType.all, .programs, .freestyle], id: \.self) { filter in
+                            Button(action: {
+                                filterType = filter
+                            }) {
+                                Text(filter.displayName)
+                                    .font(.subheadline)
+                                    .fontWeight(filterType == filter ? .semibold : .regular)
+                                    .foregroundColor(filterType == filter ? .tornyBlue : .secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(
+                                        VStack(spacing: 0) {
+                                            Color.clear
+                                            Rectangle()
+                                                .fill(filterType == filter ? Color.tornyBlue : Color.clear)
+                                                .frame(height: 2)
+                                        }
+                                    )
+                            }
+                        }
+                    }
+                    .background(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.05), radius: 1, x: 0, y: 1)
+
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(filteredSessions) { session in
                             NavigationLink(destination: SessionDetailView(session: session)) {
                                 SessionRowView(session: session)
                             }
@@ -33,6 +88,7 @@ struct SessionHistoryView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
+                    }
                 }
             }
             .navigationTitle("Session History")
@@ -67,8 +123,8 @@ struct SessionHistoryView: View {
                 Text(alertMessage)
             }
             .overlay {
-                if sessions.isEmpty && !isLoading {
-                    EmptyHistoryView()
+                if filteredSessions.isEmpty && !isLoading {
+                    EmptyHistoryView(filterType: filterType)
                 }
             }
         }
@@ -119,20 +175,49 @@ struct SessionHistoryView: View {
 }
 
 struct EmptyHistoryView: View {
+    let filterType: SessionHistoryView.SessionFilterType
+
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "clock")
+            Image(systemName: iconName)
                 .font(.system(size: 50))
                 .foregroundColor(.gray)
 
-            Text("No Training Sessions")
+            Text(title)
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            Text("Start your first training session to see your history here.")
+            Text(message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
+        }
+    }
+
+    private var iconName: String {
+        switch filterType {
+        case .all: return "clock"
+        case .programs: return "list.bullet.clipboard"
+        case .freestyle: return "figure.walk"
+        }
+    }
+
+    private var title: String {
+        switch filterType {
+        case .all: return "No Training Sessions"
+        case .programs: return "No Program Sessions"
+        case .freestyle: return "No Freestyle Sessions"
+        }
+    }
+
+    private var message: String {
+        switch filterType {
+        case .all:
+            return "Start your first training session to see your history here."
+        case .programs:
+            return "Try a training program to track your progress with structured practice."
+        case .freestyle:
+            return "Start a freestyle training session to practice at your own pace."
         }
     }
 }
@@ -145,7 +230,7 @@ struct LoadMoreRow: View {
         HStack {
             Spacer()
             if isLoading {
-                TornyLoadingView(color: .tornyBlue)
+                TornyLoadingView()
             } else {
                 Button("Load More") {
                     loadMore()

@@ -23,7 +23,7 @@ struct ComparativeAnalysisView: View {
 
                 if viewModel.isLoading {
                     VStack(spacing: 12) {
-                        TornyLoadingView(color: .tornyBlue)
+                        TornyLoadingView()
                         Text("Loading comparative analysis...")
                             .font(TornyFonts.body)
                             .foregroundColor(.tornyTextSecondary)

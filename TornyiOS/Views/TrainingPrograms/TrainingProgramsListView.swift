@@ -60,7 +60,7 @@ struct TrainingProgramsListView: View {
                 if viewModel.isLoading {
                     Spacer()
                     VStack(spacing: 12) {
-                        TornyLoadingView(color: .tornyBlue)
+                        TornyLoadingView()
                         Text("Loading programs...")
                             .font(TornyFonts.body)
                             .foregroundColor(.tornyTextSecondary)
@@ -161,7 +161,7 @@ struct TrainingProgramsListView: View {
                             } else {
                                 LazyVStack(spacing: 12) {
                                     ForEach(filteredPrograms) { program in
-                                        NavigationLink(destination: ProgramDetailView(program: program)) {
+                                        NavigationLink(destination: ProgramDetailView(program: program, onDismissToRoot: onDismiss)) {
                                             ProgramCard(
                                                 program: program,
                                                 onFavoriteTap: {

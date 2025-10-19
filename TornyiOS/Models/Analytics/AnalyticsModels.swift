@@ -213,6 +213,8 @@ struct AIInsightsResponse: Codable {
     let strengths: [String]
     let areasForImprovement: [AreaForImprovement]
     let recommendedDrills: [RecommendedDrill]
+    let recommendedPrograms: [RecommendedProgram]?
+    let primaryProgramRecommendation: String?
     let nextSessionFocus: String
     let equipmentPerformance: [EquipmentPerformance]?
     let clubPerformance: [ClubPerformance]?
@@ -227,6 +229,8 @@ struct AIInsightsResponse: Codable {
         case strengths
         case areasForImprovement = "areas_for_improvement"
         case recommendedDrills = "recommended_drills"
+        case recommendedPrograms = "recommended_programs"
+        case primaryProgramRecommendation = "primary_program_recommendation"
         case nextSessionFocus = "next_session_focus"
         case equipmentPerformance = "equipment_performance"
         case clubPerformance = "club_performance"
@@ -261,6 +265,64 @@ struct AIStatistics: Codable {
         case weightedAccuracy = "weighted_accuracy"
         case improvementTrend = "improvement_trend"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Helper to decode Int or String as Int
+        func decodeIntOrString(_ key: CodingKeys) throws -> Int {
+            if let intValue = try? container.decode(Int.self, forKey: key) {
+                return intValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let intValue = Int(stringValue) {
+                return intValue
+            }
+            throw DecodingError.typeMismatch(Int.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Int or String for key \(key)"
+            ))
+        }
+
+        // Helper to decode number or string as String
+        func decodeNumberOrString(_ key: CodingKeys) throws -> String {
+            if let stringValue = try? container.decode(String.self, forKey: key) {
+                return stringValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return String(intValue)
+            } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return String(doubleValue)
+            }
+            throw DecodingError.typeMismatch(String.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected String, Int, or Double for key \(key)"
+            ))
+        }
+
+        // Helper for optional string/number fields
+        func decodeOptionalNumberOrString(_ key: CodingKeys) -> String? {
+            if let stringValue = try? container.decode(String.self, forKey: key) {
+                return stringValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return String(intValue)
+            } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return String(doubleValue)
+            }
+            return nil
+        }
+
+        totalSessions = try decodeIntOrString(.totalSessions)
+        totalShots = try decodeIntOrString(.totalShots)
+        totalPoints = try decodeNumberOrString(.totalPoints)
+        maxPossiblePoints = try decodeIntOrString(.maxPossiblePoints)
+        overallAccuracy = try decodeNumberOrString(.overallAccuracy)
+        successfulShots = decodeOptionalNumberOrString(.successfulShots)
+        successRate = decodeOptionalNumberOrString(.successRate)
+        excellentShots = decodeOptionalNumberOrString(.excellentShots)
+        excellenceRate = decodeOptionalNumberOrString(.excellenceRate)
+        drawAccuracy = try decodeNumberOrString(.drawAccuracy)
+        weightedAccuracy = try decodeNumberOrString(.weightedAccuracy)
+        improvementTrend = try container.decode(AnalyticsImprovementTrend.self, forKey: .improvementTrend)
+    }
 }
 
 struct PracticePatterns: Codable {
@@ -279,6 +341,57 @@ struct PracticePatterns: Codable {
         case maxDurationMinutes = "max_duration_minutes"
         case weeklyFrequency = "weekly_frequency"
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Helper to decode Int or String as Int
+        func decodeIntOrString(_ key: CodingKeys) throws -> Int {
+            // Check if value is null first
+            if let isNull = try? container.decodeNil(forKey: key), isNull {
+                return 0
+            }
+            if let intValue = try? container.decode(Int.self, forKey: key) {
+                return intValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let intValue = Int(stringValue) {
+                return intValue
+            } else if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return Int(doubleValue)
+            }
+            throw DecodingError.typeMismatch(Int.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Int or String for key \(key), got something else"
+            ))
+        }
+
+        // Helper to decode Double or String as Double
+        func decodeDoubleOrString(_ key: CodingKeys) throws -> Double {
+            // Check if value is null first
+            if let isNull = try? container.decodeNil(forKey: key), isNull {
+                return 0.0
+            }
+            if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return doubleValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let doubleValue = Double(stringValue) {
+                return doubleValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return Double(intValue)
+            }
+            throw DecodingError.typeMismatch(Double.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Double or String for key \(key), got something else"
+            ))
+        }
+
+        sessionsPerWeek = try decodeIntOrString(.sessionsPerWeek)
+        avgDurationMinutes = try decodeIntOrString(.avgDurationMinutes)
+        totalPracticeHours = try decodeDoubleOrString(.totalPracticeHours)
+        minDurationMinutes = try decodeIntOrString(.minDurationMinutes)
+        maxDurationMinutes = try decodeIntOrString(.maxDurationMinutes)
+        weeklyFrequency = try container.decode([WeeklyFrequency].self, forKey: .weeklyFrequency)
+    }
 }
 
 struct WeeklyFrequency: Codable, Identifiable {
@@ -291,6 +404,28 @@ struct WeeklyFrequency: Codable, Identifiable {
         case week
         case sessions
         case avgDurationMinutes = "avg_duration_minutes"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Helper to decode Int or String as Int
+        func decodeIntOrString(_ key: CodingKeys) throws -> Int {
+            if let intValue = try? container.decode(Int.self, forKey: key) {
+                return intValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let intValue = Int(stringValue) {
+                return intValue
+            }
+            throw DecodingError.typeMismatch(Int.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Int or String for key \(key)"
+            ))
+        }
+
+        week = try decodeIntOrString(.week)
+        sessions = try decodeIntOrString(.sessions)
+        avgDurationMinutes = try decodeIntOrString(.avgDurationMinutes)
     }
 }
 
@@ -454,6 +589,25 @@ struct RecommendedDrill: Codable, Identifiable {
         try container.encode(duration, forKey: .duration)
     }
 }
+// MARK: - Program Recommendation Models
+
+struct RecommendedProgram: Codable, Identifiable {
+    var id: Int { programId }
+    let programId: Int
+    let programTitle: String
+    let relevance: String
+    let expectedBenefit: String
+    let priority: String
+
+    enum CodingKeys: String, CodingKey {
+        case programId = "program_id"
+        case programTitle = "program_title"
+        case relevance
+        case expectedBenefit = "expected_benefit"
+        case priority
+    }
+}
+
 // MARK: - Session AI Analysis Models
 
 struct SessionAIAnalysis: Codable {
@@ -466,6 +620,8 @@ struct SessionAIAnalysis: Codable {
     let strengths: [String]
     let areasForImprovement: [AreaForImprovement]
     let recommendedDrills: [RecommendedDrill]
+    let recommendedPrograms: [RecommendedProgram]?
+    let primaryProgramRecommendation: String?
     let nextSessionFocus: String
 
     enum CodingKeys: String, CodingKey {
@@ -478,6 +634,8 @@ struct SessionAIAnalysis: Codable {
         case strengths
         case areasForImprovement = "areas_for_improvement"
         case recommendedDrills = "recommended_drills"
+        case recommendedPrograms = "recommended_programs"
+        case primaryProgramRecommendation = "primary_program_recommendation"
         case nextSessionFocus = "next_session_focus"
     }
 
@@ -563,5 +721,87 @@ struct SessionAIStatistics: Codable {
         case driveShots = "drive_shots"
         case drivePoints = "drive_points"
         case driveAccuracyPercentage = "drive_accuracy_percentage"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Helper to decode Int or String as Int
+        func decodeIntOrString(_ key: CodingKeys) throws -> Int {
+            if let intValue = try? container.decode(Int.self, forKey: key) {
+                return intValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let intValue = Int(stringValue) {
+                return intValue
+            }
+            throw DecodingError.typeMismatch(Int.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Int or String for key \(key)"
+            ))
+        }
+
+        // Helper to decode Double or String as Double
+        func decodeDoubleOrString(_ key: CodingKeys) throws -> Double {
+            if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return doubleValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let doubleValue = Double(stringValue) {
+                return doubleValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return Double(intValue)
+            }
+            throw DecodingError.typeMismatch(Double.self, DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: "Expected Double or String for key \(key)"
+            ))
+        }
+
+        // Helper to decode optional Double or String as Double?
+        func decodeOptionalDoubleOrString(_ key: CodingKeys) -> Double? {
+            if let doubleValue = try? container.decode(Double.self, forKey: key) {
+                return doubleValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let doubleValue = Double(stringValue) {
+                return doubleValue
+            } else if let intValue = try? container.decode(Int.self, forKey: key) {
+                return Double(intValue)
+            }
+            return nil
+        }
+
+        // Helper to decode optional Int or String as Int?
+        func decodeOptionalIntOrString(_ key: CodingKeys) -> Int? {
+            if let intValue = try? container.decode(Int.self, forKey: key) {
+                return intValue
+            } else if let stringValue = try? container.decode(String.self, forKey: key),
+                      let intValue = Int(stringValue) {
+                return intValue
+            }
+            return nil
+        }
+
+        totalShots = try decodeIntOrString(.totalShots)
+        totalPoints = try decodeIntOrString(.totalPoints)
+        maxPossiblePoints = try decodeIntOrString(.maxPossiblePoints)
+        averageScore = try decodeDoubleOrString(.averageScore)
+        accuracyPercentage = try decodeDoubleOrString(.accuracyPercentage)
+        successfulShots = try decodeIntOrString(.successfulShots)
+        successRate = try decodeDoubleOrString(.successRate)
+        excellentShots = try decodeIntOrString(.excellentShots)
+        excellenceRate = try decodeDoubleOrString(.excellenceRate)
+        byHandBreakdown = try container.decodeIfPresent(String.self, forKey: .byHandBreakdown)
+        byLengthBreakdown = try container.decodeIfPresent(String.self, forKey: .byLengthBreakdown)
+        drawShots = decodeOptionalIntOrString(.drawShots)
+        drawPoints = decodeOptionalIntOrString(.drawPoints)
+        drawAccuracyPercentage = decodeOptionalDoubleOrString(.drawAccuracyPercentage)
+        yardOnShots = decodeOptionalIntOrString(.yardOnShots)
+        yardOnPoints = decodeOptionalIntOrString(.yardOnPoints)
+        yardOnAccuracyPercentage = decodeOptionalDoubleOrString(.yardOnAccuracyPercentage)
+        ditchWeightShots = decodeOptionalIntOrString(.ditchWeightShots)
+        ditchWeightPoints = decodeOptionalIntOrString(.ditchWeightPoints)
+        ditchWeightAccuracyPercentage = decodeOptionalDoubleOrString(.ditchWeightAccuracyPercentage)
+        driveShots = decodeOptionalIntOrString(.driveShots)
+        drivePoints = decodeOptionalIntOrString(.drivePoints)
+        driveAccuracyPercentage = decodeOptionalDoubleOrString(.driveAccuracyPercentage)
     }
 }

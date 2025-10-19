@@ -16,7 +16,7 @@ struct AnalyticsView: View {
 
             if viewModel.isLoading {
                 VStack(spacing: 12) {
-                    TornyLoadingView(color: .tornyBlue)
+                    TornyLoadingView()
                     Text("Loading analytics...")
                         .font(TornyFonts.body)
                         .foregroundColor(.tornyTextSecondary)
@@ -150,7 +150,7 @@ struct AnalyticsView: View {
                 }
             } else {
                 // Initial loading state
-                TornyLoadingView(color: .tornyBlue)
+                TornyLoadingView()
                     .onAppear {
                         viewModel.fetchAnalytics()
                     }

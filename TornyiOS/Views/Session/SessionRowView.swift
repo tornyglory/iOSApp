@@ -123,6 +123,23 @@ struct SessionRowView: View {
                 .foregroundColor(.secondary)
             }
 
+            // Training Program badge (if session is from a program)
+            if let programTitle = session.programTitle {
+                HStack(spacing: 6) {
+                    Image(systemName: "list.bullet.clipboard.fill")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    Text(programTitle)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.orange)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+            }
+
             // Club name (if available)
             if let clubName = session.clubName {
                 HStack(spacing: 4) {

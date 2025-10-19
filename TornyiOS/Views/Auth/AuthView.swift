@@ -106,7 +106,7 @@ struct LoginView: View {
             Button(action: login) {
                 HStack {
                     if isLoading {
-                        TornyLoadingView(color: .white)
+                        TornyLoadingView()
                         Text("Signing In...")
                     } else {
                         Text("Sign In")
@@ -213,7 +213,7 @@ struct RegisterView: View {
             Button(action: register) {
                 HStack {
                     if isLoading {
-                        TornyLoadingView(color: .white)
+                        TornyLoadingView()
                         Text("Creating Account...")
                     } else {
                         Text("Create Account")

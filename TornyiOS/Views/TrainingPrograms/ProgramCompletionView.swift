@@ -12,10 +12,6 @@ struct ProgramCompletionView: View {
     @State private var showShareSheet = false
     @State private var sessionNotes = ""
     @State private var isEndingSession = false
-    @State private var showingAlert = false
-    @State private var alertMessage = ""
-
-    private let apiService = APIService.shared
 
     var body: some View {
         NavigationView {
@@ -265,11 +261,6 @@ struct ProgramCompletionView: View {
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [shareText])
         }
-        .alert("Error", isPresented: $showingAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(alertMessage)
-        }
     }
 
     // MARK: - Computed Properties
@@ -319,40 +310,22 @@ struct ProgramCompletionView: View {
     // MARK: - Actions
 
     private func endSession() {
+        // For training programs, the session is already complete when all shots are finished
+        // We just need to save any notes and dismiss the view
         isEndingSession = true
 
-        Task {
-            do {
-                // Calculate duration from when session was shown to now
-                // Note: We don't have the actual start time, but the backend should have it
-                // Send minimal duration for now - backend likely tracks actual duration
-                let endedAt = ISO8601DateFormatter().string(from: Date())
-                let request = EndSessionRequest(
-                    endedAt: endedAt,
-                    durationSeconds: 1, // Backend tracks actual duration
-                    notes: sessionNotes.isEmpty ? nil : sessionNotes
-                )
+        // If there are notes, we could save them here via an API call
+        // For now, just dismiss with animation
 
-                _ = try await apiService.endSession(sessionId, request: request)
+        // Trigger confetti celebration
+        confettiCounter += 1
 
-                await MainActor.run {
-                    isEndingSession = false
-                    // Trigger confetti celebration
-                    confettiCounter += 1
-                    // Dismiss after a short delay to show confetti
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        dismiss()
-                        // Call completion handler to dismiss parent views
-                        onComplete?()
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    isEndingSession = false
-                    alertMessage = "Failed to end session: \(error.localizedDescription)"
-                    showingAlert = true
-                }
-            }
+        // Dismiss after a short delay to show confetti
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            isEndingSession = false
+            dismiss()
+            // Call completion handler to dismiss parent views
+            onComplete?()
         }
     }
 }

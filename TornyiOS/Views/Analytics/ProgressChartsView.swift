@@ -34,7 +34,7 @@ struct ProgressChartsView: View {
 
                 if viewModel.isLoading {
                     VStack(spacing: 12) {
-                        TornyLoadingView(color: .tornyBlue)
+                        TornyLoadingView()
                         Text("Loading progress data...")
                             .font(TornyFonts.body)
                             .foregroundColor(.tornyTextSecondary)

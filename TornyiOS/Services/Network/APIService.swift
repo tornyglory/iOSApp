@@ -533,6 +533,24 @@ class APIService: ObservableObject {
         )
     }
 
+    func getOverallAIAnalysis(period: String = "all", sport: String = "lawn_bowls") async throws -> AIInsightsResponse {
+        struct AnalysisRequest: Codable {
+            let period: String
+            let sport: String
+        }
+
+        let request = AnalysisRequest(period: period, sport: sport)
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(request)
+
+        return try await makeRequest(
+            endpoint: "/analyze/overall",
+            method: .POST,
+            body: data,
+            responseType: AIInsightsResponse.self
+        )
+    }
+
     func getLiveChartData(sessionId: Int) async throws -> ChartDataResponse {
         return try await makeRequest(
             endpoint: "/sessions/\(sessionId)/chart-data",

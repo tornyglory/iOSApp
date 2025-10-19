@@ -27,16 +27,23 @@ struct SessionDetailView: View {
                     SessionStatisticsCard(session: session, sessionStats: sessionStats)
                         .padding(.horizontal)
 
-                    // Torny AI Analysis Button
+                    // TornyAI Improvement Plan Button
                     NavigationLink(destination: SessionAIAnalysisView(sessionId: session.id)) {
-                        HStack {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 20))
-                            Text("Analyse with Torny AI")
-                                .font(TornyFonts.body)
-                                .fontWeight(.semibold)
+                        VStack(spacing: 8) {
+                            HStack {
+                                Image(systemName: "target")
+                                    .font(.system(size: 20))
+                                Text("Get Your Improvement Plan")
+                                    .font(TornyFonts.body)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+
+                            Text("AI identifies weaknesses & recommends your next program")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.9))
+                                .multilineTextAlignment(.center)
                         }
-                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(

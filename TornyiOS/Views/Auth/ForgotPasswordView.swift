@@ -95,7 +95,7 @@ struct ForgotPasswordView: View {
                                     Button(action: sendResetRequest) {
                                         HStack {
                                             if isLoading {
-                                                TornyLoadingView(color: .white)
+                                                TornyLoadingView()
                                                 Text("Sending...")
                                             } else {
                                                 Image(systemName: "envelope.fill")

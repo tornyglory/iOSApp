@@ -217,7 +217,7 @@ struct TrainingSessionView: View {
                     Spacer()
 
                     if isLoadingChartData {
-                        TornyLoadingView(color: .tornyBlue)
+                        TornyLoadingView()
                     } else {
                         Button(action: {
                             print("Refresh button tapped - loading chart data")
@@ -461,7 +461,7 @@ struct TrainingSessionView: View {
         Button(action: recordShot) {
             HStack {
                 if isRecording {
-                    TornyLoadingView(color: .white)
+                    TornyLoadingView()
                     Text("Recording...")
                 } else {
                     Image(systemName: "plus.circle.fill")
@@ -846,7 +846,7 @@ struct SessionEndView: View {
                         Button(action: endSession) {
                             HStack {
                                 if isEnding {
-                                    TornyLoadingView(color: .white)
+                                    TornyLoadingView()
                                     Text("Ending Session...")
                                 } else {
                                     Text("End Session & Return to Dashboard")

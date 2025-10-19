@@ -11,7 +11,7 @@ struct AIInsightsView: View {
 
                 if viewModel.isLoading {
                     VStack(spacing: 12) {
-                        TornyLoadingView(color: .tornyBlue)
+                        TornyLoadingView()
                         Text("Analysing your performance...")
                             .font(TornyFonts.body)
                             .foregroundColor(.tornyTextSecondary)
@@ -97,6 +97,37 @@ struct AIInsightsView: View {
                                         .font(TornyFonts.body)
                                         .foregroundColor(.tornyTextSecondary)
                                         .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+
+                            // Recommended Training Programs
+                            if let programs = insights.recommendedPrograms, !programs.isEmpty {
+                                VStack(spacing: 16) {
+                                    // Primary Program Recommendation
+                                    if let primaryRec = insights.primaryProgramRecommendation {
+                                        TornyCard {
+                                            VStack(alignment: .leading, spacing: 12) {
+                                                HStack {
+                                                    Image(systemName: "star.circle.fill")
+                                                        .foregroundColor(.tornyBlue)
+                                                    Text("Your Coach Says")
+                                                        .font(TornyFonts.title3)
+                                                        .fontWeight(.semibold)
+                                                        .foregroundColor(.tornyTextPrimary)
+                                                }
+
+                                                Text(primaryRec)
+                                                    .font(TornyFonts.body)
+                                                    .foregroundColor(.tornyTextSecondary)
+                                                    .fixedSize(horizontal: false, vertical: true)
+                                            }
+                                        }
+                                    }
+
+                                    // Program Cards
+                                    ForEach(programs) { program in
+                                        RecommendedProgramCard(program: program)
+                                    }
                                 }
                             }
 
@@ -261,14 +292,12 @@ struct AIInsightsView: View {
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
-
-                            Spacer(minLength: 100)
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 100)
                     }
                 } else {
-                    TornyLoadingView(color: .tornyBlue)
+                    TornyLoadingView()
                         .onAppear {
                             viewModel.fetchInsights()
                         }

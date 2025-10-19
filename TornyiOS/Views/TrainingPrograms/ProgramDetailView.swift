@@ -4,9 +4,11 @@ struct ProgramDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: ProgramDetailViewModel
     @State private var showingStartSession = false
+    var onDismissToRoot: (() -> Void)? = nil
 
-    init(program: TrainingProgram) {
+    init(program: TrainingProgram, onDismissToRoot: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: ProgramDetailViewModel(program: program))
+        self.onDismissToRoot = onDismissToRoot
     }
 
     var body: some View {
@@ -138,7 +140,7 @@ struct ProgramDetailView: View {
             }
         }
         .sheet(isPresented: $showingStartSession) {
-            ProgramStartSetupView(program: viewModel.program)
+            ProgramStartSetupView(program: viewModel.program, onDismissToRoot: onDismissToRoot)
         }
     }
 
@@ -346,6 +348,7 @@ struct ProgramStartSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var apiService = APIService.shared
     let program: TrainingProgram
+    var onDismissToRoot: (() -> Void)? = nil
 
     @State private var location = "outdoor"
     @State private var greenType = "bent"
@@ -385,6 +388,21 @@ struct ProgramStartSetupView: View {
             return ["synthetic", "carpet"]
         } else {
             return ["couch", "tift", "bent", "synthetic", "carpet"]
+        }
+    }
+
+    var bowlsModels: [String] {
+        switch bowlsBrand {
+        case "Henselite":
+            return ["Dreamline XG", "Cruse", "Dreamline", "Alpha", "Tiger II", "ABT 2000", "Classic II"]
+        case "Aero":
+            return ["Dynamic", "Optima", "Turbo Pro", "Evolve", "Defiance"]
+        case "Drakes Pride":
+            return ["Conquest", "Adrenaline", "LS-125", "International"]
+        case "Taylor":
+            return ["GTR", "SRV", "SR", "Ace", "Blaze", "Vector VS"]
+        default:
+            return []
         }
     }
 
@@ -660,6 +678,8 @@ struct ProgramStartSetupView: View {
                                         ForEach(bowlsBrands, id: \.self) { brand in
                                             Button(brand) {
                                                 bowlsBrand = brand
+                                                // Reset model to first in list when brand changes
+                                                bowlsModel = bowlsModels.first ?? ""
                                             }
                                         }
                                     } label: {
@@ -689,8 +709,30 @@ struct ProgramStartSetupView: View {
                                         .fontWeight(.medium)
                                         .foregroundColor(.tornyTextPrimary)
 
-                                    TextField("Enter model", text: $bowlsModel)
-                                        .textFieldStyle(TornyTextFieldStyle())
+                                    Menu {
+                                        ForEach(bowlsModels, id: \.self) { model in
+                                            Button(model) {
+                                                bowlsModel = model
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(bowlsModel)
+                                                .foregroundColor(.tornyTextPrimary)
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .foregroundColor(.gray)
+                                        }
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .stroke(Color.tornyLightBlue, lineWidth: 1)
+                                                )
+                                        )
+                                    }
                                 }
 
                                 // Bowl Size
@@ -831,7 +873,7 @@ struct ProgramStartSetupView: View {
                         Button(action: startProgram) {
                             HStack {
                                 if isLoading {
-                                    TornyLoadingView(color: .white)
+                                    TornyLoadingView()
                                     Text("Starting Program...")
                                 } else {
                                     Image(systemName: "play.fill")
@@ -881,7 +923,13 @@ struct ProgramStartSetupView: View {
                         sessionInfo: response.session,
                         currentShot: nextShot,
                         programTitle: program.title,
-                        sessionMetadata: metadata
+                        sessionMetadata: metadata,
+                        onCompleteProgram: {
+                            // Dismiss the setup sheet
+                            dismiss()
+                            // Then dismiss all the way to the dashboard
+                            onDismissToRoot?()
+                        }
                     )
                 }
             } else {

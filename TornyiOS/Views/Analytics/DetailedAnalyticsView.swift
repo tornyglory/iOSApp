@@ -27,7 +27,7 @@ struct ShotAnalysisContentView: View {
                 LazyVStack(spacing: 0) {
                     if viewModel.isLoading {
                         VStack(spacing: 12) {
-                            TornyLoadingView(color: .tornyBlue)
+                            TornyLoadingView()
                             Text("Loading shot analysis...")
                                 .font(TornyFonts.body)
                                 .foregroundColor(.tornyTextSecondary)

@@ -780,7 +780,7 @@ struct SaveButtonSection: View {
                 }
             }) {
                 if viewModel.isLoading {
-                    TornyLoadingView(color: .white)
+                    TornyLoadingView()
                         .scaleEffect(0.8)
                 } else {
                     Text("Save Changes")

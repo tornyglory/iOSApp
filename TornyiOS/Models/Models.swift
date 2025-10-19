@@ -474,6 +474,10 @@ struct TrainingSession: Codable, Identifiable {
     // Equipment details
     let equipment: SessionEquipment?
 
+    // Training program details (if session is from a program)
+    let programId: Int?
+    let programTitle: String?
+
 
     // Computed property to convert MySQL TINYINT (0/1) to Bool
     var isActive: Bool? {
@@ -559,10 +563,12 @@ struct TrainingSession: Codable, Identifiable {
         case clubName = "club_name"
         case clubDescription = "club_description"
         case equipment
+        case programId = "program_id"
+        case programTitle = "program_title"
     }
 
     // Memberwise initializer for preview/test purposes
-    init(id: Int, playerId: Int, sport: String, sessionDate: Date, location: Location, greenType: GreenType, greenSpeed: Int, rinkNumber: Int?, weather: Weather?, windConditions: WindConditions?, notes: String?, createdAt: Date, updatedAt: Date, totalShots: Int?, _drawShots: String?, _weightedShots: String?, drawAccuracy: Double?, weightedAccuracy: Double?, overallAccuracy: Double?, startedAt: Date?, endedAt: Date?, durationSeconds: Int?, _isActive: Int?, _totalPoints: String?, _averageScore: String?, _accuracyPercentage: String?, _yardOnShots: String?, yardOnAccuracy: Double?, _ditchWeightShots: String?, ditchWeightAccuracy: Double?, _driveShots: String?, driveAccuracy: Double?, clubId: Int? = nil, clubName: String? = nil, clubDescription: String? = nil, equipment: SessionEquipment? = nil) {
+    init(id: Int, playerId: Int, sport: String, sessionDate: Date, location: Location, greenType: GreenType, greenSpeed: Int, rinkNumber: Int?, weather: Weather?, windConditions: WindConditions?, notes: String?, createdAt: Date, updatedAt: Date, totalShots: Int?, _drawShots: String?, _weightedShots: String?, drawAccuracy: Double?, weightedAccuracy: Double?, overallAccuracy: Double?, startedAt: Date?, endedAt: Date?, durationSeconds: Int?, _isActive: Int?, _totalPoints: String?, _averageScore: String?, _accuracyPercentage: String?, _yardOnShots: String?, yardOnAccuracy: Double?, _ditchWeightShots: String?, ditchWeightAccuracy: Double?, _driveShots: String?, driveAccuracy: Double?, clubId: Int? = nil, clubName: String? = nil, clubDescription: String? = nil, equipment: SessionEquipment? = nil, programId: Int? = nil, programTitle: String? = nil) {
         self.id = id
         self.playerId = playerId
         self.sport = sport
@@ -599,6 +605,8 @@ struct TrainingSession: Codable, Identifiable {
         self.clubName = clubName
         self.clubDescription = clubDescription
         self.equipment = equipment
+        self.programId = programId
+        self.programTitle = programTitle
     }
 
     init(from decoder: Decoder) throws {
@@ -720,6 +728,10 @@ struct TrainingSession: Codable, Identifiable {
 
         // Equipment details
         equipment = try container.decodeIfPresent(SessionEquipment.self, forKey: .equipment)
+
+        // Training program details
+        programId = try container.decodeIfPresent(Int.self, forKey: .programId)
+        programTitle = try container.decodeIfPresent(String.self, forKey: .programTitle)
     }
     
     // Computed property for formatted duration display

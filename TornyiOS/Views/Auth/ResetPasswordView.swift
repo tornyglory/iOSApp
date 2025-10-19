@@ -136,7 +136,7 @@ struct ResetPasswordView: View {
                                     Button(action: resetPassword) {
                                         HStack {
                                             if isLoading {
-                                                TornyLoadingView(color: .white)
+                                                TornyLoadingView()
                                                 Text("Resetting...")
                                             } else {
                                                 Image(systemName: "lock.rotation")
@@ -153,7 +153,7 @@ struct ResetPasswordView: View {
                             // Loading or error state
                             VStack(spacing: 24) {
                                 if isLoading {
-                                    TornyLoadingView(color: .tornyBlue)
+                                    TornyLoadingView()
                                     Text("Validating reset link...")
                                         .font(TornyFonts.body)
                                         .foregroundColor(.tornyTextSecondary)

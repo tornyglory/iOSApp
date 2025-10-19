@@ -5,14 +5,16 @@ struct ActiveProgramSessionView: View {
     @StateObject private var viewModel: ActiveProgramViewModel
     @State private var showToast = false
     @State private var toastMessage = ""
+    var onCompleteProgram: (() -> Void)? = nil
 
-    init(sessionInfo: SessionInfo, currentShot: ProgramShot, programTitle: String, sessionMetadata: ProgramSessionMetadata) {
+    init(sessionInfo: SessionInfo, currentShot: ProgramShot, programTitle: String, sessionMetadata: ProgramSessionMetadata, onCompleteProgram: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: ActiveProgramViewModel(
             sessionInfo: sessionInfo,
             currentShot: currentShot,
             programTitle: programTitle,
             sessionMetadata: sessionMetadata
         ))
+        self.onCompleteProgram = onCompleteProgram
     }
 
     var body: some View {
@@ -376,8 +378,10 @@ struct ActiveProgramSessionView: View {
                 programTitle: viewModel.programTitle,
                 sessionId: viewModel.sessionInfo.id,
                 onComplete: {
-                    // Dismiss the active session view to return to dashboard
+                    // Dismiss the active session view
                     dismiss()
+                    // Then dismiss the setup sheet to return to dashboard
+                    onCompleteProgram?()
                 }
             )
         }
