@@ -247,22 +247,52 @@ struct TornyLogoView: View {
 // MARK: - Loading Indicator
 struct TornyLoadingView: View {
     @State private var isPulsing = false
-    var color: Color = .gray
-    var size: CGFloat = 40
+    @State private var shimmerOffset: CGFloat = -200
+    var size: CGFloat = 80
 
     var body: some View {
-        Image("torny_logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: size, height: size)
-            .colorMultiply(color)
-            .opacity(isPulsing ? 0.3 : 1.0)
-            .scaleEffect(isPulsing ? 0.85 : 1.0)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-                    isPulsing = true
-                }
+        ZStack {
+            // Base logo with grey tint
+            Image("torny_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
+                .colorMultiply(Color.gray.opacity(0.3))
+
+            // Shimmer overlay
+            Image("torny_logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: size, height: size)
+                .mask(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            .clear,
+                            Color.white.opacity(0.3),
+                            Color.white.opacity(0.8),
+                            Color.white.opacity(0.3),
+                            .clear
+                        ]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: size * 2)
+                    .offset(x: shimmerOffset)
+                )
+                .colorMultiply(Color.gray.opacity(0.6))
+        }
+        .opacity(isPulsing ? 0.6 : 1.0)
+        .onAppear {
+            // Pulsing animation
+            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                isPulsing = true
             }
+
+            // Shimmer animation
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                shimmerOffset = size * 2
+            }
+        }
     }
 }
 

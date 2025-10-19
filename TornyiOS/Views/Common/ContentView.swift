@@ -697,13 +697,11 @@ struct MainDashboardView: View {
 
                                         if dashboardViewModel.isLoading {
                                             HStack {
-                                                TornyLoadingView(color: .tornyBlue)
-                                                Text("Loading activity...")
-                                                    .font(TornyFonts.body)
-                                                    .foregroundColor(.tornyTextSecondary)
+                                                Spacer()
+                                                TornyLoadingView()
                                                 Spacer()
                                             }
-                                            .padding(.vertical, 20)
+                                            .padding(.vertical, 40)
                                         } else {
                                             VStack(spacing: 12) {
                                                 // Recent session
