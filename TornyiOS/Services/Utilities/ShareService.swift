@@ -15,29 +15,30 @@ class ShareService: NSObject, ObservableObject {
 
     var shareMessage: String {
         """
-        I've been using Torny to improve my lawn bowls game!
+        I've been using Torny to seriously improve my lawn bowls game! 🎯
 
-        ✅ Track every shot with accuracy analysis
-        ✅ See progress with detailed charts
-        ✅ Compare sessions to find patterns
-        ✅ Works offline at any bowling green
+        The AI analyzes my performance and recommends guided training programs:
+        ✅ AI identifies my weaknesses after every session
+        ✅ Recommends training programs to fix problem areas
+        ✅ Tracks progress with detailed performance analytics
+        ✅ Structured programs targeting draws, drives, and weighted shots
 
-        Perfect for bowlers of all skill levels! Give it a try:
+        Perfect for bowlers who want to improve fast! Try it:
         \(appStoreURL)
         """
     }
 
     var inviteMessage: String {
         """
-        Hey, thought you might be interested in this lawn bowls training app called Torny! 🏆
+        Hey, you need to check out Torny! 🏆
 
-        It's been a game-changer for my training with features like:
-        ✅ Shot accuracy tracking and analysis
-        ✅ Detailed progress charts and statistics
-        ✅ Session comparisons to spot patterns
-        ✅ Perfect for bowlers of all skill levels
+        It's like having a personal bowls coach in your pocket:
+        ✅ AI analyzes your sessions and highlights weaknesses
+        ✅ Recommends guided training programs to improve
+        ✅ Structured programs for draws, drives, and weighted shots
+        ✅ Performance tracking shows exactly where you're improving
 
-        Give it a try: \(appStoreURL)
+        Game-changer for serious bowlers: \(appStoreURL)
 
         """
     }

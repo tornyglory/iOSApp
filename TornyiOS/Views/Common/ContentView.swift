@@ -480,6 +480,74 @@ struct MainDashboardView: View {
                                 }
                                 .padding(.horizontal, 20)
 
+                                // Torny Performance Feature Button
+                                Button(action: {
+                                    showAIInsights = true
+                                }) {
+                                    HStack(spacing: 16) {
+                                        // Icon with gradient background
+                                        ZStack {
+                                            Circle()
+                                                .fill(
+                                                    LinearGradient(
+                                                        gradient: Gradient(colors: [.purple, .blue]),
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                                .frame(width: 60, height: 60)
+
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.white)
+                                        }
+
+                                        // Text content
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack(spacing: 6) {
+                                                Text("Torny Performance")
+                                                    .font(TornyFonts.title2)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.tornyTextPrimary)
+
+                                                Image(systemName: "sparkles")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.purple)
+                                            }
+
+                                            Text("Understand weaknesses & keep improving")
+                                                .font(TornyFonts.bodySecondary)
+                                                .foregroundColor(.tornyTextSecondary)
+                                                .multilineTextAlignment(.leading)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(.tornyTextSecondary)
+                                    }
+                                    .padding(20)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.white)
+                                            .shadow(color: Color.purple.opacity(0.2), radius: 8, x: 0, y: 4)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(
+                                                LinearGradient(
+                                                    gradient: Gradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)]),
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 2
+                                            )
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal, 20)
+
                                 // Training Programs Button
                                 Button(action: {
                                     selectedView = .trainingPrograms
@@ -548,9 +616,12 @@ struct MainDashboardView: View {
                                 .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 20)
 
-                                // Torny AI Feature Button
+                                // Share with Friends Button
                                 Button(action: {
-                                    showAIInsights = true
+                                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                       let window = windowScene.windows.first {
+                                        ShareService.shared.shareViaMessages(from: window.rootViewController!)
+                                    }
                                 }) {
                                     HStack(spacing: 16) {
                                         // Icon with gradient background
@@ -558,14 +629,14 @@ struct MainDashboardView: View {
                                             Circle()
                                                 .fill(
                                                     LinearGradient(
-                                                        gradient: Gradient(colors: [.purple, .blue]),
+                                                        gradient: Gradient(colors: [.tornyGreen, .green]),
                                                         startPoint: .topLeading,
                                                         endPoint: .bottomTrailing
                                                     )
                                                 )
                                                 .frame(width: 60, height: 60)
 
-                                            Image(systemName: "brain.head.profile")
+                                            Image(systemName: "square.and.arrow.up")
                                                 .font(.system(size: 28))
                                                 .foregroundColor(.white)
                                         }
@@ -573,17 +644,17 @@ struct MainDashboardView: View {
                                         // Text content
                                         VStack(alignment: .leading, spacing: 4) {
                                             HStack(spacing: 6) {
-                                                Text("Torny AI")
+                                                Text("Share with Friends")
                                                     .font(TornyFonts.title2)
                                                     .fontWeight(.bold)
                                                     .foregroundColor(.tornyTextPrimary)
 
-                                                Image(systemName: "sparkles")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.purple)
+                                                Image(systemName: "heart.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.tornyGreen)
                                             }
 
-                                            Text("Get personalised insights & recommendations")
+                                            Text("Help others improve with guided programs")
                                                 .font(TornyFonts.bodySecondary)
                                                 .foregroundColor(.tornyTextSecondary)
                                                 .multilineTextAlignment(.leading)
@@ -599,13 +670,13 @@ struct MainDashboardView: View {
                                     .background(
                                         RoundedRectangle(cornerRadius: 16)
                                             .fill(Color.white)
-                                            .shadow(color: Color.purple.opacity(0.2), radius: 8, x: 0, y: 4)
+                                            .shadow(color: Color.tornyGreen.opacity(0.2), radius: 8, x: 0, y: 4)
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 16)
                                             .stroke(
                                                 LinearGradient(
-                                                    gradient: Gradient(colors: [.purple.opacity(0.3), .blue.opacity(0.3)]),
+                                                    gradient: Gradient(colors: [.tornyGreen.opacity(0.3), .green.opacity(0.3)]),
                                                     startPoint: .topLeading,
                                                     endPoint: .bottomTrailing
                                                 ),
@@ -614,60 +685,6 @@ struct MainDashboardView: View {
                                     )
                                 }
                                 .buttonStyle(PlainButtonStyle())
-                                .padding(.horizontal, 20)
-
-                                // Invite friends button
-                                VStack(spacing: 12) {
-                                    Button(action: {
-                                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                                           let window = windowScene.windows.first {
-                                            ShareService.shared.shareViaMessages(from: window.rootViewController!)
-                                        }
-                                    }) {
-                                        HStack(spacing: 16) {
-                                            Image(systemName: "message.fill")
-                                                .font(.title2)
-                                                .foregroundColor(.white)
-
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Share Torny with Friends")
-                                                    .font(TornyFonts.buttonLarge)
-                                                    .fontWeight(.semibold)
-                                                    .foregroundColor(.white)
-
-                                                Text("Share via text message")
-                                                    .font(TornyFonts.bodySecondary)
-                                                    .foregroundColor(.white.opacity(0.9))
-                                            }
-
-                                            Spacer()
-
-                                            Image(systemName: "chevron.right")
-                                                .font(.body)
-                                                .fontWeight(.medium)
-                                                .foregroundColor(.white.opacity(0.8))
-                                        }
-                                        .padding(.horizontal, 24)
-                                        .padding(.vertical, 20)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(
-                                                    LinearGradient(
-                                                        gradient: Gradient(colors: [.tornyBlue, .tornyDarkBlue]),
-                                                        startPoint: .leading,
-                                                        endPoint: .trailing
-                                                    )
-                                                )
-                                                .shadow(color: Color.tornyBlue.opacity(0.3), radius: 8, x: 0, y: 4)
-                                        )
-                                    }
-                                    .buttonStyle(InviteButtonStyle())
-
-                                    Text("Help your friends improve their lawn bowls game!")
-                                        .font(TornyFonts.caption)
-                                        .foregroundColor(.tornyTextSecondary)
-                                        .multilineTextAlignment(.center)
-                                }
                                 .padding(.horizontal, 20)
 
                                 // Recent activity section
@@ -882,32 +899,57 @@ struct DashboardActionCard: View {
     let subtitle: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.largeTitle)
-                    .foregroundColor(color)
-                
-                VStack(spacing: 4) {
+            VStack(spacing: 16) {
+                // Icon with gradient circle background
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [color, color.opacity(0.7)]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 56, height: 56)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 26))
+                        .foregroundColor(.white)
+                }
+
+                VStack(spacing: 6) {
                     Text(title)
                         .font(TornyFonts.body)
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundColor(.tornyTextPrimary)
-                    
+
                     Text(subtitle)
-                        .font(TornyFonts.bodySecondary)
+                        .font(TornyFonts.caption)
                         .foregroundColor(.tornyTextSecondary)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: 120)
-            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, minHeight: 140)
+            .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .shadow(color: color.opacity(0.15), radius: 8, x: 0, y: 4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [color.opacity(0.2), color.opacity(0.1)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
             )
         }
         .buttonStyle(PlainButtonStyle())
