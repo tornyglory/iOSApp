@@ -8,7 +8,7 @@ class ShareService: NSObject, ObservableObject {
     static let shared = ShareService()
 
     // MARK: - App Store Information
-    private let appStoreURL = "https://apps.apple.com/app/torny/YOUR_APP_ID" // Update when app is live
+    private let appStoreURL = "https://torny.co"
     private let testFlightURL = "https://testflight.apple.com/join/YOUR_BETA_CODE" // Update with actual TestFlight link
 
     // MARK: - Share Messages
