@@ -246,18 +246,21 @@ struct TornyLogoView: View {
 
 // MARK: - Loading Indicator
 struct TornyLoadingView: View {
-    @State private var isAnimating = false
-    var color: Color = .tornyBlue
-    
+    @State private var isPulsing = false
+    var color: Color = .gray
+    var size: CGFloat = 40
+
     var body: some View {
-        Circle()
-            .trim(from: 0, to: 0.7)
-            .stroke(color, lineWidth: 3)
-            .frame(width: 24, height: 24)
-            .rotationEffect(.degrees(isAnimating ? 360 : 0))
+        Image("torny_logo")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size, height: size)
+            .colorMultiply(color)
+            .opacity(isPulsing ? 0.3 : 1.0)
+            .scaleEffect(isPulsing ? 0.85 : 1.0)
             .onAppear {
-                withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
-                    isAnimating = true
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                    isPulsing = true
                 }
             }
     }
