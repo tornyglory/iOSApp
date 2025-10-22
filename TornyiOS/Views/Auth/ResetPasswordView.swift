@@ -136,8 +136,7 @@ struct ResetPasswordView: View {
                                     Button(action: resetPassword) {
                                         HStack {
                                             if isLoading {
-                                                TornyLoadingView()
-
+                                                TornyButtonSpinner()
                                             } else {
                                                 Image(systemName: "lock.rotation")
                                                 Text("Reset Password")

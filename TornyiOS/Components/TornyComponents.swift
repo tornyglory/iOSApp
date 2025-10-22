@@ -296,6 +296,25 @@ struct TornyLoadingView: View {
     }
 }
 
+// MARK: - Button Loading Spinner
+struct TornyButtonSpinner: View {
+    @State private var isAnimating = false
+    var color: Color = .white
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: 0.7)
+            .stroke(color, lineWidth: 2)
+            .frame(width: 20, height: 20)
+            .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
+            .onAppear {
+                withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                    isAnimating = true
+                }
+            }
+    }
+}
+
 // MARK: - Facebook-Style Navigation Bar
 struct TornyNavBar: View {
     @Binding var showSidebar: Bool
@@ -681,7 +700,9 @@ struct BottomNavProfileItem: View {
             VStack(spacing: 4) {
                 ZStack {
                     // User avatar or initials
-                    if let avatarUrlString = apiService.userAvatarUrl,
+                    if let currentUser = apiService.currentUser,
+                       let avatarUrlString = currentUser.avatarUrl,
+                       !avatarUrlString.isEmpty,
                        let avatarUrl = URL(string: avatarUrlString) {
                         AsyncImage(url: avatarUrl) { phase in
                         switch phase {
@@ -721,6 +742,7 @@ struct BottomNavProfileItem: View {
                         Circle()
                             .stroke(Color.tornyBlue, lineWidth: 2)
                     )
+                    .id(apiService.currentUser?.id ?? 0)
                     } else {
                         Circle()
                             .fill(Color.tornyBlue.opacity(0.2))

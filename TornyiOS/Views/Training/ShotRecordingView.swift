@@ -169,7 +169,7 @@ struct ShotRecordingView: View {
                 Button(action: recordShot) {
                     HStack {
                         if isLoading {
-                            TornyLoadingView()
+                            TornyButtonSpinner()
                         } else {
                             Image(systemName: "plus.circle.fill")
                         }

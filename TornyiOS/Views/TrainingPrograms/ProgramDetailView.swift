@@ -873,7 +873,7 @@ struct ProgramStartSetupView: View {
                         Button(action: startProgram) {
                             HStack {
                                 if isLoading {
-                                    TornyLoadingView()
+                                    TornyButtonSpinner()
                                     Text("Starting Program...")
                                 } else {
                                     Image(systemName: "play.fill")

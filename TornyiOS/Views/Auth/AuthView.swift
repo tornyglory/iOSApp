@@ -3,12 +3,12 @@ import Foundation
 
 struct AuthView: View {
     @State private var isShowingLogin = true
-    @State private var registrationSuccessMessage: String? = nil
-    
+    @EnvironmentObject private var navigationManager: NavigationManager
+
     var body: some View {
         ZStack {
             TornyBackgroundView()
-            
+
             ScrollView {
                 VStack(spacing: 20) {
                     Spacer(minLength: 40)
@@ -22,26 +22,31 @@ struct AuthView: View {
                     TornyCard {
                         if isShowingLogin {
                             LoginView(
-                                successMessage: registrationSuccessMessage,
-                                onSwitchToRegister: { 
-                                    registrationSuccessMessage = nil
-                                    isShowingLogin = false 
+                                onSwitchToRegister: {
+                                    isShowingLogin = false
                                 }
                             )
                         } else {
-                            RegisterView(onSwitchToLogin: { message in
-                                registrationSuccessMessage = message
-                                isShowingLogin = true 
+                            RegisterView(onSwitchToLogin: {
+                                isShowingLogin = true
                             })
                         }
                     }
                     .padding(.horizontal, 20)
-                    
+
                     Spacer(minLength: 40)
                 }
             }
         }
         .ignoresSafeArea()
+        .sheet(isPresented: $navigationManager.showingForgotPassword) {
+            ForgotPasswordView()
+        }
+        .sheet(isPresented: $navigationManager.showingPasswordReset) {
+            if let token = navigationManager.passwordResetToken {
+                ResetPasswordView(token: token)
+            }
+        }
     }
 }
 
@@ -53,8 +58,8 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    @State private var showValidationErrors = false
 
-    let successMessage: String?
     let onSwitchToRegister: () -> Void
     
     var body: some View {
@@ -63,51 +68,55 @@ struct LoginView: View {
                 .font(TornyFonts.title2)
                 .foregroundColor(.tornyTextPrimary)
                 .fontWeight(.bold)
-            
-            // Success message from registration
-            if let successMessage = successMessage {
-                VStack(spacing: 8) {
-                    HStack {
-                        Text("🎉")
-                            .font(.title2)
-                        Text("Registration Successful!")
-                            .font(TornyFonts.body)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.tornyGreen)
-                    }
-                    Text("You can now log in with your credentials.")
-                        .font(TornyFonts.bodySecondary)
-                        .foregroundColor(.tornyTextSecondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.tornyGreen.opacity(0.1))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.tornyGreen.opacity(0.3), lineWidth: 1)
-                        )
-                )
-            }
-            
+
             VStack(spacing: 16) {
                 TextField("Email", text: $email)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                
+                    .onChange(of: email) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
+
                 SecureField("Password", text: $password)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.password)
+                    .onChange(of: password) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
             }
-            
+
+            // Validation error messages
+            if showValidationErrors {
+                VStack(alignment: .leading, spacing: 8) {
+                    if email.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Email is required")
+                                .font(TornyFonts.bodySecondary)
+                                .foregroundColor(.red)
+                        }
+                    }
+                    if password.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Password is required")
+                                .font(TornyFonts.bodySecondary)
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+            }
+
             Button(action: login) {
                 HStack {
                     if isLoading {
-                        TornyLoadingView()
-
+                        TornyButtonSpinner()
                     } else {
                         Text("Sign In")
                     }
@@ -115,7 +124,7 @@ struct LoginView: View {
             }
             .buttonStyle(TornyPrimaryButton(isLarge: true))
             .frame(maxWidth: .infinity)
-            .disabled(isLoading || email.isEmpty || password.isEmpty)
+            .disabled(isLoading)
 
             // Forgot Password Link
             Button("Forgot Password?") {
@@ -145,10 +154,16 @@ struct LoginView: View {
     }
     
     private func login() {
+        // Validate fields first
+        guard !email.isEmpty && !password.isEmpty else {
+            showValidationErrors = true
+            return
+        }
+
         isLoading = true
-        
+
         let request = LoginRequest(email: email, password: password)
-        
+
         Task {
             do {
                 let response = try await apiService.login(request)
@@ -180,8 +195,9 @@ struct RegisterView: View {
     @State private var isLoading = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
-    
-    let onSwitchToLogin: (String) -> Void
+    @State private var showValidationErrors = false
+
+    let onSwitchToLogin: () -> Void
     
     var body: some View {
         VStack(spacing: 24) {
@@ -194,27 +210,55 @@ struct RegisterView: View {
                 TextField("Full Name", text: $name)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.name)
-                
+                    .onChange(of: name) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
+
                 TextField("Email", text: $email)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
-                
+                    .onChange(of: email) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
+
                 SecureField("Password", text: $password)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.newPassword)
-                
+                    .onChange(of: password) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
+
                 SecureField("Confirm Password", text: $confirmPassword)
                     .textFieldStyle(TornyTextFieldStyle())
                     .textContentType(.newPassword)
+                    .onChange(of: confirmPassword) { _ in
+                        if showValidationErrors { showValidationErrors = false }
+                    }
             }
-            
+
+            // Validation error messages
+            if showValidationErrors {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(validationErrors, id: \.self) { error in
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text(error)
+                                .font(TornyFonts.bodySecondary)
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+            }
+
             Button(action: register) {
                 HStack {
                     if isLoading {
-                        TornyLoadingView()
-
+                        TornyButtonSpinner()
                     } else {
                         Text("Create Account")
                     }
@@ -222,10 +266,10 @@ struct RegisterView: View {
             }
             .buttonStyle(TornyPrimaryButton(isLarge: true))
             .frame(maxWidth: .infinity)
-            .disabled(isLoading || !isFormValid)
+            .disabled(isLoading)
             
             Button(action: {
-                onSwitchToLogin("")
+                onSwitchToLogin()
             }) {
                 HStack(spacing: 4) {
                     Text("Already have an account?")
@@ -251,20 +295,37 @@ struct RegisterView: View {
         password == confirmPassword &&
         password.count >= 6
     }
+
+    private var validationErrors: [String] {
+        var errors: [String] = []
+
+        if name.isEmpty {
+            errors.append("Full name is required")
+        }
+        if email.isEmpty {
+            errors.append("Email is required")
+        }
+        if password.isEmpty {
+            errors.append("Password is required")
+        } else if password.count < 6 {
+            errors.append("Password must be at least 6 characters")
+        }
+        if confirmPassword.isEmpty {
+            errors.append("Please confirm your password")
+        } else if !password.isEmpty && password != confirmPassword {
+            errors.append("Passwords do not match")
+        }
+
+        return errors
+    }
     
     private func register() {
-        guard password == confirmPassword else {
-            alertMessage = "Passwords do not match"
-            showingAlert = true
+        // Validate form first
+        guard isFormValid else {
+            showValidationErrors = true
             return
         }
-        
-        guard password.count >= 6 else {
-            alertMessage = "Password must be at least 6 characters"
-            showingAlert = true
-            return
-        }
-        
+
         isLoading = true
         
         let request = RegisterRequest(
@@ -284,8 +345,8 @@ struct RegisterView: View {
                 await MainActor.run {
                     print("✅ Registration successful: \(response.message)")
                     isLoading = false
-                    // Switch to login with success message
-                    onSwitchToLogin(response.message)
+                    // Switch to login
+                    onSwitchToLogin()
                 }
             } catch {
                 await MainActor.run {

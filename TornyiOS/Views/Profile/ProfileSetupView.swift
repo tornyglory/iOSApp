@@ -780,8 +780,7 @@ struct SaveButtonSection: View {
                 }
             }) {
                 if viewModel.isLoading {
-                    TornyLoadingView()
-                        .scaleEffect(0.8)
+                    TornyButtonSpinner()
                 } else {
                     Text("Save Changes")
                         .fontWeight(.semibold)
