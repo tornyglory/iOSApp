@@ -55,14 +55,18 @@ struct AnalyticsView: View {
                         }
                         .padding(.top, 20)
 
-                        // Quick stats overview
-                        TornyCard {
-                            VStack(spacing: 16) {
-                                Text("Performance Overview")
-                                    .font(TornyFonts.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.tornyTextPrimary)
+                        // Shot Performance Section
+                        ShotPerformanceSection()
+                            .padding(.horizontal, -20) // Remove outer padding for this section since it has its own
 
+                        // Quick stats overview
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Performance Overview")
+                                .font(TornyFonts.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.tornyTextPrimary)
+
+                            TornyCard {
                                 LazyVGrid(columns: [
                                     GridItem(.flexible()),
                                     GridItem(.flexible()),

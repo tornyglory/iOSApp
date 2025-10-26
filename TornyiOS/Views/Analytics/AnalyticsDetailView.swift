@@ -73,8 +73,12 @@ struct OverviewCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Overall Performance")
-                .font(.headline)
+                .font(TornyFonts.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.tornyTextPrimary)
 
+            TornyCard {
+                VStack(alignment: .leading, spacing: 16) {
             HStack {
                 StatBox(
                     value: "\(analytics.totalSessions)",
@@ -127,10 +131,9 @@ struct OverviewCard: View {
                         .fontWeight(.semibold)
                 }
             }
+                }
+            }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
 }
 
@@ -141,8 +144,11 @@ struct AccuracyCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Accuracy Metrics")
-                .font(.headline)
+                .font(TornyFonts.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.tornyTextPrimary)
 
+            TornyCard {
             VStack(spacing: 12) {
                 AccuracyRow(
                     title: "Overall Accuracy",
@@ -162,10 +168,8 @@ struct AccuracyCard: View {
                     color: .purple
                 )
             }
+            }
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
 }
 

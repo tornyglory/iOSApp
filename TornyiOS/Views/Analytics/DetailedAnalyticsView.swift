@@ -201,21 +201,20 @@ struct LifetimeSessionStats: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Lifetime Statistics")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            HStack(spacing: 16) {
-                StatColumn(value: "\(totalShots)", label: "Total Shots", color: .primary)
-                StatColumn(value: "\(successfulShots)", label: "Successful", color: .green)
-                StatColumn(value: String(format: "%.1f%%", overallAccuracy), label: "Accuracy", color: .green)
+            TornyCard {
+                HStack(spacing: 16) {
+                    StatColumn(value: "\(totalShots)", label: "Total Shots", color: .primary)
+                    StatColumn(value: "\(successfulShots)", label: "Successful", color: .green)
+                    StatColumn(value: String(format: "%.1f%%", overallAccuracy), label: "Accuracy", color: .green)
+                }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var totalShots: Int {
@@ -261,33 +260,32 @@ struct LifetimeShotTypeBreakdown: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Shot Type Breakdown")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            if shotTypeStats.isEmpty {
-                Text("No shot type data available")
-                    .foregroundColor(.secondary)
-                    .padding()
-            } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                    ForEach(shotTypeStats, id: \.type) { stat in
-                        ShotTypeBreakdownCard(
-                            shotType: stat.type,
-                            shots: stat.shots,
-                            points: stat.points,
-                            accuracy: stat.accuracy,
-                            color: shotTypeColor(stat.type)
-                        )
+            TornyCard {
+                if shotTypeStats.isEmpty {
+                    Text("No shot type data available")
+                        .foregroundColor(.secondary)
+                        .padding()
+                } else {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                        ForEach(shotTypeStats, id: \.type) { stat in
+                            ShotTypeBreakdownCard(
+                                shotType: stat.type,
+                                shots: stat.shots,
+                                points: stat.points,
+                                accuracy: stat.accuracy,
+                                color: shotTypeColor(stat.type)
+                            )
+                        }
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var shotTypeStats: [(type: String, shots: Int, points: Int, accuracy: Double)] {
@@ -427,68 +425,69 @@ struct DetailedShotBreakdown: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Detailed Shot Breakdown")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            ForEach(shotTypeStats, id: \.type) { stat in
-                if stat.shots > 0 {
-                    VStack(spacing: 12) {
-                        HStack {
-                            Text(stat.type.replacingOccurrences(of: "_", with: " ").capitalized)
-                                .font(.headline)
-                                .foregroundColor(shotTypeColor(stat.type))
-                            Spacer()
-                            Text("\(stat.shots) shots · \(stat.points) points")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+            TornyCard {
+                VStack(spacing: 16) {
+                    ForEach(shotTypeStats, id: \.type) { stat in
+                        if stat.shots > 0 {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    Text(stat.type.replacingOccurrences(of: "_", with: " ").capitalized)
+                                        .font(.headline)
+                                        .foregroundColor(shotTypeColor(stat.type))
+                                    Spacer()
+                                    Text("\(stat.shots) shots · \(stat.points) points")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                // Simple breakdown for now
+                                HStack(spacing: 16) {
+                                    VStack {
+                                        Text("Foot")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Text("\(Int(Double(stat.points) / 2.0))")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.green)
+                                    }
+
+                                    VStack {
+                                        Text("Yard")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Text("\(max(0, stat.shots - Int(Double(stat.points) / 2.0) - (stat.shots - stat.points)))")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.orange)
+                                    }
+
+                                    VStack {
+                                        Text("Miss")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Text("\(stat.shots - stat.points)")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.red)
+                                    }
+
+                                    Spacer()
+                                }
+
+                                Divider()
+                            }
                         }
-
-                        // Simple breakdown for now
-                        HStack(spacing: 16) {
-                            VStack {
-                                Text("Foot")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(Int(Double(stat.points) / 2.0))")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.green)
-                            }
-
-                            VStack {
-                                Text("Yard")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(max(0, stat.shots - Int(Double(stat.points) / 2.0) - (stat.shots - stat.points)))")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.orange)
-                            }
-
-                            VStack {
-                                Text("Miss")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(stat.shots - stat.points)")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.red)
-                            }
-
-                            Spacer()
-                        }
-
-                        Divider()
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var shotTypeStats: [(type: String, shots: Int, points: Int)] {
@@ -533,53 +532,54 @@ struct LengthHandAnalysis: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Length & Hand Analysis")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            // Length Performance
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Performance by Length")
-                    .font(.headline)
+            TornyCard {
+                VStack(spacing: 16) {
+                    // Length Performance
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Performance by Length")
+                            .font(.headline)
 
-                HStack(spacing: 12) {
-                    if let short = analytics.lengthMatrix.short {
-                        LengthPerformanceCard(title: "Short", data: short, color: .green)
+                        HStack(spacing: 12) {
+                            if let short = analytics.lengthMatrix.short {
+                                LengthPerformanceCard(title: "Short", data: short, color: .green)
+                            }
+                            LengthPerformanceCard(title: "Medium", data: analytics.lengthMatrix.medium, color: .orange)
+                            if let long = analytics.lengthMatrix.long {
+                                LengthPerformanceCard(title: "Long", data: long, color: .red)
+                            }
+                        }
                     }
-                    LengthPerformanceCard(title: "Medium", data: analytics.lengthMatrix.medium, color: .orange)
-                    if let long = analytics.lengthMatrix.long {
-                        LengthPerformanceCard(title: "Long", data: long, color: .red)
+
+                    Divider()
+
+                    // Hand Performance
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Performance by Hand")
+                            .font(.headline)
+
+                        HStack(spacing: 16) {
+                            HandPerformanceCard(
+                                hand: "Forehand",
+                                accuracy: forehandAccuracy,
+                                shots: forehandShots
+                            )
+
+                            HandPerformanceCard(
+                                hand: "Backhand",
+                                accuracy: backhandAccuracy,
+                                shots: backhandShots
+                            )
+                        }
                     }
-                }
-            }
-
-            Divider()
-
-            // Hand Performance
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Performance by Hand")
-                    .font(.headline)
-
-                HStack(spacing: 16) {
-                    HandPerformanceCard(
-                        hand: "Forehand",
-                        accuracy: forehandAccuracy,
-                        shots: forehandShots
-                    )
-
-                    HandPerformanceCard(
-                        hand: "Backhand",
-                        accuracy: backhandAccuracy,
-                        shots: backhandShots
-                    )
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var forehandAccuracy: Double {
@@ -682,59 +682,60 @@ struct ConditionsBreakdown: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Playing Conditions Breakdown")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            // Green Types
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Green Type Performance")
-                    .font(.headline)
+            TornyCard {
+                VStack(spacing: 16) {
+                    // Green Types
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Green Type Performance")
+                            .font(.headline)
 
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                    ForEach(greenTypePerformance, id: \.type) { greenType in
-                        GreenTypePerformanceCard(
-                            greenType: greenType.type,
-                            accuracy: greenType.accuracy,
-                            sessions: greenType.sessions
-                        )
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                            ForEach(greenTypePerformance, id: \.type) { greenType in
+                                GreenTypePerformanceCard(
+                                    greenType: greenType.type,
+                                    accuracy: greenType.accuracy,
+                                    sessions: greenType.sessions
+                                )
+                            }
+                        }
                     }
-                }
-            }
 
-            Divider()
+                    Divider()
 
-            // Best/Worst Conditions
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Conditions Analysis")
-                    .font(.headline)
+                    // Best/Worst Conditions
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Conditions Analysis")
+                            .font(.headline)
 
-                VStack(spacing: 8) {
-                    ConditionsCard(
-                        title: "Best Conditions",
-                        description: analytics.insights.optimalConditions.description,
-                        accuracy: analytics.insights.optimalConditions.accuracy,
-                        sessions: analytics.insights.optimalConditions.sessions,
-                        color: .green
-                    )
+                        VStack(spacing: 8) {
+                            ConditionsCard(
+                                title: "Best Conditions",
+                                description: analytics.insights.optimalConditions.description,
+                                accuracy: analytics.insights.optimalConditions.accuracy,
+                                sessions: analytics.insights.optimalConditions.sessions,
+                                color: .green
+                            )
 
-                    if let worst = worstConditions {
-                        ConditionsCard(
-                            title: "Most Challenging",
-                            description: worst.description,
-                            accuracy: worst.accuracy,
-                            sessions: worst.sessions,
-                            color: .red
-                        )
+                            if let worst = worstConditions {
+                                ConditionsCard(
+                                    title: "Most Challenging",
+                                    description: worst.description,
+                                    accuracy: worst.accuracy,
+                                    sessions: worst.sessions,
+                                    color: .red
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var greenTypePerformance: [(type: String, accuracy: Double, sessions: Int)] {
@@ -838,50 +839,51 @@ struct GreenTypesSpeedsAnalysis: View {
     let analytics: ComparativeAnalyticsResponse
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Green Types & Speeds Analysis")
-                .font(.title2)
+                .font(TornyFonts.title2)
                 .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundColor(.tornyTextPrimary)
 
-            // Speed Range Performance
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Performance by Green Speed")
-                    .font(.headline)
+            TornyCard {
+                VStack(spacing: 16) {
+                    // Speed Range Performance
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Performance by Green Speed")
+                            .font(.headline)
 
-                HStack(spacing: 8) {
-                    ForEach(speedRangeStats, id: \.range) { speedRange in
-                        GreenSpeedCard(
-                            speedRange: speedRange.range,
-                            accuracy: speedRange.accuracy,
-                            sessions: speedRange.sessions,
-                            description: speedRange.description
-                        )
+                        HStack(spacing: 8) {
+                            ForEach(speedRangeStats, id: \.range) { speedRange in
+                                GreenSpeedCard(
+                                    speedRange: speedRange.range,
+                                    accuracy: speedRange.accuracy,
+                                    sessions: speedRange.sessions,
+                                    description: speedRange.description
+                                )
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Location vs Green Type Matrix
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Location & Green Type Combinations")
+                            .font(.headline)
+
+                        ForEach(locationGreenCombos.prefix(3), id: \.combination) { combo in
+                            LocationGreenComboCard(
+                                combination: combo.combination,
+                                accuracy: combo.accuracy,
+                                sessions: combo.sessions,
+                                shots: combo.shots,
+                                averageSpeed: combo.averageSpeed
+                            )
+                        }
                     }
                 }
             }
-
-            Divider()
-
-            // Location vs Green Type Matrix
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Location & Green Type Combinations")
-                    .font(.headline)
-
-                ForEach(locationGreenCombos.prefix(3), id: \.combination) { combo in
-                    LocationGreenComboCard(
-                        combination: combo.combination,
-                        accuracy: combo.accuracy,
-                        sessions: combo.sessions,
-                        shots: combo.shots,
-                        averageSpeed: combo.averageSpeed
-                    )
-                }
-            }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 
     private var speedRangeStats: [(range: String, accuracy: Double, sessions: Int, description: String)] {

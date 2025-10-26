@@ -7,6 +7,7 @@ struct ContentView: View {
     @ObservedObject private var apiService = APIService.shared
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
+    @AppStorage("profile_completed") private var profileCompletedStorage = false
     @State private var hasCompletedProfile = false
     @State private var showingSplashScreen = true
 
@@ -17,11 +18,7 @@ struct ContentView: View {
                     .transition(.opacity)
             } else {
                 if apiService.isAuthenticated {
-                    // Check profile completion from currentUser
-                    let profileComplete = apiService.currentUser?.profileCompleted == 1 ||
-                                         UserDefaults.standard.bool(forKey: "profile_completed")
-
-                    if profileComplete {
+                    if hasCompletedProfile {
                         MainDashboardView()
                     } else {
                         ProfileSetupView()
@@ -35,20 +32,25 @@ struct ContentView: View {
         .onChange(of: apiService.currentUser?.profileCompleted) { newValue in
             if newValue == 1 {
                 hasCompletedProfile = true
-                UserDefaults.standard.set(true, forKey: "profile_completed")
+                profileCompletedStorage = true
+            }
+        }
+        .onChange(of: profileCompletedStorage) { newValue in
+            if newValue {
+                hasCompletedProfile = true
             }
         }
         .onChange(of: apiService.isAuthenticated) { isAuthenticated in
             if isAuthenticated {
                 // Check profile completion status when user logs in
-                hasCompletedProfile = UserDefaults.standard.bool(forKey: "profile_completed") || apiService.currentUser?.profileCompleted == 1
+                hasCompletedProfile = profileCompletedStorage || apiService.currentUser?.profileCompleted == 1
                 showingProfileSetup = !hasCompletedProfile
             }
         }
         .onAppear {
             // Initialize profile completion state
             if apiService.isAuthenticated {
-                hasCompletedProfile = UserDefaults.standard.bool(forKey: "profile_completed") || apiService.currentUser?.profileCompleted == 1
+                hasCompletedProfile = profileCompletedStorage || apiService.currentUser?.profileCompleted == 1
                 showingProfileSetup = !hasCompletedProfile
             }
 
@@ -273,8 +275,8 @@ struct ProfileView: View {
                             // Actions
                             VStack(spacing: 16) {
                                 NavigationLink("Edit Profile", destination: ProfileSetupView())
-                                .buttonStyle(TornySecondaryButton(isLarge: true))
-                                .frame(maxWidth: .infinity)
+                                    .buttonStyle(TornySecondaryButton(isLarge: true))
+                                    .frame(maxWidth: .infinity)
 
                                 Button("Sign Out") {
                                     apiService.logout()
@@ -406,15 +408,16 @@ struct MainDashboardView: View {
                 }
             } else {
                 // Show main dashboard
-                VStack(spacing: 0) {
-                    // Navigation bar
-                    TornyNavBar(showSidebar: $showSidebar)
-                    
-                    // Main content
-                    ZStack {
-                        TornyBackgroundView()
-                        
-                        ScrollView {
+                ZStack {
+                    VStack(spacing: 0) {
+                        // Navigation bar
+                        TornyNavBar(showSidebar: $showSidebar)
+
+                        // Main content
+                        ZStack {
+                            TornyBackgroundView()
+
+                            ScrollView {
                             VStack(spacing: 24) {
                                 // Welcome section
                                 VStack(spacing: 16) {
@@ -431,7 +434,7 @@ struct MainDashboardView: View {
                                 }
                                 .padding(.top, 40)
                                 .padding(.horizontal, 20)
-                                
+
                                 // Quick actions
                                 LazyVGrid(columns: [
                                     GridItem(.flexible(), spacing: 16),
@@ -480,7 +483,7 @@ struct MainDashboardView: View {
                                 }
                                 .padding(.horizontal, 20)
 
-                                // Torny Performance Feature Button
+                                // Training Loop Feature Button
                                 Button(action: {
                                     showAIInsights = true
                                 }) {
@@ -505,7 +508,7 @@ struct MainDashboardView: View {
                                         // Text content
                                         VStack(alignment: .leading, spacing: 4) {
                                             HStack(spacing: 6) {
-                                                Text("Torny Performance")
+                                                Text("Training Loop")
                                                     .font(TornyFonts.title2)
                                                     .fontWeight(.bold)
                                                     .foregroundColor(.tornyTextPrimary)
@@ -687,15 +690,19 @@ struct MainDashboardView: View {
                                 .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal, 20)
 
-                                // Recent activity section
-                                TornyCard {
-                                    VStack(alignment: .leading, spacing: 16) {
-                                        Text("Recent Activity")
-                                            .font(TornyFonts.title3)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.tornyTextPrimary)
+                                // Shot Performance Section
+                                ShotPerformanceSection()
 
-                                        if dashboardViewModel.isLoading {
+                                // Recent activity section
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Recent Activity")
+                                        .font(TornyFonts.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.tornyTextPrimary)
+
+                                    TornyCard {
+                                        VStack(alignment: .leading, spacing: 16) {
+                                            if dashboardViewModel.isLoading {
                                             HStack {
                                                 Spacer()
                                                 TornyLoadingView()
@@ -755,36 +762,15 @@ struct MainDashboardView: View {
                                         }
                                     }
                                 }
-                                .padding(.horizontal, 20)
-                                
+
                                 Spacer(minLength: 100)
                             }
+                            .padding(.horizontal, 20)
                             .padding(.bottom, 20)
                         }
                     }
-                    
-                    // Bottom navigation
-                    TornyBottomNavigation(
-                        selectedTab: $selectedBottomTab,
-                        onHomeTap: { 
-                            selectedView = nil
-                            selectedBottomTab = 0
-                        },
-                        onTrainingTap: { 
-                            showingTrainingSetup = true
-                            selectedBottomTab = 1
-                        },
-                        onAnalyticsTap: {
-                            showingAnalytics = true
-                            selectedBottomTab = 2
-                        },
-                        onProfileTap: {
-                            showingProfileSetup = true
-                            selectedBottomTab = 3
-                        }
-                    )
                 }
-                
+
                 // Sidebar overlay
                 if showSidebar {
                     Color.black.opacity(0.3)
@@ -807,7 +793,34 @@ struct MainDashboardView: View {
                     }
                     .transition(.move(edge: .leading))
                 }
+                }
             }
+        }
+        }
+        .overlay(alignment: .bottom) {
+            VStack(spacing: 0) {
+                TornyBottomNavigation(
+                    selectedTab: $selectedBottomTab,
+                    onHomeTap: {
+                        selectedView = nil
+                        selectedBottomTab = 0
+                    },
+                    onTrainingTap: {
+                        showingTrainingSetup = true
+                        selectedBottomTab = 1
+                    },
+                    onAnalyticsTap: {
+                        showingAnalytics = true
+                        selectedBottomTab = 2
+                    },
+                    onProfileTap: {
+                        showingProfileSetup = true
+                        selectedBottomTab = 3
+                    }
+                )
+            }
+            .background(Color.white)
+            .edgesIgnoringSafeArea(.bottom)
         }
         .animation(.easeInOut(duration: 0.3), value: showSidebar)
         .onChange(of: selectedView) { newView in

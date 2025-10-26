@@ -26,7 +26,7 @@ struct DashboardView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.tornyTextPrimary)
                                     .multilineTextAlignment(.center)
-                                
+
                                 Text("Ready to practice like a pro?")
                                     .font(TornyFonts.body)
                                     .foregroundColor(.tornyTextSecondary)
@@ -34,7 +34,10 @@ struct DashboardView: View {
                             }
                             .padding(.top, 40)
                             .padding(.horizontal, 20)
-                            
+
+                            // Shot Performance Section
+                            ShotPerformanceSection()
+
                             // Quick actions
                             LazyVGrid(columns: [
                                 GridItem(.flexible(), spacing: 16),
@@ -176,7 +179,7 @@ struct DashboardView: View {
                                     // Text content
                                     VStack(alignment: .leading, spacing: 4) {
                                         HStack(spacing: 6) {
-                                            Text("Torny AI")
+                                            Text("Training Loop")
                                                 .font(TornyFonts.title2)
                                                 .fontWeight(.bold)
                                                 .foregroundColor(.tornyTextPrimary)
@@ -282,22 +285,14 @@ struct DashboardView: View {
                         .padding(.bottom, 20)
                     }
                 }
-                
-                // Bottom navigation
-                TornyBottomNavigation(
-                    onHomeTap: { selectedView = nil },
-                    onTrainingTap: { /* Navigate to training */ },
-                    onAnalyticsTap: { selectedView = .analytics },
-                    onProfileTap: { selectedView = .profile }
-                )
             }
-            
+
             // Sidebar overlay
             if showSidebar {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture { showSidebar = false }
-                
+
                 HStack {
                     TornySidebar(isPresented: $showSidebar, onNavigate: { navType in
                         selectedView = navType
@@ -307,6 +302,15 @@ struct DashboardView: View {
                 }
                 .transition(.move(edge: .leading))
             }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom) {
+            TornyBottomNavigation(
+                onHomeTap: { selectedView = nil },
+                onTrainingTap: { /* Navigate to training */ },
+                onAnalyticsTap: { selectedView = .analytics },
+                onProfileTap: { selectedView = .profile }
+            )
         }
         .animation(.easeInOut(duration: 0.3), value: showSidebar)
         .sheet(isPresented: $showAIInsights) {
@@ -381,6 +385,229 @@ struct ActivityRow: View {
             
             Spacer()
         }
+    }
+}
+
+// MARK: - Shot Performance Section
+struct ShotPerformanceSection: View {
+    @State private var shotTypeData: ShotTypeSummaryData?
+    @State private var isLoading = false
+    @State private var selectedPeriod: String = "all"
+    private let apiService = APIService.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Header with dropdown
+            HStack {
+                Text("Shot Performance")
+                    .font(TornyFonts.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.tornyTextPrimary)
+
+                Spacer()
+
+                // Period dropdown
+                Menu {
+                    Button("7 Days") {
+                        selectedPeriod = "7days"
+                    }
+                    Button("30 Days") {
+                        selectedPeriod = "30days"
+                    }
+                    Button("90 Days") {
+                        selectedPeriod = "90days"
+                    }
+                    Button("All Time") {
+                        selectedPeriod = "all"
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(periodDisplayName)
+                            .font(TornyFonts.bodySecondary)
+                            .foregroundColor(.tornyTextSecondary)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 12))
+                            .foregroundColor(.tornyTextSecondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.gray.opacity(0.1))
+                    )
+                }
+            }
+            .padding(.horizontal, 20)
+
+            Group {
+                if isLoading {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(0..<4) { _ in
+                                ShotTypeCardSkeleton()
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                } else if let data = shotTypeData {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                        ShotPerformanceCard(
+                            type: "Draw",
+                            stats: data.draw,
+                            color: Color.tornyGreen
+                        )
+
+                        ShotPerformanceCard(
+                            type: "Yard On",
+                            stats: data.yardOn,
+                            color: Color.tornyBlue
+                        )
+
+                        ShotPerformanceCard(
+                            type: "D-Weight",
+                            stats: data.ditchWeight,
+                            color: Color.orange
+                        )
+
+                        ShotPerformanceCard(
+                            type: "Drive",
+                            stats: data.drive,
+                            color: Color.tornyPurple
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                }
+            } else {
+                // Empty state - no data yet
+                Text("No training data available")
+                    .font(TornyFonts.body)
+                    .foregroundColor(.tornyTextSecondary)
+                    .padding(.horizontal, 20)
+            }
+            }
+        }
+        .onAppear {
+            // Only fetch if we don't already have data and we're not currently loading
+            if shotTypeData == nil && !isLoading {
+                Task {
+                    await fetchShotTypeData()
+                }
+            }
+        }
+        .onChange(of: selectedPeriod) { _ in
+            Task {
+                await fetchShotTypeData()
+            }
+        }
+    }
+
+    private var periodDisplayName: String {
+        switch selectedPeriod {
+        case "7days": return "7 Days"
+        case "30days": return "30 Days"
+        case "90days": return "90 Days"
+        case "all": return "All Time"
+        default: return "All Time"
+        }
+    }
+
+    private func fetchShotTypeData() async {
+        guard !isLoading else { return }
+        isLoading = true
+        do {
+            let response = try await apiService.getShotTypeSummary(period: selectedPeriod)
+            await MainActor.run {
+                shotTypeData = response.data
+                isLoading = false
+            }
+        } catch {
+            print("Error fetching shot type summary: \(error)")
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+}
+
+// MARK: - Shot Performance Card
+struct ShotPerformanceCard: View {
+    let type: String
+    let stats: ShotTypeSummaryStats
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(type)
+                .font(TornyFonts.bodySecondary)
+                .fontWeight(.semibold)
+                .foregroundColor(.tornyTextSecondary)
+
+            Text("\(stats.accuracyPercentage, specifier: "%.1f")%")
+                .font(TornyFonts.title2)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+
+            // Bar chart
+            ZStack(alignment: .bottom) {
+                // Background bar
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.1))
+                    .frame(width: 40, height: 100)
+
+                // Filled bar
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(color)
+                    .frame(width: 40, height: CGFloat(stats.accuracyPercentage))
+            }
+
+            Text("\(stats.totalShots)")
+                .font(TornyFonts.bodySecondary)
+                .foregroundColor(.tornyTextSecondary)
+
+            Text("shots")
+                .font(TornyFonts.caption)
+                .foregroundColor(.tornyTextSecondary)
+        }
+        .frame(width: 80)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
+    }
+}
+
+// MARK: - Shot Type Card Skeleton
+struct ShotTypeCardSkeleton: View {
+    var body: some View {
+        VStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 60, height: 12)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 50, height: 20)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.gray.opacity(0.1))
+                .frame(width: 40, height: 100)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.gray.opacity(0.2))
+                .frame(width: 30, height: 12)
+        }
+        .frame(width: 80)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
     }
 }
 
