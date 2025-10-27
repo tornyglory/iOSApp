@@ -239,7 +239,7 @@ struct RadarChartView: View {
 
                                                 Rectangle()
                                                     .fill(series.name == "forehand" ? Color.blue : Color.green)
-                                                    .frame(width: 40, height: CGFloat(Double(series.data[index]) ?? 0) * 0.6)
+                                                    .frame(width: 40, height: CGFloat(series.data[index]) * 0.6)
                                             }
                                             .cornerRadius(4)
 
@@ -289,7 +289,7 @@ struct HeatmapView: View {
                     ForEach(data.prefix(12), id: \.x) { point in
                         VStack(spacing: 4) {
                             Rectangle()
-                                .fill(colorForValue(Double(point.value) ?? 0))
+                                .fill(colorForValue(point.value))
                                 .frame(height: 40)
                                 .cornerRadius(4)
                                 .overlay(
@@ -485,7 +485,7 @@ struct TimeAnalysisView: View {
                 Chart(data) { timeData in
                     BarMark(
                         x: .value("Hour", timeData.hour),
-                        y: .value("Accuracy", Double(timeData.accuracy) ?? 0)
+                        y: .value("Accuracy", timeData.accuracy)
                     )
                     .foregroundStyle(Color.purple)
                 }
@@ -540,7 +540,7 @@ struct InsightsCard: View {
                     icon: "target",
                     title: "Best Performance",
                     description: "\(insights.bestHandShotCombo.hand.capitalized) \(insights.bestHandShotCombo.shotType.replacingOccurrences(of: "_", with: " "))",
-                    value: String(format: "%.1f%%", Double(insights.bestHandShotCombo.accuracy) ?? 0),
+                    value: String(format: "%.1f%%", insights.bestHandShotCombo.accuracy),
                     color: .green
                 )
 
@@ -548,7 +548,7 @@ struct InsightsCard: View {
                     icon: "location",
                     title: "Optimal Conditions",
                     description: insights.optimalConditions.description,
-                    value: String(format: "%.1f%%", Double(insights.optimalConditions.accuracy) ?? 0),
+                    value: String(format: "%.1f%%", insights.optimalConditions.accuracy),
                     color: .blue
                 )
 
@@ -617,12 +617,13 @@ struct InsightRow: View {
 
 // MARK: - ViewModel
 
+@MainActor
 class ComparativeAnalysisViewModel: ObservableObject {
     @Published var comparativeData: ComparativeAnalyticsResponse?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchComparativeData(period: String = "all") {
         isLoading = true

@@ -1,0 +1,8 @@
+# API Keys - NEVER commit these!
+private_keys/
+
+# Build artifacts
+build/
+build_notes/
+*.ipa
+*.xcarchive

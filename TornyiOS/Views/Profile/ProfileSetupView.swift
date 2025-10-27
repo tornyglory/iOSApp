@@ -16,7 +16,7 @@ struct ProfileSetupView: View {
 
 struct ProfileSetupViewContent: View {
     @StateObject private var viewModel = ProfileSetupViewModel()
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @Binding var isPresented: Bool
     let showDoneButton: Bool
 

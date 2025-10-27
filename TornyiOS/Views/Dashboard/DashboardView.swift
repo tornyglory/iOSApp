@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct DashboardView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var showSidebar = false
     @State private var selectedView: DashboardNavigationType? = nil
     @State private var showAIInsights = false
@@ -393,7 +393,7 @@ struct ShotPerformanceSection: View {
     @State private var shotTypeData: ShotTypeSummaryData?
     @State private var isLoading = false
     @State private var selectedPeriod: String = "all"
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {

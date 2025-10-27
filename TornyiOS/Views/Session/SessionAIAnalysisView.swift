@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SessionAIAnalysisView: View {
     let sessionId: Int
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var analysis: SessionAIAnalysis?
     @State private var isLoading = false
     @State private var showingError = false
@@ -94,7 +94,7 @@ struct SessionAIAnalysisView: View {
                                             HStack {
                                                 Image(systemName: "star.circle.fill")
                                                     .foregroundColor(.tornyBlue)
-                                                Text("Your Coach Says")
+                                                Text("Recommendations Coach")
                                                     .font(TornyFonts.title3)
                                                     .fontWeight(.semibold)
                                                     .foregroundColor(.tornyTextPrimary)
@@ -291,7 +291,7 @@ struct RecommendedProgramCard: View {
     @State private var isLoadingProgram = false
     @State private var showError = false
     @State private var errorMessage = ""
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     private var priorityColor: Color {
         switch program.priority.lowercased() {

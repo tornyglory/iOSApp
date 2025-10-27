@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct SessionHistoryView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var sessions: [TrainingSession] = []
     @State private var isLoading = false
     @State private var showingAlert = false

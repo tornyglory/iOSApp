@@ -12,7 +12,7 @@ class DashboardViewModel: ObservableObject {
     @Published var showingHistory = false
     @Published var showingAnalytics = false
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     struct UserStatistics {
         var totalSessions: Int = 0

@@ -1,11 +1,12 @@
 import Foundation
-import Foundation
 
+@MainActor
 class APIService: ObservableObject {
     static let shared = APIService()
     
     private let trainingBaseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod/api/training"
     private let authBaseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod"
+    private let apiBaseURL = "https://ieg3lhlyy0.execute-api.ap-southeast-2.amazonaws.com/Prod/api"
     @Published var authToken: String?
     @Published var isAuthenticated: Bool = false
     @Published var currentUser: User?
@@ -45,9 +46,17 @@ class APIService: ObservableObject {
         method: HTTPMethod = .GET,
         body: Data? = nil,
         responseType: T.Type,
-        useAuthBase: Bool = false
+        useAuthBase: Bool = false,
+        useApiBase: Bool = false
     ) async throws -> T {
-        let baseURL = useAuthBase ? authBaseURL : trainingBaseURL
+        let baseURL: String
+        if useApiBase {
+            baseURL = apiBaseURL
+        } else if useAuthBase {
+            baseURL = authBaseURL
+        } else {
+            baseURL = trainingBaseURL
+        }
         guard let url = URL(string: baseURL + endpoint) else {
             throw APIError.invalidURL
         }
@@ -179,7 +188,7 @@ class APIService: ObservableObject {
 
                 // Migrate user ID if available
                 if let userId = UserDefaults.standard.string(forKey: "current_user_id") {
-                    KeychainService.shared.saveCurrentUserId(userId)
+                    _ = KeychainService.shared.saveCurrentUserId(userId)
                     print("🔑 Successfully migrated user ID to Keychain")
                 }
 
@@ -302,7 +311,7 @@ class APIService: ObservableObject {
 
         saveAuthToken(response.token)
         // Store the user ID securely in Keychain for future profile loading
-        KeychainService.shared.saveCurrentUserId(String(response.user.id))
+        _ = KeychainService.shared.saveCurrentUserId(String(response.user.id))
         DispatchQueue.main.async {
             self.currentUser = response.user
             self.objectWillChange.send()
@@ -748,6 +757,21 @@ class APIService: ObservableObject {
         return try await makeRequest(
             endpoint: "/progress/chart?\(queryString)",
             responseType: ProgressChartResponse.self
+        )
+    }
+
+    func getShotTypeSummary(period: String = "all", sport: String = "lawn_bowls") async throws -> ShotTypeSummaryResponse {
+        var components = URLComponents()
+        components.queryItems = [
+            URLQueryItem(name: "period", value: period),
+            URLQueryItem(name: "sport", value: sport)
+        ]
+        let queryString = components.percentEncodedQuery ?? ""
+
+        return try await makeRequest(
+            endpoint: "/analytics/shot-types?\(queryString)",
+            responseType: ShotTypeSummaryResponse.self,
+            useApiBase: true
         )
     }
 

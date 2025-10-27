@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct TrainingSessionView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     let session: TrainingSession
     let onSessionEnd: (() -> Void)?
     @State private var currentShot = ShotData()
@@ -714,7 +714,7 @@ struct SessionEndView: View {
     let stats: SessionStatistics
     let onReturn: (() -> Void)?
     @Environment(\.presentationMode) var presentationMode
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var sessionNotes: String = ""
     @State private var isEnding = false
     @State private var showingError = false

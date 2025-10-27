@@ -32,7 +32,7 @@ class ProfileSetupViewModel: ObservableObject {
     @Published var alertMessage = ""
     @Published var navigateToDashboard = false
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     private let genders = ["Male", "Female", "Other", "Prefer not to say"]
     private let countries = ["Australia", "New Zealand", "United Kingdom", "United States", "Other"]
     private let australianStates = ["Victoria", "New South Wales", "Queensland", "Western Australia", "South Australia", "Tasmania", "Northern Territory", "Australian Capital Territory"]

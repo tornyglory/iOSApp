@@ -11,7 +11,7 @@ class TrainingSessionViewModel: ObservableObject {
     @Published var alertMessage = ""
     @Published var sessionStats: SessionStatistics?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     struct ShotData {
         var shotType: ShotType = .draw
@@ -84,8 +84,6 @@ class TrainingSessionViewModel: ObservableObject {
         }
 
         isLoading = true
-
-        let score = calculateScore(for: currentShot.distanceFromJack)
 
         let request = RecordShotRequest(
             sessionId: session.id,

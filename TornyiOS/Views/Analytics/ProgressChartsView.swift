@@ -465,12 +465,13 @@ struct EmptyProgressView: View {
 
 // MARK: - ViewModel
 
+@MainActor
 class ProgressChartsViewModel: ObservableObject {
     @Published var progressData: ProgressChartResponse?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchProgressData(period: String = "month") {
         isLoading = true

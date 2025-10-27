@@ -11,7 +11,7 @@ class SessionHistoryViewModel: ObservableObject {
     @Published var currentOffset = 0
 
     private let pageSize = 20
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func loadSessions(refresh: Bool = false) async {
         if refresh {
@@ -73,7 +73,7 @@ class SessionDetailViewModel: ObservableObject {
     @Published var alertMessage = ""
     @Published var showingDeleteAlert = false
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     let session: TrainingSession
 
     init(session: TrainingSession) {

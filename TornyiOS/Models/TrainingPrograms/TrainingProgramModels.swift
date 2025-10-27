@@ -407,3 +407,71 @@ struct StartProgramRequest: Codable {
         case clubId = "club_id"
     }
 }
+
+// MARK: - Program Setup Instructions
+
+struct ProgramInstructions {
+    let programId: Int
+    let title: String
+    let difficulty: TrainingProgram.Difficulty
+    let duration: Int  // minutes
+    let totalShots: Int
+    let category: String
+    let bestFor: String
+    let imageUrl: String?  // Cloudflare Images URL
+
+    let whatYouNeed: [String]
+    let setupSteps: [InstructionStep]
+    let tips: [String]
+    let structure: ProgramStructure
+    let warnings: [String]?
+    let learningFocus: [String]?
+    let safetyRequirements: [String]?
+    let prerequisites: [String]?
+    let notRecommendedIf: [String]?
+    let performanceGoals: PerformanceGoals?
+    let advancedTips: [String]?
+}
+
+struct InstructionStep {
+    let title: String
+    let description: String
+    let duration: String?
+    let important: Bool
+
+    init(title: String, description: String, duration: String? = nil, important: Bool = false) {
+        self.title = title
+        self.description = description
+        self.duration = duration
+        self.important = important
+    }
+}
+
+struct ProgramStructure {
+    let overview: String
+    let phases: [ProgramPhase]
+    let shotDistribution: ShotDistribution
+}
+
+struct ProgramPhase {
+    let name: String
+    let shots: String  // e.g., "Shots 1-20"
+    let description: String
+}
+
+struct ShotDistribution {
+    let draws: Int
+    let yardOn: Int
+    let ditchWeight: Int
+    let drives: Int
+
+    var total: Int {
+        draws + yardOn + ditchWeight + drives
+    }
+}
+
+struct PerformanceGoals {
+    let yardOn: String?
+    let ditchWeight: String?
+    let drives: String?
+}

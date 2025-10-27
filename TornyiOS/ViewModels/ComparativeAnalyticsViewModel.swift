@@ -7,7 +7,7 @@ class ComparativeAnalyticsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchComparativeData(query: ComparativeAnalyticsQuery = ComparativeAnalyticsQuery()) async {
         isLoading = true

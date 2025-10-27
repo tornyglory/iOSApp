@@ -691,6 +691,7 @@ struct LiveShotTypeStatRow: View {
 
 // MARK: - View Model
 
+@MainActor
 class ActiveProgramViewModel: ObservableObject {
     @Published var sessionInfo: SessionInfo
     @Published var currentShot: ProgramShot
@@ -703,7 +704,7 @@ class ActiveProgramViewModel: ObservableObject {
 
     let programTitle: String
     let sessionMetadata: ProgramSessionMetadata
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     init(sessionInfo: SessionInfo, currentShot: ProgramShot, programTitle: String, sessionMetadata: ProgramSessionMetadata) {
         self.sessionInfo = sessionInfo

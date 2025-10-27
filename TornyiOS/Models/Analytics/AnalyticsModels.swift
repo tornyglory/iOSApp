@@ -805,3 +805,56 @@ struct SessionAIStatistics: Codable {
         driveAccuracyPercentage = decodeOptionalDoubleOrString(.driveAccuracyPercentage)
     }
 }
+
+// MARK: - Shot Type Summary Models
+struct ShotTypeSummaryResponse: Codable {
+    let status: String
+    let data: ShotTypeSummaryData
+}
+
+struct ShotTypeSummaryData: Codable {
+    let draw: ShotTypeSummaryStats
+    let yardOn: ShotTypeSummaryStats
+    let ditchWeight: ShotTypeSummaryStats
+    let drive: ShotTypeSummaryStats
+
+    enum CodingKeys: String, CodingKey {
+        case draw
+        case yardOn = "yard_on"
+        case ditchWeight = "ditch_weight"
+        case drive
+    }
+}
+
+struct ShotTypeSummaryStats: Codable {
+    let totalShots: Int
+    let totalPoints: Int
+    let accuracyPercentage: Double
+
+    enum CodingKeys: String, CodingKey {
+        case totalShots = "total_shots"
+        case totalPoints = "total_points"
+        case accuracyPercentage = "accuracy_percentage"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // totalShots as Int
+        totalShots = try container.decode(Int.self, forKey: .totalShots)
+
+        // totalPoints can be String or Int
+        if let pointsString = try? container.decode(String.self, forKey: .totalPoints) {
+            totalPoints = Int(pointsString) ?? 0
+        } else {
+            totalPoints = try container.decode(Int.self, forKey: .totalPoints)
+        }
+
+        // accuracyPercentage can be String or Double
+        if let accuracyString = try? container.decode(String.self, forKey: .accuracyPercentage) {
+            accuracyPercentage = Double(accuracyString) ?? 0.0
+        } else {
+            accuracyPercentage = try container.decode(Double.self, forKey: .accuracyPercentage)
+        }
+    }
+}

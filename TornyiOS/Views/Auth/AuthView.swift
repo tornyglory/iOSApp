@@ -51,7 +51,7 @@ struct AuthView: View {
 }
 
 struct LoginView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @EnvironmentObject private var navigationManager: NavigationManager
     @State private var email = ""
     @State private var password = ""
@@ -187,7 +187,7 @@ struct LoginView: View {
 }
 
 struct RegisterView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var name = ""
     @State private var email = ""
     @State private var password = ""

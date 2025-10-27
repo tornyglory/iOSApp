@@ -1,13 +1,14 @@
 import Foundation
 import Combine
 
+@MainActor
 class AIInsightsViewModel: ObservableObject {
     @Published var insights: AIInsightsResponse?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchInsights(period: String = "all") {
         isLoading = true

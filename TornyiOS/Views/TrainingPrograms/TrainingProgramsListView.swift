@@ -355,12 +355,13 @@ struct ProgramCard: View {
 
 // MARK: - View Model
 
+@MainActor
 class TrainingProgramsViewModel: ObservableObject {
     @Published var programs: [TrainingProgram] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func loadPrograms() async {
         isLoading = true

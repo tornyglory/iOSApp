@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct TrainingSetupView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var location = "outdoor"
     @State private var greenType = "bent"
     @State private var greenSpeed = 14
@@ -474,7 +474,7 @@ struct TrainingSetupView: View {
                                 if let club = selectedClub {
                                     // Selected Club Display
                                     HStack(spacing: 12) {
-                                        AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                                        AsyncImage(url: URL(string: club.avatar)) { image in
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -858,7 +858,7 @@ struct ClubSearchRow: View {
     var body: some View {
         Button(action: onSelect) {
             HStack(spacing: 12) {
-                AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                AsyncImage(url: URL(string: club.avatar)) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)

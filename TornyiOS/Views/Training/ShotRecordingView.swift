@@ -5,7 +5,7 @@ struct ShotRecordingView: View {
     let session: TrainingSession
     let onShotRecorded: () -> Void
 
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @Environment(\.dismiss) private var dismiss
 
     @State private var shotType: ShotType = .draw

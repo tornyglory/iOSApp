@@ -351,7 +351,7 @@ struct TornyNavBar: View {
 
 // MARK: - Sidebar Component
 struct TornySidebar: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @Binding var isPresented: Bool
     let onNavigate: ((DashboardNavigationType) -> Void)?
     
@@ -536,7 +536,7 @@ struct SidebarLink: View {
 // MARK: - Bottom Navigation Footer
 struct TornyBottomNavigation: View {
     @Binding var selectedTab: Int
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     var onHomeTap: (() -> Void)? = nil
     var onTrainingTap: (() -> Void)? = nil
     var onAnalyticsTap: (() -> Void)? = nil
@@ -689,7 +689,7 @@ struct TornyBackButton: View {
 
 // MARK: - Bottom Navigation Profile Item with Avatar
 struct BottomNavProfileItem: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     let title: String
     let isSelected: Bool
     let notification: String?

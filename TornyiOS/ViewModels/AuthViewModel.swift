@@ -13,7 +13,7 @@ class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
     @Published var needsProfileSetup = false
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     var isLoginFormValid: Bool {
         !email.isEmpty && !password.isEmpty
@@ -48,6 +48,18 @@ class AuthViewModel: ObservableObject {
             isAuthenticated = true
             needsProfileSetup = user.profileCompleted != 1
 
+            isLoading = false
+        } catch let error as APIError {
+            // Handle specific API errors with better messaging
+            switch error {
+            case .unauthorized:
+                alertMessage = "Invalid email or password. Please try again."
+            case .serverErrorWithMessage(_, let message):
+                alertMessage = message
+            default:
+                alertMessage = error.localizedDescription
+            }
+            showingAlert = true
             isLoading = false
         } catch {
             alertMessage = error.localizedDescription

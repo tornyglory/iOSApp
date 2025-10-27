@@ -1,13 +1,14 @@
 import Foundation
 import Combine
 
+@MainActor
 class AnalyticsViewModel: ObservableObject {
     @Published var analytics: AnalyticsResponse?
     @Published var isLoading = false
     @Published var errorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchAnalytics() {
         guard let token = apiService.authToken else {

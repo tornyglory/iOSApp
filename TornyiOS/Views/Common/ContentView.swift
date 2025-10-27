@@ -4,7 +4,7 @@ import MessageUI
 
 
 struct ContentView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
     @AppStorage("profile_completed") private var profileCompletedStorage = false
@@ -66,7 +66,7 @@ struct ContentView: View {
 
 struct MainTabView: View {
     @Binding var selectedTab: Int
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -103,7 +103,7 @@ struct MainTabView: View {
 }
 
 struct ProfileView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     var body: some View {
         NavigationView {
@@ -318,7 +318,7 @@ struct ProfileRow: View {
 
 // MARK: - Dashboard View
 struct MainDashboardView: View {
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @StateObject private var dashboardViewModel = DashboardViewModel()
     @State private var showSidebar = false
     @State private var selectedView: DashboardNavigationType? = nil

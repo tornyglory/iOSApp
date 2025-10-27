@@ -10,12 +10,7 @@ struct AIInsightsView: View {
                 TornyBackgroundView()
 
                 if viewModel.isLoading {
-                    VStack(spacing: 12) {
-                        TornyLoadingView()
-                        Text("Analysing your performance...")
-                            .font(TornyFonts.body)
-                            .foregroundColor(.tornyTextSecondary)
-                    }
+                    TornyLoadingView()
                 } else if let errorMessage = viewModel.errorMessage {
                     VStack(spacing: 16) {
                         Image(systemName: "exclamationmark.triangle")
@@ -37,7 +32,7 @@ struct AIInsightsView: View {
                 } else if let insights = viewModel.insights {
                     ScrollView {
                         VStack(spacing: 24) {
-                            // Header section with Torny AI branding
+                            // Header section with Training Loop branding
                             VStack(spacing: 16) {
                                 ZStack {
                                     Circle()
@@ -59,11 +54,11 @@ struct AIInsightsView: View {
                                 }
 
                                 HStack(spacing: 4) {
-                                    Text("Torny")
+                                    Text("Training")
                                         .font(TornyFonts.largeTitle)
                                         .fontWeight(.bold)
                                         .foregroundColor(.tornyTextPrimary)
-                                    Text("AI")
+                                    Text("Loop")
                                         .font(TornyFonts.largeTitle)
                                         .fontWeight(.bold)
                                         .foregroundStyle(
@@ -110,7 +105,7 @@ struct AIInsightsView: View {
                                                 HStack {
                                                     Image(systemName: "star.circle.fill")
                                                         .foregroundColor(.tornyBlue)
-                                                    Text("Your Coach Says")
+                                                    Text("Recommendations Coach")
                                                         .font(TornyFonts.title3)
                                                         .fontWeight(.semibold)
                                                         .foregroundColor(.tornyTextPrimary)
@@ -303,7 +298,7 @@ struct AIInsightsView: View {
                         }
                 }
             }
-            .navigationTitle("Torny AI")
+            .navigationTitle("Training Loop")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

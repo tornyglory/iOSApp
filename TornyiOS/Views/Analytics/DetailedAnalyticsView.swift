@@ -1092,7 +1092,7 @@ class DetailedAnalyticsViewModelLocal: ObservableObject {
     @Published var error: Error?
     @Published var selectedPeriod = "all"
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func loadAnalytics() {
         isLoading = true

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SessionDetailView: View {
     let session: TrainingSession
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     @State private var sessionStats: SessionStatistics?
     @State private var shots: [TrainingShot] = []
     @State private var isLoading = false

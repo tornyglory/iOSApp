@@ -3,6 +3,7 @@ import SwiftUI
 struct ProgramDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: ProgramDetailViewModel
+    @State private var showingInstructions = false
     @State private var showingStartSession = false
     var onDismissToRoot: (() -> Void)? = nil
 
@@ -21,6 +22,14 @@ struct ProgramDetailView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+                    // Program Image (if available)
+                    if let instructions = ProgramInstructionsData.getInstructions(forProgramId: viewModel.program.id),
+                       let imageUrl = instructions.imageUrl,
+                       let url = URL(string: imageUrl) {
+                        programImage(url: url)
+                            .padding(.horizontal)
+                    }
+
                     // Hero Section
                     VStack(spacing: 12) {
                         HStack {
@@ -98,7 +107,7 @@ struct ProgramDetailView: View {
                 Spacer()
 
                 Button(action: {
-                    showingStartSession = true
+                    showingInstructions = true
                 }) {
                     HStack {
                         Image(systemName: "play.fill")
@@ -139,6 +148,40 @@ struct ProgramDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingInstructions) {
+            if let instructions = ProgramInstructionsData.getInstructions(forProgramId: viewModel.program.id) {
+                ProgramSetupInstructionsView(
+                    instructions: instructions,
+                    program: viewModel.program,
+                    onBeginSetup: {
+                        showingInstructions = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            showingStartSession = true
+                        }
+                    }
+                )
+            } else {
+                // Fallback if instructions not found - go directly to setup
+                VStack(spacing: 20) {
+                    Text("Instructions not available for this program")
+                        .font(TornyFonts.body)
+                        .foregroundColor(.tornyTextSecondary)
+
+                    Button("Continue to Setup") {
+                        showingInstructions = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingStartSession = true
+                        }
+                    }
+                    .buttonStyle(TornyPrimaryButton(isLarge: true))
+                    .padding()
+                }
+                .padding()
+                .onAppear {
+                    print("⚠️ No instructions found for program ID: \(viewModel.program.id)")
+                }
+            }
+        }
         .sheet(isPresented: $showingStartSession) {
             ProgramStartSetupView(program: viewModel.program, onDismissToRoot: onDismissToRoot)
         }
@@ -157,6 +200,38 @@ struct ProgramDetailView: View {
         case .beginner: return "leaf.fill"
         case .intermediate: return "flame.fill"
         case .advanced: return "bolt.fill"
+        }
+    }
+
+    private func programImage(url: URL) -> some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            case .failure(_):
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(height: 200)
+                    .overlay(
+                        Image(systemName: "photo")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray)
+                    )
+            case .empty:
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.gray.opacity(0.1))
+                    .frame(height: 200)
+                    .overlay(
+                        ProgressView()
+                    )
+            @unknown default:
+                EmptyView()
+            }
         }
     }
 }
@@ -314,9 +389,10 @@ struct ShotPreviewRow: View {
 
 // MARK: - View Model
 
+@MainActor
 class ProgramDetailViewModel: ObservableObject {
     @Published var program: TrainingProgram
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     init(program: TrainingProgram) {
         self.program = program
@@ -346,7 +422,7 @@ class ProgramDetailViewModel: ObservableObject {
 
 struct ProgramStartSetupView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
     let program: TrainingProgram
     var onDismissToRoot: (() -> Void)? = nil
 
@@ -782,7 +858,7 @@ struct ProgramStartSetupView: View {
                                 if let club = selectedClub {
                                     // Selected Club Display
                                     HStack(spacing: 12) {
-                                        AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                                        AsyncImage(url: URL(string: club.avatar)) { image in
                                             image
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -1163,7 +1239,7 @@ struct ProgramClubSearchRow: View {
     var body: some View {
         Button(action: onSelect) {
             HStack(spacing: 12) {
-                AsyncImage(url: URL(string: club.avatar ?? "")) { image in
+                AsyncImage(url: URL(string: club.avatar)) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)

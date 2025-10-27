@@ -7,7 +7,7 @@ class ProgressAnalyticsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    private let apiService = APIService.shared
+    private var apiService: APIService { APIService.shared }
 
     func fetchProgressData(query: ProgressChartQuery = ProgressChartQuery()) async {
         isLoading = true
