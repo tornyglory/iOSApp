@@ -435,18 +435,22 @@ struct ProgramSetupInstructionsView: View {
     // MARK: - Begin Setup Button
 
     private var beginSetupButton: some View {
-        Button(action: onBeginSetup) {
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                Text("Begin Setup")
+        VStack(spacing: 0) {
+            Button(action: onBeginSetup) {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                    Text("Begin Setup")
+                }
             }
+            .buttonStyle(TornyPrimaryButton(isLarge: true))
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
         }
-        .buttonStyle(TornyPrimaryButton(isLarge: true))
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.bottom, 16)
         .background(
             Color.white
+                .ignoresSafeArea(edges: .bottom)
                 .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: -4)
         )
     }

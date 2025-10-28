@@ -21,12 +21,13 @@ struct ProgramDetailView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // Program Image (if available)
                     if let instructions = ProgramInstructionsData.getInstructions(forProgramId: viewModel.program.id),
                        let imageUrl = instructions.imageUrl,
                        let url = URL(string: imageUrl) {
                         programImage(url: url)
+                            .frame(maxHeight: 220)
                             .padding(.horizontal)
                     }
 
@@ -99,7 +100,7 @@ struct ProgramDetailView: View {
 
                     Spacer(minLength: 100)
                 }
-                .padding(.top, 20)
+                .padding(.top, 8)
             }
 
             // Start Button (Fixed at bottom)
@@ -129,7 +130,7 @@ struct ProgramDetailView: View {
                     .shadow(color: .orange.opacity(0.3), radius: 8, x: 0, y: 4)
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 20)
+                .padding(.bottom, 90)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -210,7 +211,7 @@ struct ProgramDetailView: View {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: 220)
                     .cornerRadius(16)
                     .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
             case .failure(_):
@@ -961,10 +962,10 @@ struct ProgramStartSetupView: View {
                         .frame(maxWidth: .infinity)
                         .disabled(isLoading)
                         .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
 
                         Spacer(minLength: 100)
                     }
-                    .padding(.bottom, 20)
                 }
             }
             .navigationTitle("Setup Session")
