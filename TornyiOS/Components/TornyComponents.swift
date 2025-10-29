@@ -333,7 +333,9 @@ struct TornyNavBar: View {
 
             // Right side - Hamburger menu
             Button(action: {
-                showSidebar.toggle()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showSidebar.toggle()
+                }
             }) {
                 Image(systemName: "line.3.horizontal")
                     .font(.title2)
@@ -354,7 +356,9 @@ struct TornySidebar: View {
     private var apiService: APIService { APIService.shared }
     @Binding var isPresented: Bool
     let onNavigate: ((DashboardNavigationType) -> Void)?
-    
+    var onTrainingSessionsTap: (() -> Void)?
+    var onTrainingLoopTap: (() -> Void)?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header with user info
@@ -434,10 +438,11 @@ struct TornySidebar: View {
                     Spacer()
                 }
                 .padding()
-                
+                .padding(.top, 40)
+
                 Divider()
             }
-            
+
             // Navigation links
             ScrollView {
                 VStack(spacing: 0) {
@@ -445,27 +450,40 @@ struct TornySidebar: View {
                         // Home action
                         isPresented = false
                     }
-                    
-                    SidebarLink(icon: "target", title: "Training Sessions", notification: nil) {
-                        // Training action
+
+                    SidebarLink(icon: "target", title: "Start Training", notification: nil) {
+                        // Start a new training session
+                        onTrainingSessionsTap?()
                         isPresented = false
                     }
-                    
+
+                    SidebarLink(icon: "chart.line.uptrend.xyaxis", title: "Training Loop", notification: nil) {
+                        // AI Insights / Training Loop
+                        onTrainingLoopTap?()
+                        isPresented = false
+                    }
+
+                    SidebarLink(icon: "list.bullet.clipboard", title: "Training Programs", notification: nil) {
+                        // Training Programs
+                        onNavigate?(.trainingPrograms)
+                        isPresented = false
+                    }
+
                     SidebarLink(icon: "chart.bar", title: "Analytics", notification: nil) {
                         onNavigate?(.analytics)
                         isPresented = false
                     }
-                    
+
                     SidebarLink(icon: "clock", title: "Session History", notification: nil) {
                         onNavigate?(.history)
                         isPresented = false
                     }
-                    
+
                     SidebarLink(icon: "person.crop.circle", title: "Profile Settings", notification: nil) {
                         onNavigate?(.settings)
                         isPresented = false
                     }
-                    
+
                     Divider()
                         .padding(.vertical, 16)
 

@@ -11,6 +11,7 @@ struct ProfileSetupView: View {
         NavigationView {
             ProfileSetupViewContent(isPresented: $isPresented, showDoneButton: false)
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -56,6 +57,8 @@ struct ProfileSetupViewContent: View {
                         }
                         .padding()
                     }
+                    .frame(maxWidth: 700)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .navigationTitle("Profile Settings")

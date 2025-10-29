@@ -39,6 +39,7 @@ class APIService: ObservableObject {
     
     func setAuthToken(_ token: String) {
         self.authToken = token
+        self.isAuthenticated = true
     }
     
     private func makeRequest<T: Codable>(

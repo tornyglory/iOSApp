@@ -4,7 +4,7 @@ import MessageUI
 
 
 struct ContentView: View {
-    private var apiService: APIService { APIService.shared }
+    @ObservedObject private var apiService = APIService.shared
     @State private var selectedTab = 0
     @State private var showingProfileSetup = false
     @AppStorage("profile_completed") private var profileCompletedStorage = false
@@ -329,7 +329,47 @@ struct MainDashboardView: View {
     @State private var showAIInsights = false
     @State private var currentTrainingSession: TrainingSession? = nil
     @State private var selectedBottomTab = 0
-    
+
+    @ViewBuilder
+    private var sidebarOverlay: some View {
+        if showSidebar {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation {
+                        showSidebar = false
+                    }
+                }
+
+            Group {
+                TornySidebar(
+                    isPresented: $showSidebar,
+                    onNavigate: { view in
+                        if view == .history {
+                            showingHistory = true
+                        } else if view == .analytics {
+                            showingAnalytics = true
+                        } else if view == .settings {
+                            showingProfileSetup = true
+                        } else {
+                            selectedView = view
+                        }
+                    },
+                    onTrainingSessionsTap: {
+                        showingTrainingSetup = true
+                    },
+                    onTrainingLoopTap: {
+                        showAIInsights = true
+                    }
+                )
+            }
+            .frame(width: 280)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+            .ignoresSafeArea()
+            .transition(.move(edge: .trailing))
+        }
+    }
+
     var body: some View {
         ZStack {
             if let currentView = selectedView {
@@ -770,31 +810,11 @@ struct MainDashboardView: View {
                         }
                     }
                 }
-
-                // Sidebar overlay
-                if showSidebar {
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
-                        .onTapGesture { showSidebar = false }
-                    
-                    HStack {
-                        TornySidebar(isPresented: $showSidebar) { view in
-                            if view == .history {
-                                showingHistory = true
-                            } else if view == .analytics {
-                                showingAnalytics = true
-                            } else if view == .settings {
-                                showingProfileSetup = true
-                            } else {
-                                selectedView = view
-                            }
-                        }
-                        Spacer()
-                    }
-                    .transition(.move(edge: .leading))
-                }
                 }
             }
+
+            // Sidebar overlay - at top level to cover full screen
+            sidebarOverlay
         }
         }
         .overlay(alignment: .bottom) {
