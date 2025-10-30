@@ -99,12 +99,13 @@ struct ProfileHeaderSection: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Banner Background
-            ZStack(alignment: .topTrailing) {
+            // Banner Background with camera button overlay
+            ZStack {
                 if let bannerImage = viewModel.banner {
                     Image(uiImage: bannerImage)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .frame(width: UIScreen.main.bounds.width)
                         .frame(height: 280)
                         .clipped()
                 } else {
@@ -116,6 +117,7 @@ struct ProfileHeaderSection: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
+                    .frame(width: UIScreen.main.bounds.width)
                     .frame(height: 280)
                 }
 
@@ -125,21 +127,11 @@ struct ProfileHeaderSection: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                .frame(width: UIScreen.main.bounds.width)
                 .frame(height: 280)
-
-                // Camera button for banner
-                PhotosPicker(selection: $viewModel.bannerItem, matching: .images, photoLibrary: .shared()) {
-                    Image(systemName: "camera.fill")
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(Color.black.opacity(0.5))
-                        .clipShape(Circle())
-                }
-                .padding()
-                .onChange(of: viewModel.bannerItem) { _ in
-                    viewModel.loadBannerFromItem()
-                }
             }
+            .frame(width: UIScreen.main.bounds.width)
+            .frame(height: 280)
 
             VStack(spacing: 16) {
                 // Navigation Bar (optional - could be removed if not needed)
@@ -256,6 +248,26 @@ struct ProfileHeaderSection: View {
                     .frame(height: 10)
             }
         }
+        .frame(height: 280)
+        .clipped()
+        .overlay(
+            // Camera button positioned absolutely on top of everything
+            GeometryReader { geometry in
+                PhotosPicker(selection: $viewModel.bannerItem, matching: .images, photoLibrary: .shared()) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.3))
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
+                }
+                .onChange(of: viewModel.bannerItem) { _ in
+                    viewModel.loadBannerFromItem()
+                }
+                .position(x: geometry.size.width - 32, y: 32)
+            }
+        )
     }
 }
 

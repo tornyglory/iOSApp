@@ -149,7 +149,7 @@ struct ProgramDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingInstructions) {
+        .fullScreenCover(isPresented: $showingInstructions) {
             if let instructions = ProgramInstructionsData.getInstructions(forProgramId: viewModel.program.id) {
                 ProgramSetupInstructionsView(
                     instructions: instructions,
@@ -183,7 +183,7 @@ struct ProgramDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingStartSession) {
+        .fullScreenCover(isPresented: $showingStartSession) {
             ProgramStartSetupView(program: viewModel.program, onDismissToRoot: onDismissToRoot)
         }
     }

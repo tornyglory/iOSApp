@@ -122,6 +122,7 @@ struct ProfileView: View {
                                     image
                                         .resizable()
                                         .aspectRatio(contentMode: .fill)
+                                        .frame(width: UIScreen.main.bounds.width)
                                         .frame(height: 200)
                                         .clipped()
                                 } placeholder: {
@@ -131,6 +132,7 @@ struct ProfileView: View {
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         ))
+                                        .frame(width: UIScreen.main.bounds.width)
                                         .frame(height: 200)
                                 }
 
@@ -217,6 +219,7 @@ struct ProfileView: View {
                                                                 .foregroundColor(.tornyBlue.opacity(0.5))
                                                         )
                                                 }
+                                                .id(avatarUrl)
                                             } else {
                                                 Circle()
                                                     .fill(Color.tornyBlue.opacity(0.1))
@@ -390,6 +393,7 @@ struct MainDashboardView: View {
                                 selectedView = nil
                             })
                         }
+                        .navigationViewStyle(.stack)
                     case .settings:
                         VStack(spacing: 0) {
                             // Navigation bar
@@ -867,7 +871,7 @@ struct MainDashboardView: View {
                 selectedBottomTab = 0  // Reset to home when history modal is dismissed
             }
         }
-        .sheet(isPresented: $showingTrainingSetup) {
+        .fullScreenCover(isPresented: $showingTrainingSetup) {
             TrainingSetupView { session in
                 // Session created callback
                 showingTrainingSetup = false
@@ -878,16 +882,16 @@ struct MainDashboardView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingHistory) {
+        .fullScreenCover(isPresented: $showingHistory) {
             SessionHistoryView()
         }
-        .sheet(isPresented: $showingAnalytics) {
+        .fullScreenCover(isPresented: $showingAnalytics) {
             AnalyticsView()
         }
-        .sheet(isPresented: $showingProfileSetup) {
+        .fullScreenCover(isPresented: $showingProfileSetup) {
             ProfileSetupViewContent(isPresented: $showingProfileSetup, showDoneButton: true)
         }
-        .sheet(isPresented: $showAIInsights) {
+        .fullScreenCover(isPresented: $showAIInsights) {
             AIInsightsView()
         }
         .onAppear {

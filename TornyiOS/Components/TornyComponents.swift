@@ -155,15 +155,16 @@ struct TornySecondaryButton: ButtonStyle {
 // MARK: - Torny Card View
 struct TornyCard<Content: View>: View {
     let content: Content
-    
+
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
-    
+
     var body: some View {
         VStack {
             content
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -707,12 +708,12 @@ struct TornyBackButton: View {
 
 // MARK: - Bottom Navigation Profile Item with Avatar
 struct BottomNavProfileItem: View {
-    private var apiService: APIService { APIService.shared }
+    @ObservedObject private var apiService = APIService.shared
     let title: String
     let isSelected: Bool
     let notification: String?
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
@@ -760,7 +761,7 @@ struct BottomNavProfileItem: View {
                         Circle()
                             .stroke(Color.tornyBlue, lineWidth: 2)
                     )
-                    .id(apiService.currentUser?.id ?? 0)
+                    .id(avatarUrlString)
                     } else {
                         Circle()
                             .fill(Color.tornyBlue.opacity(0.2))
